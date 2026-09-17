@@ -142,7 +142,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
         // Already handled in initialize() method
     }
 
-    override fun didUpdateFcmToken(token: String) {
+    override fun didUpdateFcmToken() {
         val body = Arguments.createMap().apply {
             putBoolean("success", true)
             putString("type", "fcm")
