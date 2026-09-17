@@ -1,0 +1,47 @@
+# Build outputs
+lib/
+dist/
+build/
+*.tsbuildinfo
+
+# Dependencies
+node_modules/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+
+# Native
+ios/build/
+android/build/
+android/.gradle/
+android/app/build/
+
+# Example app
+example/node_modules/
+example/ios/build/
+example/android/build/
+example/android/.gradle/
+example/.expo/
+example/.expo-shared/
+
+# Local config
+.env
+.env.local
+local.properties

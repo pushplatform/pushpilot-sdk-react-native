@@ -1,0 +1,58 @@
+{
+  "name": "@pushplatform/react-native",
+  "version": "1.0.0",
+  "description": "Push Platform React Native SDK - TypeScript bridge for iOS and Android native SDKs",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --max-warnings 0",
+    "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "react-native",
+    "push-notifications",
+    "apns",
+    "fcm",
+    "voip",
+    "callkit",
+    "ios",
+    "android"
+  ],
+  "author": "Push Platform Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=16.13.1",
+    "react-native": ">=0.68.0"
+  },
+  "devDependencies": {
+    "@react-native/eslint-config": "^0.73.2",
+    "@types/react": "^18.3.31",
+    "@types/react-native": "^0.72.8",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.9.7",
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "lib/",
+    "ios/",
+    "android/",
+    "PushPlatform.podspec",
+    "react-native.config.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourorg/push-platform.git",
+    "directory": "sdk-react-native"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
