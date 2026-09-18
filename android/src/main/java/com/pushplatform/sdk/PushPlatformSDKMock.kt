@@ -1,52 +1,80 @@
 package com.pushplatform.sdk
 
+import android.content.Context
 import com.pushplatform.sdk.models.SdkError
 import com.pushplatform.sdk.notifications.ParsedNotification
 import java.util.UUID
 
 enum class Environment {
     DEVELOPMENT,
-    STAGING,
     PRODUCTION
 }
 
+data class PushConfiguration(
+    val apiKey: String,
+    val environment: Environment = Environment.PRODUCTION,
+    val debugMode: Boolean = false
+)
+
 interface PushPlatformDelegate {
-    fun didInitialize(installationID: UUID)
-    fun didUpdateRegistration()
-    fun didUpdateFcmToken(token: String)
-    fun didFailToRegisterFcmToken(error: SdkError)
-    fun didReceiveNotification(notification: ParsedNotification)
-    fun didFailWithError(error: Exception)
-    fun onNotificationPermissionResult(granted: Boolean)
+    fun didInitialize(installationId: String)
+    fun didUpdateFcmToken() {}
+    fun didFailToRegisterFcmToken(error: SdkError) {}
+    fun didReceiveNotification(notification: ParsedNotification, isInForeground: Boolean) {}
+    fun onNotificationPermissionResult(granted: Boolean) {}
 }
 
-object PushPlatform {
-    private var instance: PushPlatform? = null
+class PushPlatform private constructor() {
 
-    fun getInstance(): PushPlatform {
-        if (instance == null) {
-            instance = PushPlatform
-        }
-        return instance!!
-    }
+    private var configuration: PushConfiguration? = null
+    private var installationId: String? = UUID.randomUUID().toString()
 
     var delegate: PushPlatformDelegate? = null
-    private var configured = false
-    private var installationID: UUID? = UUID.randomUUID()
 
     fun configure(
+        context: Context,
         apiKey: String,
-        apiBaseURL: String,
-        environment: Environment,
-        debugMode: Boolean
+        environment: Environment = Environment.PRODUCTION,
+        debugMode: Boolean = false
     ) {
-        configured = true
-        installationID?.let { id ->
+        configuration = PushConfiguration(
+            apiKey = apiKey,
+            environment = environment,
+            debugMode = debugMode
+        )
+
+        // Simulate initialization
+        installationId?.let { id ->
             delegate?.didInitialize(id)
         }
     }
 
-    fun getInstallationID(): UUID? {
-        return if (configured) installationID else null
+    fun getInstallationId(): String? {
+        return installationId
+    }
+
+    fun isConfigured(): Boolean {
+        return configuration != null
+    }
+
+    fun login(userId: String, callback: (com.pushplatform.sdk.core.UserManager.Result<Unit>) -> Unit) {
+        // Mock implementation - just succeed
+        callback(com.pushplatform.sdk.core.UserManager.Result.Success(Unit))
+    }
+
+    fun logout(callback: (com.pushplatform.sdk.core.UserManager.Result<Unit>) -> Unit) {
+        // Mock implementation - just succeed
+        callback(com.pushplatform.sdk.core.UserManager.Result.Success(Unit))
+    }
+
+    companion object {
+        @Volatile
+        private var instance: PushPlatform? = null
+
+        fun getInstance(): PushPlatform {
+            return instance ?: synchronized(this) {
+                instance ?: PushPlatform().also { instance = it }
+            }
+        }
     }
 }
