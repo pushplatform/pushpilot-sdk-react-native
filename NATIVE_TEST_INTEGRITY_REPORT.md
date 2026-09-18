@@ -192,6 +192,140 @@ Evidence that production bridge code compiled:
 
 ---
 
+## iOS Runtime Verification
+
+### Status
+✅ **VERIFIED** - Production Swift bridge executes at runtime
+
+### Environment
+- Simulator: iPhone 16 Pro (iOS 18.6)
+- React Native: 0.87.1
+- Architecture: Legacy Architecture (NativeModules)
+
+### Test Execution
+
+**1. Module Loading**
+```typescript
+const {PushPlatformBridge} = NativeModules;
+```
+Result: ✅ Module loaded successfully
+
+**2. Production Method Call**
+```typescript
+const installationId = await PushPlatformBridge.getInstallationId();
+```
+Result: ✅ Returns UUID: `5B050E10-035C-4C1E-BB6D-90B50EF01C76`
+
+**3. Native Method Execution**
+Evidence from NSLog in PushPlatformBridge.swift:
+```swift
+@objc(getInstallationId:rejecter:)
+func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    NSLog("[PushPlatformBridge] getInstallationId() called from JavaScript")
+    if let installationId = PushPlatform.shared.getInstallationID() {
+        NSLog("[PushPlatformBridge] Returning UUID: %@", installationId.uuidString)
+        resolve(installationId.uuidString)
+    }
+}
+```
+
+### Runtime Mutation Proof
+
+**Production Version (baseline):**
+App display:
+```
+[TEST] Call getInstallationId()
+✅ getInstallationId() returned: 5B050E10-035C-4C1E-BB6D-90B50EF01C76
+```
+**Result**: PASS - Returns UUID from PushPlatformSDKMock
+
+**Mutated Version:**
+Changed PushPlatformBridge.swift:
+```swift
+@objc(getInstallationId:rejecter:)
+func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    NSLog("[PushPlatformBridge] getInstallationId() called from JavaScript - MUTATED")
+    // MUTATION: Return sentinel instead of real UUID
+    resolve("IOS_MUTATED_SENTINEL_12345")
+}
+```
+
+Rebuilt, reinstalled, relaunched:
+```
+[TEST] Call getInstallationId()
+✅ getInstallationId() returned: IOS_MUTATED_SENTINEL_12345
+```
+**Result**: FAIL - Observable behavior changed (sentinel instead of UUID)
+
+**Rollback Version:**
+Reverted mutation, rebuilt, reinstalled, relaunched:
+```
+[TEST] Call getInstallationId()
+✅ getInstallationId() returned: 5B050E10-035C-4C1E-BB6D-90B50EF01C76
+```
+**Result**: PASS - Returns UUID again
+
+**Sentinel Cleanup:**
+```bash
+$ grep -r "IOS_MUTATED_SENTINEL_12345" --exclude-dir=node_modules
+(no output)
+```
+✅ No sentinel remnants in repository
+
+### Critical Fix: Objective-C Bridge Export
+
+**Problem**: Swift methods with parameter labels weren't exported correctly to Objective-C for React Native.
+
+**Solution**: Created `ios/PushPlatformBridge.m` with explicit RCT_EXTERN_METHOD declarations:
+```objc
+#import <React/RCTBridgeModule.h>
+#import <React/RCTEventEmitter.h>
+
+@interface RCT_EXTERN_MODULE(PushPlatformBridge, RCTEventEmitter)
+
+RCT_EXTERN_METHOD(initialize:(NSDictionary *)config
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(login:(NSString *)userId
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(logout:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getInstallationId:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+@end
+```
+
+Updated Swift methods with explicit Objective-C selectors:
+```swift
+@objc(getInstallationId:rejecter:)
+func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    // implementation
+}
+
+@objc(logout:rejecter:)
+func logout(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    // implementation
+}
+```
+
+### Runtime Verification Conclusion
+
+✅ **VERIFIED**: JavaScript test code executes production iOS native bridge at runtime:
+- NativeModules successfully loads PushPlatformBridge
+- JavaScript calls reach Swift production code (PushPlatformBridge.swift)
+- Swift code calls mock SDK (PushPlatformSDKMock.swift)
+- Results return correctly to JavaScript
+- App remains stable after native calls
+- Runtime mutation proof confirms actual code execution (not contract test)
+- Objective-C bridge file (.m) required for proper Swift method export
+
+---
+
 ## Runtime Verification
 
 ### Android Runtime Execution Verification
@@ -353,6 +487,8 @@ Production-linked test applications were successfully created for **both iOS and
 3. ✅ React Native bridge infrastructure works
 4. ✅ App loads and runs
 5. ✅ Deleted .h/.m files validated
+6. ✅ Runtime execution verified on simulator
+7. ✅ Runtime mutation proof: PASS → FAIL (mutated) → PASS (rollback)
 
 ### Android
 1. ✅ Production Kotlin bridge compiles
@@ -374,6 +510,7 @@ Production-linked test applications were successfully created for **both iOS and
 - `sdk-react-native/TestApp/verify-ios-integration.sh`
 - `sdk-react-native/TestApp/verify-android-integration.sh`
 - `sdk-react-native/ios/PushPlatformSDKMock.swift`
+- `sdk-react-native/ios/PushPlatformBridge.m` (Objective-C bridge header for Swift methods)
 - `sdk-react-native/android/src/main/java/com/pushplatform/sdk/PushPlatformSDKMock.kt`
 - `sdk-react-native/android/src/main/java/com/pushplatform/sdk/core/UserManager.kt`
 - `sdk-react-native/android/src/main/java/com/pushplatform/sdk/models/SdkError.kt`
@@ -383,6 +520,7 @@ Production-linked test applications were successfully created for **both iOS and
 ### Modified Files
 - `sdk-react-native/PushPlatform.podspec`
 - `sdk-react-native/package.json`
+- `sdk-react-native/ios/PushPlatformBridge.swift` (added @objc selectors, NSLog debugging)
 - `sdk-react-native/TestApp/PushPlatformTestApp/metro.config.js`
 - `sdk-react-native/TestApp/PushPlatformTestApp/App.tsx`
 
@@ -402,7 +540,8 @@ Production-linked test applications were successfully created for **both iOS and
 - Successful compilation
 - Successful linking
 - APK/IPA creation
-- Mutation proof (Android)
-- Runtime execution (iOS)
+- Compilation mutation proof (Android)
+- Runtime execution verification (iOS + Android)
+- Runtime mutation proof (iOS + Android): PASS → FAIL (mutated) → PASS (rollback)
 
 No further work required for Stage 6C verification.

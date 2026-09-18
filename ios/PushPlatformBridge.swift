@@ -86,8 +86,8 @@ class PushPlatformBridge: RCTEventEmitter {
         }
     }
 
-    @objc
-    func logout(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(logout:rejecter:)
+    func logout(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         PushPlatform.shared.logout { result in
             switch result {
             case .success:
@@ -98,11 +98,14 @@ class PushPlatformBridge: RCTEventEmitter {
         }
     }
 
-    @objc
-    func getInstallationId(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    @objc(getInstallationId:rejecter:)
+    func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        NSLog("[PushPlatformBridge] getInstallationId() called from JavaScript")
         if let installationId = PushPlatform.shared.getInstallationID() {
+            NSLog("[PushPlatformBridge] Returning UUID: %@", installationId.uuidString)
             resolve(installationId.uuidString)
         } else {
+            NSLog("[PushPlatformBridge] SDK not initialized, rejecting")
             reject("NOT_INITIALIZED", "SDK not initialized", nil)
         }
     }
