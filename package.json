@@ -27,6 +27,7 @@
   ],
   "author": "Push Platform Team",
   "license": "MIT",
+  "homepage": "https://github.com/yourorg/push-platform#readme",
   "peerDependencies": {
     "react": ">=16.13.1",
     "react-native": ">=0.68.0"
@@ -41,6 +42,7 @@
     "eslint": "^8.57.1",
     "jest": "^30.5.1",
     "prettier": "^3.9.7",
+    "react-native": "^0.71.0",
     "ts-jest": "^29.4.12",
     "typescript": "^5.9.3"
   },
