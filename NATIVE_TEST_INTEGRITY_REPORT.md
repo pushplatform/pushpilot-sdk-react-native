@@ -188,7 +188,122 @@ Evidence that production bridge code compiled:
 - Checks: APK exists, classes compiled, package registered, TypeScript compiled
 - Result: All static checks passed
 
-**Note**: Runtime verification on emulator encountered JavaScript bundling issues unrelated to native bridge compilation. Static verification (build success + mutation proof) confirms production code executes.
+**Note**: Static verification (build success + compilation mutation proof) completed. Runtime verification required React Native New Architecture (TurboModules) - see Runtime Verification section below.
+
+---
+
+## Runtime Verification
+
+### Android Runtime Execution Verification
+
+**Status**: ✅ VERIFIED
+
+#### Environment
+- Device: Android Emulator (emulator-5554)
+- React Native: 0.87.1 (Bridgeless mode, Fabric enabled)
+- Architecture: New Architecture (TurboModules)
+
+#### Critical Discovery
+React Native 0.87+ ignores `newArchEnabled=false` setting. The new architecture (Bridgeless/Fabric/TurboModules) is always enabled. Legacy `NativeModules` API does not work in Bridgeless mode.
+
+**Solution**: Use `TurboModuleRegistry.get()` instead of `NativeModules` to access native modules in new architecture.
+
+#### Test Execution
+
+**1. APK Installation**
+```bash
+$ adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+Performing Streamed Install
+Success
+Exit code: 0
+```
+
+**2. App Launch**
+```bash
+$ adb shell am start -n com.pushplatformtestapp/.MainActivity
+Starting: Intent { cmp=com.pushplatformtestapp/.MainActivity }
+Exit code: 0
+```
+
+**3. Process Verification**
+```bash
+$ adb shell pidof com.pushplatformtestapp
+4630
+Exit code: 0
+```
+
+**4. Native Bridge Call**
+Test code (App.tsx):
+```typescript
+const PushPlatformBridge = TurboModuleRegistry.get('PushPlatformBridge');
+const installationId = await PushPlatformBridge.getInstallationId();
+```
+
+Logcat output:
+```
+09-18 19:23:44.668  4630  4693 I ReactNativeJS: [TEST] Call getInstallationId()
+09-18 19:23:44.687  4630  4693 I ReactNativeJS: ✅ getInstallationId() returned: c489df8c-f03c-484a-91ce-6563955efd19
+```
+
+**Result**: ✅ Call reached native Kotlin code (PushPlatformModule.kt) and returned UUID
+
+**5. App Stability Check**
+```bash
+$ adb shell pidof com.pushplatformtestapp
+4630
+Exit code: 0
+```
+**Result**: ✅ App remains running after native call (no crash)
+
+**6. Fatal Exception Check**
+```bash
+$ adb logcat -d | grep FATAL
+(no output)
+```
+**Result**: ✅ No FATAL EXCEPTION in logcat
+
+#### Runtime Mutation Proof
+
+**Production Version (baseline):**
+```bash
+$ adb logcat -d | grep "getInstallationId"
+09-18 19:19:58.391  4338  4375 I ReactNativeJS: ✅ getInstallationId() returned: 3be4a868-bb64-40e9-b1bc-0a24bbef8661
+```
+**Result**: PASS - Returns UUID from PushPlatformSDKMock
+
+**Mutated Version:**
+Changed PushPlatformModule.kt:
+```kotlin
+fun getInstallationId(promise: Promise) {
+    // MUTATION: Always return specific sentinel value
+    promise.resolve("MUTATED_SENTINEL_12345")
+}
+```
+
+Rebuilt, reinstalled, relaunched:
+```bash
+$ adb logcat -d | grep "getInstallationId"
+09-18 19:22:31.339  4470  4540 I ReactNativeJS: ✅ getInstallationId() returned: MUTATED_SENTINEL_12345
+```
+**Result**: FAIL - Observable behavior changed (sentinel instead of UUID)
+
+**Rollback Version:**
+Reverted mutation, rebuilt, reinstalled, relaunched:
+```bash
+$ adb logcat -d | grep "getInstallationId"
+09-18 19:23:44.687  4630  4693 I ReactNativeJS: ✅ getInstallationId() returned: c489df8c-f03c-484a-91ce-6563955efd19
+```
+**Result**: PASS - Returns UUID again
+
+#### Runtime Verification Conclusion
+
+✅ **VERIFIED**: JavaScript test code executes production Android native bridge at runtime:
+- TurboModuleRegistry successfully loads PushPlatformModule
+- JavaScript calls reach Kotlin production code (PushPlatformModule.kt)
+- Native code calls mock SDK (PushPlatformSDKMock.kt) 
+- Results return correctly to JavaScript
+- App remains stable after native calls
+- Runtime mutation proof confirms actual code execution (not contract test)
 
 ---
 
@@ -202,8 +317,8 @@ Evidence that production bridge code compiled:
 | Android | 29 tests | Contract (JUnit) | ❌ NO |
 | **Total Contract** | **52 tests** | - | **❌ NO** |
 | | | | |
-| iOS | 1 app | Integration (RN) | ✅ YES |
-| Android | 1 app | Integration (RN) | ✅ YES (build + mutation) |
+| iOS | 1 app | Integration (RN) | ✅ YES (runtime verified) |
+| Android | 1 app | Integration (RN) | ✅ YES (runtime + mutation verified) |
 | **Total Production** | **2 apps** | - | **✅ VERIFIED** |
 
 ### Production Bridge Code Verification
@@ -220,7 +335,9 @@ Evidence that production bridge code compiled:
 - Production `PushPlatformPackage.kt` registered
 - Mock SDK API aligned with real SDK
 - APK build successful (117M)
-- **Mutation proof passed**: Source changes reflected in bytecode
+- **Compilation mutation proof passed**: Source changes reflected in bytecode
+- **Runtime execution verified**: JavaScript calls reach native Kotlin code
+- **Runtime mutation proof passed**: PASS → FAIL (mutated) → PASS (rollback)
 
 ---
 
@@ -242,9 +359,11 @@ Production-linked test applications were successfully created for **both iOS and
 2. ✅ Production TypeScript bridge compiles
 3. ✅ React Native autolinking works
 4. ✅ APK builds successfully
-5. ✅ Mutation proof confirms production code in compilation
+5. ✅ Compilation mutation proof confirms production code in bytecode
+6. ✅ Runtime execution verified on emulator
+7. ✅ Runtime mutation proof: PASS → FAIL → PASS
 
-**Both platforms VERIFIED**: Production bridge code compiles and links correctly.
+**Both platforms VERIFIED**: Production bridge code compiles, links, and executes correctly at runtime.
 
 ---
 
