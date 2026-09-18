@@ -8,92 +8,147 @@ import type { PushPlatformConfig, JSONObject } from '../types';
 import { ErrorCode, SDKError } from '../types';
 
 /**
- * Validation utility
+ * Validate configuration object
  */
-export class Validator {
-  /**
-   * Validate configuration object
-   */
-  static validateConfig(config: PushPlatformConfig): void {
-    if (!config) {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'Configuration is required'
-      );
-    }
-
-    if (!config.apiKey || typeof config.apiKey !== 'string' || config.apiKey.trim() === '') {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'API key is required and must be a non-empty string'
-      );
-    }
-
-    if (!config.environment || !['development', 'production'].includes(config.environment)) {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'Environment must be "development" or "production"'
-      );
-    }
-
-    if (config.debug !== undefined && typeof config.debug !== 'boolean') {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'Debug flag must be a boolean'
-      );
-    }
-
-    if (config.baseURL !== undefined && (typeof config.baseURL !== 'string' || config.baseURL.trim() === '')) {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'Base URL must be a non-empty string if provided'
-      );
-    }
+export function validateConfig(config: PushPlatformConfig): void {
+  if (!config) {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      'Configuration is required'
+    );
   }
 
-  /**
-   * Validate user ID
-   */
-  static validateUserId(userId: string): void {
-    if (!userId || typeof userId !== 'string' || userId.trim() === '') {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'User ID must be a non-empty string'
-      );
-    }
-
-    if (userId.length > 255) {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'User ID must not exceed 255 characters'
-      );
-    }
+  // Validate apiKey
+  if (!config.apiKey) {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiKey is required');
+  }
+  if (typeof config.apiKey !== 'string') {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiKey must be a string');
+  }
+  if (config.apiKey.trim() === '') {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiKey cannot be empty');
   }
 
-  /**
-   * Validate user data object
-   */
-  static validateUserData(userData: JSONObject | undefined): void {
-    if (userData === undefined) {
-      return;
-    }
+  // Validate apiBaseURL
+  if (!config.apiBaseURL) {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiBaseURL is required');
+  }
+  validateURL(config.apiBaseURL);
 
-    if (typeof userData !== 'object' || userData === null || Array.isArray(userData)) {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'User data must be a valid JSON object'
-      );
-    }
+  // Validate HTTPS in production
+  const environment = config.environment || 'production';
+  if (environment === 'production' && !config.apiBaseURL.startsWith('https://')) {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      'apiBaseURL must use HTTPS in production'
+    );
+  }
 
-    // Validate it's serializable JSON
-    try {
-      JSON.stringify(userData);
-    } catch (error) {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'User data must be JSON-serializable',
-        { originalError: String(error) }
-      );
-    }
+  // Validate environment
+  const validEnvironments = ['development', 'staging', 'production'];
+  if (config.environment && !validEnvironments.includes(config.environment)) {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      `Invalid environment. Must be one of: ${validEnvironments.join(', ')}`
+    );
+  }
+
+  // Validate debugMode
+  if (config.debugMode !== undefined && typeof config.debugMode !== 'boolean') {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      'debugMode must be a boolean'
+    );
   }
 }
+
+/**
+ * Validate user ID
+ */
+export function validateUserId(userId: unknown): void {
+  if (typeof userId !== 'string') {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'userId must be a string');
+  }
+
+  if (userId.trim() === '') {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'userId cannot be empty');
+  }
+
+  if (userId.length > 255) {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'userId too long (max 255 characters)');
+  }
+
+  // Check for invalid characters (control chars, SQL injection patterns)
+  const invalidChars = /[\x00-\x1F\x7F;'"\\]/;
+  if (invalidChars.test(userId)) {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      'userId contains invalid characters'
+    );
+  }
+}
+
+/**
+ * Validate URL
+ */
+export function validateURL(url: unknown): void {
+  if (typeof url !== 'string') {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'URL must be a string');
+  }
+
+  if (url.trim() === '') {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'URL cannot be empty');
+  }
+
+  let parsedURL: URL;
+  try {
+    parsedURL = new URL(url.trim());
+  } catch (error) {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'must be a valid URL');
+  }
+
+  // Only allow HTTP and HTTPS
+  if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:') {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      'URL must use HTTP or HTTPS protocol'
+    );
+  }
+}
+
+/**
+ * Validate user data object
+ */
+export function validateUserData(userData: JSONObject | undefined): void {
+  if (userData === undefined) {
+    return;
+  }
+
+  if (typeof userData !== 'object' || userData === null || Array.isArray(userData)) {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      'User data must be a valid JSON object'
+    );
+  }
+
+  // Validate it's serializable JSON
+  try {
+    JSON.stringify(userData);
+  } catch (error) {
+    throw new SDKError(
+      ErrorCode.INVALID_CONFIG,
+      'User data must be JSON-serializable',
+      { originalError: String(error) }
+    );
+  }
+}
+
+/**
+ * Legacy Validator class for backward compatibility
+ */
+export class Validator {
+  static validateConfig = validateConfig;
+  static validateUserId = validateUserId;
+  static validateUserData = validateUserData;
+}
+

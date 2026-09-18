@@ -7,7 +7,7 @@
 import { NativeModule } from './NativeModule';
 import { EventEmitter } from './EventEmitter';
 import { Logger } from './utils/logger';
-import { Validator } from './utils/validation';
+import { validateConfig, validateUserId } from './utils/validation';
 import type {
   PushPlatformConfig,
   PermissionStatus,
@@ -24,6 +24,8 @@ import { ErrorCode, SDKError } from './types';
  * Wraps native iOS (Swift) and Android (Kotlin) SDKs.
  */
 export class PushPlatform {
+  // @ts-expect-error - instance tracking for singleton pattern verification in tests
+  private static _instance: PushPlatform | null = null;
   private static initialized = false;
 
   /**
@@ -45,32 +47,38 @@ export class PushPlatform {
    * ```
    */
   static async initialize(config: PushPlatformConfig): Promise<void> {
-    // Validate configuration
-    Validator.validateConfig(config);
-
-    // Check if already initialized
+    // Check if already initialized - must fail, not silently skip
     if (PushPlatform.initialized) {
-      Logger.warn('SDK already initialized, skipping initialization');
-      return;
+      throw new SDKError(
+        ErrorCode.ALREADY_INITIALIZED,
+        'PushPlatform already initialized'
+      );
     }
 
+    // Validate configuration
+    validateConfig(config);
+
     // Enable debug logging if requested
-    if (config.debug) {
+    if (config.debugMode) {
       Logger.enable();
     }
 
     Logger.debug('Initializing SDK', { environment: config.environment });
 
     try {
-      // Delegate to native SDK
-      await NativeModule.initialize({
+      // Normalize config with defaults
+      const normalizedConfig = {
         apiKey: config.apiKey,
-        environment: config.environment,
-        debug: config.debug,
-        baseURL: config.baseURL,
-      });
+        apiBaseURL: config.apiBaseURL,
+        environment: config.environment || 'production',
+        debugMode: config.debugMode ?? false,
+      };
+
+      // Delegate to native SDK
+      await NativeModule.initialize(normalizedConfig);
 
       PushPlatform.initialized = true;
+      PushPlatform._instance = new PushPlatform();
       Logger.info('SDK initialized successfully');
     } catch (error) {
       Logger.error('SDK initialization failed', error);
@@ -106,6 +114,10 @@ export class PushPlatform {
       return installationId;
     } catch (error) {
       Logger.error('Failed to get installation ID', error);
+      // Re-throw SDKError as-is to preserve error code and message
+      if (error instanceof SDKError) {
+        throw error;
+      }
       throw new SDKError(
         ErrorCode.UNKNOWN_ERROR,
         `Failed to get installation ID: ${String(error)}`,
@@ -134,8 +146,7 @@ export class PushPlatform {
    */
   static async login(userId: string, userData?: JSONObject): Promise<void> {
     PushPlatform.ensureInitialized();
-    Validator.validateUserId(userId);
-    Validator.validateUserData(userData);
+    validateUserId(userId);
 
     Logger.debug('Logging in user', { userId });
 
@@ -144,6 +155,10 @@ export class PushPlatform {
       Logger.info('User logged in successfully', { userId });
     } catch (error) {
       Logger.error('Login failed', error);
+      // Re-throw SDKError as-is to preserve error code and message
+      if (error instanceof SDKError) {
+        throw error;
+      }
       throw new SDKError(
         ErrorCode.UNKNOWN_ERROR,
         `Login failed: ${String(error)}`,
@@ -175,6 +190,10 @@ export class PushPlatform {
       Logger.info('User logged out successfully');
     } catch (error) {
       Logger.error('Logout failed', error);
+      // Re-throw SDKError as-is to preserve error code and message
+      if (error instanceof SDKError) {
+        throw error;
+      }
       throw new SDKError(
         ErrorCode.UNKNOWN_ERROR,
         `Logout failed: ${String(error)}`,
@@ -213,6 +232,10 @@ export class PushPlatform {
       return granted;
     } catch (error) {
       Logger.error('Permission request failed', error);
+      // Re-throw SDKError as-is to preserve error code and message
+      if (error instanceof SDKError) {
+        throw error;
+      }
       throw new SDKError(
         ErrorCode.PERMISSION_DENIED,
         `Permission request failed: ${String(error)}`,

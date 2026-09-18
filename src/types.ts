@@ -36,19 +36,19 @@ export interface PushPlatformConfig {
   apiKey: string;
 
   /**
-   * Environment: development or production
+   * Base URL for backend API
    */
-  environment: 'development' | 'production';
+  apiBaseURL: string;
 
   /**
-   * Enable debug logging (default: false)
+   * Environment: development or production (optional, defaults to production)
    */
-  debug?: boolean;
+  environment?: 'development' | 'production';
 
   /**
-   * Base URL for backend API (optional, defaults to production URL)
+   * Enable debug logging (optional, default: false)
    */
-  baseURL?: string;
+  debugMode?: boolean;
 }
 
 /**
@@ -78,7 +78,7 @@ export interface PushNotification {
   /**
    * Unique notification ID
    */
-  notificationId: string;
+  id: string;
 
   /**
    * Notification title (optional)
@@ -186,6 +186,31 @@ export class SDKError extends Error {
     this.code = code;
     this.details = details;
   }
+}
+
+/**
+ * Registration update payload (when device token is registered or updated)
+ */
+export interface RegistrationUpdate {
+  /**
+   * Installation ID (UUID v4)
+   */
+  installationId: string;
+
+  /**
+   * Platform type (apns or fcm)
+   */
+  type: 'apns' | 'fcm';
+
+  /**
+   * Whether registration succeeded
+   */
+  success: boolean;
+
+  /**
+   * Error message if registration failed
+   */
+  error?: string;
 }
 
 /**
