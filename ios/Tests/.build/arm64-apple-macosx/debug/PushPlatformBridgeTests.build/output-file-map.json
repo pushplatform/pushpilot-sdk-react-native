@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/master.swiftdeps"
+  },
+  "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/PushPlatformBridgeTests/PushPlatformBridgeTests.swift": {
+    "dependencies": "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests.d",
+    "object": "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests.swift.o",
+    "swiftmodule": "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests.swiftdeps",
+    "diagnostics": "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests.dia"
+  }
+}

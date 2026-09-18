@@ -1,0 +1,437 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.xctest/Contents/MacOS/PushPlatformBridgeTestsPackageTests",
+      "packagePath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests",
+      "productName" : "PushPlatformBridgeTestsPackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.PushPlatformBridgeTests-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/sources",
+      "importPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/PushPlatformBridgeTests/PushPlatformBridgeTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "PushPlatformBridgeTests",
+      "moduleOutputPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules/PushPlatformBridgeTests.swiftmodule",
+      "objects" : [
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g"
+      ],
+      "outputFileMapPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules/PushPlatformBridgeTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/PushPlatformBridgeTests/PushPlatformBridgeTests.swift"
+      ],
+      "tempsPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.PushPlatformBridgeTestsPackageTests-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/sources",
+      "importPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules/PushPlatformBridgeTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "PushPlatformBridgeTestsPackageTests",
+      "moduleOutputPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules/PushPlatformBridgeTestsPackageTests.swiftmodule",
+      "objects" : [
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j12",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/include/PushPlatformBridgeTestsPackageTests-Swift.h",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g"
+      ],
+      "outputFileMapPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules/PushPlatformBridgeTestsPackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "PushPlatformBridgeTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "PushPlatformBridgeTests",
+      "-c",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/PushPlatformBridgeTests/PushPlatformBridgeTests.swift",
+      "-I",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "PushPlatformBridgeTestsPackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "PushPlatformBridgeTestsPackageTests",
+      "-c",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.derived/runner.swift",
+      "-I",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j12",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/include/PushPlatformBridgeTestsPackageTests-Swift.h",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "PushPlatformBridgeTests" : [
+
+    ],
+    "PushPlatformBridgeTestsPackageTests" : [
+      "PushPlatformBridgeTests"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/PushPlatformBridgeTests/PushPlatformBridgeTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/sources"
+    },
+    "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/sources"
+    },
+    "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTests.build/PushPlatformBridgeTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.build/runner.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/PushPlatformBridgeTestsPackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/Tests/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}
