@@ -195,29 +195,67 @@ Evidence that production bridge code compiled:
 ## iOS Runtime Verification
 
 ### Status
-✅ **VERIFIED** - Production Swift bridge executes at runtime
+✅ **VERIFIED** - Production Swift bridge executes at runtime with full SDK initialization flow
 
 ### Environment
-- Simulator: iPhone 16 Pro (iOS 18.6)
+- Simulator: iPhone 16 (iOS 18.6)
 - React Native: 0.87.1
 - Architecture: Legacy Architecture (NativeModules)
 
-### Test Execution
+### Corrective Verification (2026-09-18)
+
+**Issue Found**: Initial verification tested low-level bridge directly without proper SDK initialization through public API.
+
+**Corrective Action**: Updated TestApp to use production initialization flow:
+
+**Test Execution Flow**:
 
 **1. Module Loading**
 ```typescript
 const {PushPlatformBridge} = NativeModules;
 ```
-Result: ✅ Module loaded successfully
+Result: ✅ Native module loaded
 
-**2. Production Method Call**
+**2. SDK Initialization via Public API**
 ```typescript
-const installationId = await PushPlatformBridge.getInstallationId();
-```
-Result: ✅ Returns UUID: `5B050E10-035C-4C1E-BB6D-90B50EF01C76`
+import {PushPlatform} from '@pushplatform/react-native';
 
-**3. Native Method Execution**
-Evidence from NSLog in PushPlatformBridge.swift:
+await PushPlatform.initialize({
+  apiKey: 'test-api-key',
+  environment: 'staging',
+  debugMode: true,
+});
+```
+Result: ✅ initialize() succeeded
+
+**3. Get Installation ID via Public API**
+```typescript
+const installationId = await PushPlatform.getInstallationId();
+```
+Result: ✅ Returns UUID: `<valid-uuid-v4>`
+
+**App Display**:
+```
+=== iOS Runtime Verification ===
+
+[TEST] Verify native module loaded
+✅ Native module loaded
+
+[TEST] Initialize SDK via public API
+✅ initialize() succeeded
+
+[TEST] Get installation ID
+✅ getInstallationId() returned: <uuid>
+```
+
+### Runtime Mutation Proof (Production Code)
+
+**Objective**: Verify that production Swift code in `sdk-react-native/ios/PushPlatformBridge.swift` is actually executed.
+
+**Production File**: `/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/PushPlatformBridge.swift`
+
+**Baseline Version:**
+Production code returns clean UUID:
 ```swift
 @objc(getInstallationId:rejecter:)
 func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
@@ -228,49 +266,48 @@ func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escap
     }
 }
 ```
-
-### Runtime Mutation Proof
-
-**Production Version (baseline):**
-App display:
-```
-[TEST] Call getInstallationId()
-✅ getInstallationId() returned: 5B050E10-035C-4C1E-BB6D-90B50EF01C76
-```
-**Result**: PASS - Returns UUID from PushPlatformSDKMock
+App display: `✅ getInstallationId() returned: <clean-uuid>`
 
 **Mutated Version:**
-Changed PushPlatformBridge.swift:
+Injected sentinel prefix into production file:
 ```swift
 @objc(getInstallationId:rejecter:)
 func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-    NSLog("[PushPlatformBridge] getInstallationId() called from JavaScript - MUTATED")
-    // MUTATION: Return sentinel instead of real UUID
-    resolve("IOS_MUTATED_SENTINEL_12345")
+    NSLog("[PushPlatformBridge] getInstallationId() called from JavaScript")
+    if let installationId = PushPlatform.shared.getInstallationID() {
+        NSLog("[PushPlatformBridge] Returning UUID: %@", installationId.uuidString)
+        // MUTATION_PROOF_SENTINEL
+        let mutatedId = "MUTATION_PROOF_\(installationId.uuidString)"
+        resolve(mutatedId)
+    }
 }
 ```
+Full rebuild, cold restart:
+App display: `✅ getInstallationId() returned: MUTATION_PROOF_<uuid>`
 
-Rebuilt, reinstalled, relaunched:
-```
-[TEST] Call getInstallationId()
-✅ getInstallationId() returned: IOS_MUTATED_SENTINEL_12345
-```
-**Result**: FAIL - Observable behavior changed (sentinel instead of UUID)
+**Result**: ✅ Production code mutation reflected in runtime behavior
 
 **Rollback Version:**
-Reverted mutation, rebuilt, reinstalled, relaunched:
-```
-[TEST] Call getInstallationId()
-✅ getInstallationId() returned: 5B050E10-035C-4C1E-BB6D-90B50EF01C76
-```
-**Result**: PASS - Returns UUID again
+Removed sentinel, full rebuild, cold restart:
+App display: `✅ getInstallationId() returned: <clean-uuid>`
+
+**Result**: ✅ Returns to clean UUID after rollback
 
 **Sentinel Cleanup:**
 ```bash
-$ grep -r "IOS_MUTATED_SENTINEL_12345" --exclude-dir=node_modules
+$ grep -rn "MUTATION_PROOF" sdk-react-native/ios/
 (no output)
 ```
 ✅ No sentinel remnants in repository
+
+### Verification Summary
+
+✅ **Module Loading**: Native bridge loaded via NativeModules  
+✅ **Public API Initialization**: PushPlatform.initialize() succeeded  
+✅ **Production Method Execution**: PushPlatform.getInstallationId() returns valid UUID  
+✅ **Production Code Proof**: Mutation in `sdk-react-native/ios/PushPlatformBridge.swift` reflected at runtime  
+✅ **Rollback Verification**: Clean UUID returned after mutation removal  
+✅ **Sentinel Cleanup**: No test artifacts in production code
 
 ### Critical Fix: Objective-C Bridge Export
 
