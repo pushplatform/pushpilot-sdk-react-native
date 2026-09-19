@@ -42,7 +42,6 @@ class PushPlatformBridge: RCTEventEmitter {
     func initialize(_ config: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async {
             guard let apiKey = config["apiKey"] as? String,
-                  let appId = config["appId"] as? String,
                   let environmentString = config["environment"] as? String else {
                 reject("INVALID_CONFIG", "Missing required configuration fields", nil)
                 return
