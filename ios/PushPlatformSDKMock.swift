@@ -71,6 +71,8 @@ public protocol PushPlatformDelegate: AnyObject {
 
 public class PushPlatform {
     public static let shared = PushPlatform()
+    private static var configureCallCount = 0
+    private static var getInstallationIDCallCount = 0
 
     public weak var delegate: PushPlatformDelegate?
 
@@ -79,17 +81,31 @@ public class PushPlatform {
 
     private init() {
         self.installationID = UUID()
+        NSLog("[PushPlatformSDKMock] Singleton initialized with UUID: %@", installationID?.uuidString ?? "nil")
     }
 
     public func configure(apiKey: String, apiBaseURL: String, environment: Environment, debugMode: Bool) {
+        PushPlatform.configureCallCount += 1
+        NSLog("[PushPlatformSDKMock] configure() call #%d. Before: configured=%@",
+              PushPlatform.configureCallCount,
+              configured ? "true" : "false")
         self.configured = true
+        NSLog("[PushPlatformSDKMock] configure() completed. After: configured=%@, installationID=%@",
+              configured ? "true" : "false",
+              installationID?.uuidString ?? "nil")
         if let id = installationID {
             delegate?.didInitialize(installationID: id)
         }
     }
 
     public func getInstallationID() -> UUID? {
-        return configured ? installationID : nil
+        PushPlatform.getInstallationIDCallCount += 1
+        let result = configured ? installationID : nil
+        NSLog("[PushPlatformSDKMock] getInstallationID() call #%d. configured=%@, returning=%@",
+              PushPlatform.getInstallationIDCallCount,
+              configured ? "true" : "false",
+              result?.uuidString ?? "nil")
+        return result
     }
 
     public func login(userID: String, completion: @escaping (Result<Void, SDKError>) -> Void) {

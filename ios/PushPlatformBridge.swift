@@ -1,5 +1,9 @@
 import Foundation
+#if TESTING
+// Use local mocks for testing
+#else
 import React
+#endif
 // import PushPlatformSDK - commented out for testing, using mock instead
 
 @objc(PushPlatformBridge)
@@ -75,24 +79,28 @@ class PushPlatformBridge: RCTEventEmitter {
 
     @objc
     func login(_ userId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-        PushPlatform.shared.login(userID: userId) { result in
-            switch result {
-            case .success:
-                resolve(nil)
-            case .failure(let error):
-                reject(self.errorCode(from: error), error.localizedDescription, error)
+        DispatchQueue.main.async {
+            PushPlatform.shared.login(userID: userId) { result in
+                switch result {
+                case .success:
+                    resolve(nil)
+                case .failure(let error):
+                    reject(self.errorCode(from: error), error.localizedDescription, error)
+                }
             }
         }
     }
 
     @objc(logout:rejecter:)
     func logout(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        PushPlatform.shared.logout { result in
-            switch result {
-            case .success:
-                resolve(nil)
-            case .failure(let error):
-                reject(self.errorCode(from: error), error.localizedDescription, error)
+        DispatchQueue.main.async {
+            PushPlatform.shared.logout { result in
+                switch result {
+                case .success:
+                    resolve(nil)
+                case .failure(let error):
+                    reject(self.errorCode(from: error), error.localizedDescription, error)
+                }
             }
         }
     }
@@ -100,12 +108,14 @@ class PushPlatformBridge: RCTEventEmitter {
     @objc(getInstallationId:rejecter:)
     func getInstallationId(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         NSLog("[PushPlatformBridge] getInstallationId() called from JavaScript")
-        if let installationId = PushPlatform.shared.getInstallationID() {
-            NSLog("[PushPlatformBridge] Returning UUID: %@", installationId.uuidString)
-            resolve(installationId.uuidString)
-        } else {
-            NSLog("[PushPlatformBridge] SDK not initialized, rejecting")
-            reject("NOT_INITIALIZED", "SDK not initialized", nil)
+        DispatchQueue.main.async {
+            if let installationId = PushPlatform.shared.getInstallationID() {
+                NSLog("[PushPlatformBridge] Returning UUID: %@", installationId.uuidString)
+                resolve(installationId.uuidString)
+            } else {
+                NSLog("[PushPlatformBridge] SDK not initialized, rejecting")
+                reject("NOT_INITIALIZED", "SDK not initialized", nil)
+            }
         }
     }
 
