@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/pushplatform/react-native.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
-  s.exclude_files = "ios/ContractTests/**/*"
+  s.exclude_files = "ios/ContractTests/**/*", "ios/Tests/**/*", "ios/Package.swift", "ios/standalone_test.swift"
   s.public_header_files = []
 
   s.dependency "React-Core"
