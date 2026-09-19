@@ -14,16 +14,52 @@ TypeScript SDK for integrating Push Platform's push notification service into Re
 
 ## Requirements
 
-- React Native 0.68.0 or higher
+- **React Native 0.76.0 or higher** (New Architecture required)
+- **TurboModules/Bridgeless mode required**
 - iOS 13.0 or higher
-- Android API level 26 (Android 8.0) or higher
+- Android API level 21 (Android 5.0) or higher
 - TypeScript 4.5 or higher (recommended)
+
+**⚠️ UNSUPPORTED:**
+- React Native <= 0.75.x
+- Legacy Architecture
+- Old Bridge mode
 
 ## Installation
 
 ```bash
 npm install @pushplatform/react-native
 ```
+
+### Native SDK Dependencies
+
+This package requires PushPlatform native SDKs:
+
+**iOS:**
+```ruby
+# Podfile
+pod 'PushPlatformSDK', '~> 1.0'
+
+# For local/monorepo development:
+pod 'PushPlatformSDK', :path => '../path/to/sdk-ios'
+```
+
+**Android:**
+
+Include the native Android SDK in your project:
+
+```gradle
+// settings.gradle.kts (for monorepo)
+include ':pushplatform-sdk-android'
+project(':pushplatform-sdk-android').projectDir = file('../path/to/sdk-android/sdk')
+
+// app/build.gradle
+dependencies {
+    implementation project(':pushplatform-sdk-android')
+}
+```
+
+_Note: Maven Central distribution coming soon for external projects._
 
 ### iOS Setup
 
@@ -33,7 +69,7 @@ cd ios && pod install && cd ..
 
 ### Android Setup
 
-No additional setup required — autolinking handles Gradle configuration automatically.
+Ensure the native Android SDK is properly linked in your settings.gradle.
 
 ## Quick Start
 

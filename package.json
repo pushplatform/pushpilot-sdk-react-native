@@ -29,8 +29,8 @@
   "license": "MIT",
   "homepage": "https://github.com/yourorg/push-platform#readme",
   "peerDependencies": {
-    "react": ">=16.13.1",
-    "react-native": ">=0.68.0"
+    "react": ">=18.0.0",
+    "react-native": ">=0.76.0"
   },
   "devDependencies": {
     "@react-native/eslint-config": "^0.73.2",

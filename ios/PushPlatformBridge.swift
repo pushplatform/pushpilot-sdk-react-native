@@ -1,10 +1,6 @@
 import Foundation
-#if TESTING
-// Use local mocks for testing
-#else
 import React
-#endif
-// import PushPlatformSDK - commented out for testing, using mock instead
+import PushPlatformSDK
 
 @objc(PushPlatformBridge)
 class PushPlatformBridge: RCTEventEmitter {

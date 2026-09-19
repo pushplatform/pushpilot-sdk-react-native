@@ -2,6 +2,9 @@ require "json"
 
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
+# Minimum React Native version that supports New Architecture
+MIN_RN_VERSION = "0.76.0"
+
 Pod::Spec.new do |s|
   s.name         = "PushPlatform"
   s.version      = package["version"]
@@ -14,10 +17,27 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/pushplatform/react-native.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
-  s.exclude_files = "ios/ContractTests/**/*", "ios/Tests/**/*", "ios/Package.swift", "ios/standalone_test.swift"
+  s.exclude_files = "ios/ContractTests/**/*", "ios/Tests/**/*", "ios/Package.swift", "ios/standalone_test.swift", "ios/PushPlatformSDKMock.swift"
   s.public_header_files = []
 
   s.dependency "React-Core"
 
+  # PushPlatformSDK dependency - external consumers need to add the podspec repo
+  # or use local path during development:
+  # pod 'PushPlatformSDK', :path => '../sdk-ios'
+  s.dependency "PushPlatformSDK", "~> 1.0"
+
   s.swift_version = "5.9"
+
+  # Warn if React Native version is too old
+  if defined?(Pod::REACT_NATIVE_PATH) && Pod::REACT_NATIVE_PATH
+    rn_package_path = File.join(Pod::REACT_NATIVE_PATH, "package.json")
+    if File.exist?(rn_package_path)
+      rn_package = JSON.parse(File.read(rn_package_path))
+      rn_version = rn_package["version"]
+      if Gem::Version.new(rn_version) < Gem::Version.new(MIN_RN_VERSION)
+        Pod::UI.warn "PushPlatform requires React Native >= #{MIN_RN_VERSION} with New Architecture enabled. Found #{rn_version}."
+      end
+    end
+  end
 end
