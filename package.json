@@ -30,7 +30,7 @@
   "homepage": "https://github.com/yourorg/push-platform#readme",
   "peerDependencies": {
     "react": ">=18.0.0",
-    "react-native": ">=0.76.0"
+    "react-native": ">=0.77.0"
   },
   "devDependencies": {
     "@react-native/eslint-config": "^0.73.2",

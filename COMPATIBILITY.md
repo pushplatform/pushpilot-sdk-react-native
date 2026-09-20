@@ -4,7 +4,7 @@
 
 | Platform | Minimum Version | Architecture | Status |
 |----------|----------------|--------------|--------|
-| React Native | 0.76.0 | New Architecture (TurboModules) | ✅ Supported |
+| React Native | 0.77.0 | New Architecture (TurboModules) | ✅ Supported |
 | React Native | 0.87.1+ | New Architecture (TurboModules) | ✅ Supported |
 | iOS | 13.0 | - | ✅ Supported |
 | Android | API 21 (5.0) | - | ✅ Supported |
@@ -22,7 +22,7 @@
 **Required:**
 - ✅ New Architecture enabled
 - ✅ TurboModules
-- ✅ Bridgeless mode (RN 0.76+)
+- ✅ Bridgeless mode (RN 0.77+)
 
 **Not Supported:**
 - ❌ Legacy Architecture
@@ -31,7 +31,7 @@
 
 ## Tested Configurations
 
-### React Native 0.76.x
+### React Native 0.77.x
 
 | OS | Version | Architecture | Test Status |
 |-----|---------|--------------|-------------|
@@ -47,9 +47,9 @@
 
 ## Migration from Older Versions
 
-If you're using React Native < 0.76:
+If you're using React Native < 0.77:
 
-1. **Upgrade to React Native 0.76+**
+1. **Upgrade to React Native 0.77+**
 2. **Enable New Architecture** in your project
 3. **Install PushPlatform React Native SDK**
 
@@ -69,7 +69,7 @@ There is no migration path for Legacy Architecture - New Architecture is require
 ## Known Limitations
 
 1. **Legacy Architecture**: Intentionally not supported
-2. **RN < 0.76**: No compatibility layer planned
+2. **RN < 0.77**: No compatibility layer planned
 3. **Android Maven**: Not yet published to Maven Central (monorepo setup required)
 
 ## Support Policy

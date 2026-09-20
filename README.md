@@ -14,14 +14,14 @@ TypeScript SDK for integrating Push Platform's push notification service into Re
 
 ## Requirements
 
-- **React Native 0.76.0 or higher** (New Architecture required)
+- **React Native 0.77.0 or higher** (New Architecture required)
 - **TurboModules/Bridgeless mode required**
 - iOS 13.0 or higher
 - Android API level 21 (Android 5.0) or higher
 - TypeScript 4.5 or higher (recommended)
 
 **⚠️ UNSUPPORTED:**
-- React Native <= 0.75.x
+- React Native <= 0.76.x (all versions)
 - Legacy Architecture
 - Old Bridge mode
 

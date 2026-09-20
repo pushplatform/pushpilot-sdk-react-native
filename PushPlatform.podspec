@@ -3,7 +3,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 # Minimum React Native version that supports New Architecture
-MIN_RN_VERSION = "0.76.0"
+MIN_RN_VERSION = "0.77.0"
 
 Pod::Spec.new do |s|
   s.name         = "PushPlatform"
