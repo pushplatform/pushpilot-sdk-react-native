@@ -81,7 +81,7 @@ class PushPlatformBridge: RCTEventEmitter {
     }
 
     @objc
-    func login(_ userId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    func login(_ userId: String, userData: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         NSLog("[PushPlatformBridge] login() called with userId=%@", userId)
         DispatchQueue.main.async {
             PushPlatform.shared.login(userID: userId) { result in

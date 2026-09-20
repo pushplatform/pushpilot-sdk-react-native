@@ -18,9 +18,10 @@ export interface NativePushPlatformBridge {
   /**
    * Login user to the PushPlatform
    * @param userId User identifier
+   * @param userData Optional user metadata
    * @returns Promise that resolves when login completes
    */
-  login(userId: string): Promise<void>;
+  login(userId: string, userData?: Record<string, any> | null): Promise<void>;
 
   /**
    * Logout current user
