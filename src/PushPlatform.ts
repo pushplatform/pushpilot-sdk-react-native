@@ -17,19 +17,6 @@ import type {
 } from './types';
 import { ErrorCode, SDKError } from './types';
 
-// Check for New Architecture at module load time
-const isTurboModuleEnabled = (global as any).nativeFabricUIManager != null;
-const isNewArchEnabled = (global as any).__turboModuleProxy != null || isTurboModuleEnabled;
-
-if (!isNewArchEnabled) {
-  console.error(
-    '[PushPlatform] ERROR: New Architecture not detected. ' +
-    'PushPlatform requires React Native >= 0.76 with New Architecture enabled. ' +
-    'Legacy Architecture is not supported. ' +
-    'See https://reactnative.dev/docs/new-architecture-intro'
-  );
-}
-
 /**
  * Push Platform SDK
  *
@@ -37,7 +24,7 @@ if (!isNewArchEnabled) {
  * Wraps native iOS (Swift) and Android (Kotlin) SDKs.
  *
  * **Requirements:**
- * - React Native >= 0.76
+ * - React Native >= 0.77
  * - New Architecture (TurboModules) enabled
  * - iOS 13.0+
  * - Android API 21+
@@ -66,12 +53,13 @@ export class PushPlatform {
    * ```
    */
   static async initialize(config: PushPlatformConfig): Promise<void> {
-    // Check for New Architecture
-    if (!isNewArchEnabled) {
+    // Verify TurboModule is loaded (automatic check via codegen)
+    if (!NativeModule) {
       throw new SDKError(
         ErrorCode.UNSUPPORTED_ARCHITECTURE,
-        'PushPlatform requires React Native New Architecture (TurboModules). ' +
-        'Legacy Architecture is not supported. Please upgrade to RN >= 0.76 and enable New Architecture.'
+        'PushPlatform TurboModule not available. ' +
+        'Ensure React Native >= 0.77 with New Architecture is enabled. ' +
+        'Legacy Architecture is not supported.'
       );
     }
 
