@@ -63,7 +63,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    fun login(userId: String, promise: Promise) {
+    fun login(userId: String, userData: ReadableMap?, promise: Promise) {
         pushPlatform.login(userId) { result ->
             when (result) {
                 is UserManager.Result.Success -> promise.resolve(null)

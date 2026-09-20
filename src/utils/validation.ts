@@ -100,19 +100,29 @@ export function validateURL(url: unknown): void {
     throw new SDKError(ErrorCode.INVALID_CONFIG, 'URL cannot be empty');
   }
 
-  let parsedURL: URL;
-  try {
-    parsedURL = new URL(url.trim());
-  } catch (error) {
-    throw new SDKError(ErrorCode.INVALID_CONFIG, 'must be a valid URL');
+  const trimmedUrl = url.trim();
+
+  // Basic URL validation without full URL API
+  const urlPattern = /^https?:\/\/.+/i;
+  if (!urlPattern.test(trimmedUrl)) {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'must be a valid HTTP or HTTPS URL');
   }
 
-  // Only allow HTTP and HTTPS
-  if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:') {
-    throw new SDKError(
-      ErrorCode.INVALID_CONFIG,
-      'URL must use HTTP or HTTPS protocol'
-    );
+  // Check for valid hostname
+  try {
+    const parsedURL = new URL(trimmedUrl);
+    // Only allow HTTP and HTTPS
+    if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:') {
+      throw new SDKError(
+        ErrorCode.INVALID_CONFIG,
+        'URL must use HTTP or HTTPS protocol'
+      );
+    }
+  } catch (error) {
+    // If URL API fails, fall back to regex validation
+    if (!/^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*/.test(trimmedUrl)) {
+      throw new SDKError(ErrorCode.INVALID_CONFIG, 'must be a valid URL');
+    }
   }
 }
 

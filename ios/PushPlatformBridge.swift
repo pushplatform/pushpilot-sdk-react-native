@@ -40,20 +40,25 @@ class PushPlatformBridge: RCTEventEmitter {
 
     @objc
     func initialize(_ config: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        NSLog("[PushPlatformBridge] initialize() called from JavaScript")
         DispatchQueue.main.async {
             guard let apiKey = config["apiKey"] as? String,
                   let environmentString = config["environment"] as? String else {
+                NSLog("[PushPlatformBridge] Missing required config fields")
                 reject("INVALID_CONFIG", "Missing required configuration fields", nil)
                 return
             }
 
             guard let environment = self.parseEnvironment(environmentString) else {
+                NSLog("[PushPlatformBridge] Invalid environment: %@", environmentString)
                 reject("INVALID_ENVIRONMENT", "Invalid environment value", nil)
                 return
             }
 
             let debugMode = config["debugMode"] as? Bool ?? false
             let apiBaseURL = config["apiBaseURL"] as? String ?? "https://api.pushplatform.example"
+
+            NSLog("[PushPlatformBridge] Configuring SDK: env=%@, debug=%@", environmentString, debugMode ? "true" : "false")
 
             PushPlatform.shared.configure(
                 apiKey: apiKey,
@@ -63,11 +68,13 @@ class PushPlatformBridge: RCTEventEmitter {
             )
 
             if let installationId = PushPlatform.shared.getInstallationID() {
+                NSLog("[PushPlatformBridge] Initialize succeeded, installationId=%@", installationId.uuidString)
                 resolve([
                     "installationId": installationId.uuidString,
                     "platform": "ios"
                 ])
             } else {
+                NSLog("[PushPlatformBridge] Failed to retrieve installation ID")
                 reject("INITIALIZATION_FAILED", "Failed to retrieve installation ID", nil)
             }
         }
@@ -75,12 +82,15 @@ class PushPlatformBridge: RCTEventEmitter {
 
     @objc
     func login(_ userId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+        NSLog("[PushPlatformBridge] login() called with userId=%@", userId)
         DispatchQueue.main.async {
             PushPlatform.shared.login(userID: userId) { result in
                 switch result {
                 case .success:
+                    NSLog("[PushPlatformBridge] Login succeeded")
                     resolve(nil)
                 case .failure(let error):
+                    NSLog("[PushPlatformBridge] Login failed: %@", error.localizedDescription)
                     reject(self.errorCode(from: error), error.localizedDescription, error)
                 }
             }
@@ -89,12 +99,15 @@ class PushPlatformBridge: RCTEventEmitter {
 
     @objc(logout:rejecter:)
     func logout(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        NSLog("[PushPlatformBridge] logout() called")
         DispatchQueue.main.async {
             PushPlatform.shared.logout { result in
                 switch result {
                 case .success:
+                    NSLog("[PushPlatformBridge] Logout succeeded")
                     resolve(nil)
                 case .failure(let error):
+                    NSLog("[PushPlatformBridge] Logout failed: %@", error.localizedDescription)
                     reject(self.errorCode(from: error), error.localizedDescription, error)
                 }
             }
