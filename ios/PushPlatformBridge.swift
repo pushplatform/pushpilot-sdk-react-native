@@ -58,24 +58,25 @@ class PushPlatformBridge: RCTEventEmitter {
             let debugMode = config["debugMode"] as? Bool ?? false
             let apiBaseURL = config["apiBaseURL"] as? String ?? "https://api.pushplatform.example"
 
-            NSLog("[PushPlatformBridge] Configuring SDK: env=%@, debug=%@", environmentString, debugMode ? "true" : "false")
-
+            guard let applicationIDString = config["applicationId"] as? String,
+                  let applicationID = UUID(uuidString: applicationIDString) else {
+                reject("INVALID_CONFIG", "applicationId must be an application UUID", nil)
+                return
+            }
             PushPlatform.shared.configure(
                 apiKey: apiKey,
                 apiBaseURL: apiBaseURL,
                 environment: environment,
-                debugMode: debugMode
-            )
-
-            if let installationId = PushPlatform.shared.getInstallationID() {
-                NSLog("[PushPlatformBridge] Initialize succeeded, installationId=%@", installationId.uuidString)
-                resolve([
-                    "installationId": installationId.uuidString,
-                    "platform": "ios"
-                ])
-            } else {
-                NSLog("[PushPlatformBridge] Failed to retrieve installation ID")
-                reject("INITIALIZATION_FAILED", "Failed to retrieve installation ID", nil)
+                debugMode: debugMode,
+                applicationID: applicationID
+            ) { result in
+                switch result {
+                case .success(let installationID):
+                    NSLog("[PushPlatformBridge] Initialize succeeded, installationId=%@", installationID.uuidString)
+                    resolve(["installationId": installationID.uuidString, "platform": "ios"])
+                case .failure(let error):
+                    reject(self.errorCode(from: error), error.localizedDescription, error)
+                }
             }
         }
     }

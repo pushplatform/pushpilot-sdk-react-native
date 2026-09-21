@@ -11,6 +11,8 @@ export interface NativePushPlatformBridge {
    */
   initialize(config: {
     apiKey: string;
+    applicationId?: string;
+    apiBaseURL?: string;
     environment: string;
     debugMode?: boolean;
   }): Promise<void>;

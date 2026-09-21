@@ -16,9 +16,10 @@ export interface PushPlatformNativeModule {
    */
   initialize(config: {
     apiKey: string;
+    applicationId?: string;
     environment: string;
-    debug?: boolean;
-    baseURL?: string;
+    debugMode?: boolean;
+    apiBaseURL?: string;
   }): Promise<void>;
 
   /**

@@ -35,6 +35,9 @@ export interface PushPlatformConfig {
    */
   apiKey: string;
 
+  /** Backend application UUID required by iOS installation registration. */
+  applicationId?: string;
+
   /**
    * Base URL for backend API
    */

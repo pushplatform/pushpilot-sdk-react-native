@@ -85,6 +85,7 @@ export class PushPlatform {
       // Normalize config with defaults
       const normalizedConfig = {
         apiKey: config.apiKey,
+        applicationId: config.applicationId,
         apiBaseURL: config.apiBaseURL,
         environment: config.environment || 'production',
         debugMode: config.debugMode ?? false,
