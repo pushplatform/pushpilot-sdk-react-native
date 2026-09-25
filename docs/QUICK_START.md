@@ -176,7 +176,7 @@ Use the Push Platform API or dashboard to send a test notification:
 
 ```bash
 curl -X POST https://api.pushplatform.example/v1/push \
-  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Authorization: Bearer $PUSHPLATFORM_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "installation_id": "your-installation-id",

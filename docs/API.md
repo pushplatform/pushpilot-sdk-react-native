@@ -46,7 +46,7 @@ static initialize(config: PushPlatformConfig): Promise<void>
 
 ```typescript
 await PushPlatform.initialize({
-  apiKey: 'pk_live_abc123...',
+  apiKey: '<set API key from dashboard>',
   appId: 'com.example.myapp',
   environment: 'production',
   debugMode: false,
