@@ -21,7 +21,7 @@ Created full React Native test application to execute production bridge code.
 ## iOS Production Bridge Verification
 
 ### Implementation
-**Path**: `/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/TestApp/PushPlatformTestApp/`
+**Path**: `sdk-react-native/TestApp/PushPlatformTestApp/`
 
 **Components Created**:
 1. React Native 0.87.1 test application
@@ -69,7 +69,7 @@ Evidence that production bridge code executed:
 3. **Resolution**: Metro bundler resolved `@pushplatform/react-native` module
 4. **Runtime**: App launched and loaded JavaScript bundle without errors
 
-**Verification Script**: `/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/TestApp/verify-ios-integration.sh`
+**Verification Script**: `sdk-react-native/TestApp/verify-ios-integration.sh`
 - Checks: Build success, app installed, bundle created, app running
 - Result: All checks passed
 
@@ -91,7 +91,7 @@ Evidence that production bridge code executed:
 ## Android Production Bridge Verification
 
 ### Implementation
-**Path**: `/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/TestApp/PushPlatformTestApp/android/`
+**Path**: `sdk-react-native/TestApp/PushPlatformTestApp/android/`
 
 **Components Created**:
 1. Mock SDK classes matching real SDK API:
@@ -184,7 +184,7 @@ Evidence that production bridge code compiled:
 4. ✅ **APK Creation**: 117M APK with all bridge classes
 5. ✅ **Mutation Proof**: Source code changes affect compiled bytecode
 
-**Verification Script**: `/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/TestApp/verify-android-integration.sh`
+**Verification Script**: `sdk-react-native/TestApp/verify-android-integration.sh`
 - Checks: APK exists, classes compiled, package registered, TypeScript compiled
 - Result: All static checks passed
 
@@ -267,7 +267,7 @@ guard let apiKey = config["apiKey"] as? String,
 
 **Objective**: Verify that production Swift code in `sdk-react-native/ios/PushPlatformBridge.swift` is actually executed.
 
-**Production File**: `/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/ios/PushPlatformBridge.swift`
+**Production File**: `sdk-react-native/ios/PushPlatformBridge.swift`
 
 **Baseline Version:**
 Production code returns clean UUID:
