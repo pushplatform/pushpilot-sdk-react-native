@@ -102,27 +102,13 @@ export function validateURL(url: unknown): void {
 
   const trimmedUrl = url.trim();
 
-  // Basic URL validation without full URL API
-  const urlPattern = /^https?:\/\/.+/i;
-  if (!urlPattern.test(trimmedUrl)) {
-    throw new SDKError(ErrorCode.INVALID_CONFIG, 'must be a valid HTTP or HTTPS URL');
-  }
-
-  // Check for valid hostname
   try {
     const parsedURL = new URL(trimmedUrl);
-    // Only allow HTTP and HTTPS
-    if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:') {
-      throw new SDKError(
-        ErrorCode.INVALID_CONFIG,
-        'URL must use HTTP or HTTPS protocol'
-      );
-    }
+    if (parsedURL.protocol !== 'http:' && parsedURL.protocol !== 'https:') throw new SDKError(ErrorCode.INVALID_CONFIG, 'URL must use HTTP or HTTPS protocol');
+    if (!parsedURL.hostname) throw new Error('missing host');
   } catch (error) {
-    // If URL API fails, fall back to regex validation
-    if (!/^https?:\/\/[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*/.test(trimmedUrl)) {
-      throw new SDKError(ErrorCode.INVALID_CONFIG, 'must be a valid URL');
-    }
+    if (error instanceof SDKError) throw error;
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'must be a valid URL');
   }
 }
 
@@ -161,4 +147,3 @@ export class Validator {
   static validateUserId = validateUserId;
   static validateUserData = validateUserData;
 }
-
