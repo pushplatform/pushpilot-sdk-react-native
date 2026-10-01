@@ -10,7 +10,7 @@
 
 ## Executive Summary
 
-Stage 6C контрольный запуск React Native SDK iOS завершён успешно. Все критические функции проверены в production flow.
+Stage 6C контрольный запуск React Native SDK iOS завершен успешно. Все критические функции проверены в production flow.
 
 **Результат**: 
 - ✅ Native module loaded
@@ -217,7 +217,7 @@ npx react-native run-ios --simulator="iPhone 16 Pro"
 
 ## Conclusion
 
-Stage 6C контрольный запуск завершён успешно. React Native SDK iOS production flow работает корректно:
+Stage 6C контрольный запуск завершен успешно. React Native SDK iOS production flow работает корректно:
 
 1. ✅ SDK импортируется без side effects
 2. ✅ Native module загружается корректно
