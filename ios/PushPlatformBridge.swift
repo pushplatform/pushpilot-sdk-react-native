@@ -1,6 +1,8 @@
 import Foundation
 import React
 import PushPlatformSDK
+import UIKit
+import UserNotifications
 
 @objc(PushPlatformBridge)
 class PushPlatformBridge: RCTEventEmitter {
@@ -126,6 +128,40 @@ class PushPlatformBridge: RCTEventEmitter {
                 NSLog("[PushPlatformBridge] SDK not initialized, rejecting")
                 reject("NOT_INITIALIZED", "SDK not initialized", nil)
             }
+        }
+    }
+
+    @objc(requestPermissions:rejecter:)
+    func requestPermissions(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if let error = error {
+                reject("PERMISSION_ERROR", error.localizedDescription, error)
+                return
+            }
+            DispatchQueue.main.async {
+                if granted {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+                resolve(granted)
+            }
+        }
+    }
+
+    @objc(getPermissionStatus:rejecter:)
+    func getPermissionStatus(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let status: String
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                status = "granted"
+            case .denied:
+                status = "denied"
+            case .notDetermined:
+                status = "not-determined"
+            @unknown default:
+                status = "not-determined"
+            }
+            resolve(status)
         }
     }
 

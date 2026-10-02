@@ -48,7 +48,7 @@ export class EventEmitter {
   ): Subscription {
     const subscription: EmitterSubscription = NativeEvents.addListener(
       EventNames.NOTIFICATION_RECEIVED,
-      callback
+      (payload) => callback(payload as NotificationContext)
     );
 
     return {
@@ -66,7 +66,7 @@ export class EventEmitter {
   ): Subscription {
     const subscription: EmitterSubscription = NativeEvents.addListener(
       EventNames.NOTIFICATION_OPENED,
-      callback
+      (payload) => callback(payload as NotificationContext)
     );
 
     return {

@@ -50,9 +50,8 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compileOnly "com.facebook.react:react-native:+"
 
-    // PushPlatform Android SDK
-    // For monorepo: project dependency (configured in test app's settings.gradle)
-    // For external: Maven Central (coming soon)
+    // Resolved from pushpilot-sdk-android through the host app's composite build.
+    // The native Android artifact is not published to a Maven registry yet.
     implementation "com.pushplatform:sdk-android:1.0.0"
 
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

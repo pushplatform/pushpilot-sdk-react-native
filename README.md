@@ -1,148 +1,124 @@
-# Push Platform React Native SDK
+# PushPlatform React Native SDK
 
-TypeScript SDK for integrating Push Platform's push notification service into React Native applications.
-
-## Features
-
-- 📱 **Cross-platform**: iOS and Android support
-- 🔔 **All push types**: Normal push, silent/data-only push, VoIP/call push (iOS)
-- 🎯 **Type-safe**: Full TypeScript support with strict typing
-- 🔐 **Secure**: No token values exposed to JavaScript layer
-- 🔄 **Event deduplication**: Automatic deduplication via event_id/call_id
-- ⚡ **Modern architecture**: Native SDK wrappers with zero business logic duplication
-- 🔌 **Autolinking**: Automatic native module linking (React Native 0.60+)
+TypeScript API and native bridges for the PushPlatform iOS and Android SDKs.
 
 ## Requirements
 
-- **React Native 0.77.0 or higher** (New Architecture required)
-- **TurboModules/Bridgeless mode required**
-- iOS 13.0 or higher
-- Android API level 21 (Android 5.0) or higher
-- TypeScript 4.5 or higher (recommended)
+- React Native 0.77 or later with the New Architecture enabled
+- React 18 or later
+- iOS 13 or later with CocoaPods
+- Android API 26 or later with Kotlin 1.9+
+- Node.js 18 or later
+- Read access to the private PushPlatform GitHub repositories
 
-**⚠️ UNSUPPORTED:**
-- React Native <= 0.76.x (all versions)
-- Legacy Architecture
-- Old Bridge mode
+## Install the React Native package
 
-## Installation
+Install the current integration branch from GitHub:
 
-```bash
-npm install @pushplatform/react-native
+```sh
+npm install git+ssh://git@github.com/pushplatform/pushpilot-sdk-react-native.git#sdk/rn-installation
 ```
 
-### Native SDK Dependencies
+The package builds its TypeScript entry points during installation. React Native autolinking discovers the iOS podspec and Android Gradle module.
 
-This package requires PushPlatform native SDKs:
+## Connect the native SDKs
 
-**iOS:**
+The native SDKs are separate private repositories. They are not bundled into this package, and the Android Maven artifact is not published yet.
+
+### iOS
+
+Inside the application target in `ios/Podfile`, add the native SDK source. Keep the line inside the same target where React Native calls `use_native_modules!`:
+
 ```ruby
-# Podfile
-pod 'PushPlatformSDK', '~> 1.0'
-
-# For local/monorepo development:
-pod 'PushPlatformSDK', :path => '../pushpilot-sdk-ios'
+pod 'PushPlatformSDK', :git => 'git@github.com:pushplatform/pushpilot-sdk-ios.git', :branch => 'main'
 ```
 
-**Android:**
+Then install pods:
 
-Include the native Android SDK in your project:
+```sh
+cd ios && pod install
+```
 
-```gradle
-// settings.gradle.kts (for monorepo)
-include ':pushplatform-sdk-android'
-project(':pushplatform-sdk-android').projectDir = file('../pushpilot-sdk-android/sdk')
+Enable the Push Notifications capability and the required `aps-environment` entitlement in Xcode. Forward the APNs token callbacks from the app delegate to the native SDK:
 
-// app/build.gradle
-dependencies {
-    implementation project(':pushplatform-sdk-android')
+```swift
+import PushPlatformSDK
+
+func application(_ application: UIApplication,
+                 didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+    PushPlatform.shared.didRegisterAPNsToken(deviceToken)
+}
+
+func application(_ application: UIApplication,
+                 didFailToRegisterForRemoteNotificationsWithError error: Error) {
+    PushPlatform.shared.didFailToRegisterAPNs(error)
 }
 ```
 
-_Note: Maven Central distribution coming soon for external projects._
+### Android
 
-### iOS Setup
+Clone the native SDK next to the React Native application directory:
 
-```bash
-cd ios && pod install && cd ..
+```sh
+git clone git@github.com:pushplatform/pushpilot-sdk-android.git ../pushpilot-sdk-android
 ```
 
-### Android Setup
+In the application's `android/settings.gradle`, include its Gradle build and substitute the native SDK coordinate with its `:sdk` project. The path below assumes the clone is a sibling of the app directory:
 
-Ensure the native Android SDK is properly linked in your settings.gradle.
+```groovy
+includeBuild('../../pushpilot-sdk-android') {
+    dependencySubstitution {
+        substitute(module('com.pushplatform:sdk-android')).using(project(':sdk'))
+    }
+}
+```
 
-## Quick Start
+Configure Firebase for the Android application: add its `google-services.json`, apply the Google Services Gradle plugin, and enable Firebase Cloud Messaging. The native SDK contributes its FCM service and runtime dependencies.
 
-```typescript
+## Initialize and register an installation
+
+Get `apiKey` and the application UUID from PushPlatform. `apiBaseURL` is the base URL of your PushPlatform server. `applicationId` must be the application's UUID; the native SDKs use it to register the installation.
+
+```tsx
 import PushPlatform from '@pushplatform/react-native';
 
-// Initialize SDK
-await PushPlatform.initialize({
-  apiKey: 'your-api-key',
-  appId: 'your-app-id',
-  environment: 'production',
-  debugMode: false,
-});
+export async function initializePushPlatform() {
+  // Subscribe first so an early APNs/FCM registration event is not missed.
+  const registration = PushPlatform.onRegistrationUpdated(() => {
+    console.info('Push token registration updated');
+  });
 
-// Get installation ID
-const installationId = await PushPlatform.getInstallationId();
+  await PushPlatform.initialize({
+    apiKey: 'YOUR_API_KEY',
+    applicationId: '00000000-0000-4000-8000-000000000000',
+    apiBaseURL: 'https://api.your-domain.example',
+    environment: 'production',
+    debugMode: __DEV__,
+  });
 
-// Login user
-await PushPlatform.login('user-123');
+  const installationId = await PushPlatform.getInstallationId();
+  const permissionGranted = await PushPlatform.requestPermissions();
 
-// Listen for notifications
-const subscription = PushPlatform.onNotificationReceived((context) => {
-  console.log('Notification received:', context.notification);
-  console.log('Foreground:', context.foreground);
-});
-
-// Listen for notification opens
-PushPlatform.onNotificationOpened((context) => {
-  console.log('Notification opened:', context.notification);
-  if (context.actionId) {
-    console.log('Action clicked:', context.actionId);
-  }
-});
-
-// Cleanup
-subscription.remove();
+  return { installationId, permissionGranted, registration };
+}
 ```
 
-## Documentation
+`initialize()` registers the app installation with the server and resolves with its installation ID available through `getInstallationId()`. After the OS provides an APNs or FCM token, the native SDK registers that token with the server and emits `onRegistrationUpdated`. Token values are never exposed to JavaScript. Remove the listener when it is no longer needed:
 
-- [Quick Start Guide](docs/QUICK_START.md) — Installation and setup instructions
-- [API Reference](docs/API.md) — Complete API documentation
-- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common issues and solutions
-- [Migration Guide](docs/MIGRATION.md) — Migrating from other push providers
+```ts
+registration.remove();
+```
 
-## Architecture
+Use `environment: 'development'` with the development server URL when testing. On an Android emulator, use the host's reachable emulator address instead of `127.0.0.1`.
 
-This SDK wraps native iOS (Swift) and Android (Kotlin) SDKs with a unified TypeScript interface. All push notification business logic remains in the native layer per architectural design — the JavaScript bridge only handles event forwarding and API exposure.
+## API and support
 
-- **iOS**: Wraps `PushPlatformSDK` (Swift) via RCTBridgeModule
-- **Android**: Wraps `sdk-android` (Kotlin) via ReactContextBaseJavaModule
-- **TypeScript**: Type-safe event emitters and Promise-based API
+- [API reference](docs/API.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Compatibility](COMPATIBILITY.md)
 
-## Security
-
-- Push tokens are never exposed to JavaScript layer
-- All token registration handled by native SDKs
-- VoIP/CallKit logic remains entirely in Swift (iOS)
-- Event callbacks provide registration status only (no token values)
-
-## Event Deduplication
-
-The SDK provides universal event deduplication via `event_id` and `call_id` fields, enabling migration compatibility with any legacy push provider. Native SDKs handle deduplication automatically — duplicate events are filtered before reaching JavaScript.
-
-## Support
-
-- [GitHub Issues](https://github.com/pushplatform/react-native/issues)
-- [Documentation](https://docs.pushplatform.example)
+The React Native bridge calls `pushpilot-server` through the native SDKs. It does not send or publish push notifications on its own.
 
 ## License
 
 MIT
-
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for release history.

@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@pushplatform/react-native": "file:../../pushplatform-react-native-1.0.0.tgz",
+    "@pushplatform/react-native": "file:../..",
     "@react-native/new-app-screen": "0.87.1",
     "react": "19.2.3",
     "react-native": "0.87.1",

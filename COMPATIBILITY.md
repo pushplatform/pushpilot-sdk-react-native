@@ -7,7 +7,7 @@
 | React Native | 0.77.0 | New Architecture (TurboModules) | ✅ Supported |
 | React Native | 0.87.1+ | New Architecture (TurboModules) | ✅ Supported |
 | iOS | 13.0 | - | ✅ Supported |
-| Android | API 21 (5.0) | - | ✅ Supported |
+| Android | API 26 (8.0) | - | ✅ Supported |
 
 ## Unsupported Versions
 
@@ -59,18 +59,18 @@ There is no migration path for Legacy Architecture - New Architecture is require
 
 ### iOS
 - PushPlatformSDK 1.0.0+
-- Delivered via CocoaPods
+- CocoaPods dependency from the separate `pushpilot-sdk-ios` GitHub repository
 
 ### Android  
 - PushPlatform Android SDK 1.0.0+
-- Currently: project dependency (monorepo)
-- Future: Maven Central distribution
+- Gradle composite build from the separate `pushpilot-sdk-android` GitHub repository
+- The Maven artifact is not published yet; use the composite-build substitution in the README
 
 ## Known Limitations
 
 1. **Legacy Architecture**: Intentionally not supported
 2. **RN < 0.77**: No compatibility layer planned
-3. **Android Maven**: Not yet published to Maven Central (monorepo setup required)
+3. **Android Maven**: Not yet published to a Maven registry; the GitHub source checkout is required.
 
 ## Support Policy
 

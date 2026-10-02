@@ -1,7 +1,10 @@
 package com.pushplatform.reactnative
 
-import android.app.Activity
+import android.Manifest
+import android.os.Build
 import com.facebook.react.bridge.*
+import com.facebook.react.modules.core.PermissionAwareActivity
+import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.pushplatform.sdk.Environment
 import com.pushplatform.sdk.PushPlatform
@@ -14,6 +17,20 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext), PushPlatformDelegate {
 
     private val pushPlatform = PushPlatform.getInstance()
+    private var permissionPromise: Promise? = null
+    private val permissionRequestCode = 1001
+    private val permissionListener = PermissionListener { requestCode, _, grantResults ->
+        if (requestCode != permissionRequestCode) {
+            false
+        } else {
+            pushPlatform.onRequestPermissionsResult(requestCode, grantResults)
+            permissionPromise?.resolve(
+                grantResults.firstOrNull() == android.content.pm.PackageManager.PERMISSION_GRANTED
+            )
+            permissionPromise = null
+            true
+        }
+    }
 
     init {
         pushPlatform.delegate = this
@@ -39,24 +56,32 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
             }
 
             val debugMode = config.getBoolean("debugMode")
+            val applicationId = config.getString("applicationId")
+            val apiBaseURL = config.getString("apiBaseURL")
 
             pushPlatform.configure(
                 context = reactApplicationContext,
                 apiKey = apiKey,
                 environment = environment,
-                debugMode = debugMode
-            )
-
-            val installationId = pushPlatform.getInstallationId()
-            if (installationId != null) {
-                val result = Arguments.createMap().apply {
-                    putString("installationId", installationId)
-                    putString("platform", "android")
+                debugMode = debugMode,
+                apiBaseUrl = apiBaseURL,
+                applicationId = applicationId,
+                completion = { result ->
+                    result.fold(
+                        onSuccess = { installationId ->
+                            val response = Arguments.createMap().apply {
+                                putString("installationId", installationId)
+                                putString("platform", "android")
+                            }
+                            promise.resolve(response)
+                        },
+                        onFailure = { error ->
+                            val code = (error as? SdkError)?.let(::errorCode) ?: "INITIALIZATION_FAILED"
+                            promise.reject(code, error.message, error)
+                        }
+                    )
                 }
-                promise.resolve(result)
-            } else {
-                promise.reject("INITIALIZATION_FAILED", "Failed to retrieve installation ID")
-            }
+            )
         } catch (e: Exception) {
             promise.reject("INITIALIZATION_ERROR", e.message, e)
         }
@@ -102,6 +127,37 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
         } else {
             promise.reject("NOT_INITIALIZED", "SDK not initialized")
         }
+    }
+
+    @ReactMethod
+    fun requestPermissions(promise: Promise) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || pushPlatform.hasNotificationPermission()) {
+            promise.resolve(true)
+            return
+        }
+
+        val activity = currentActivity as? PermissionAwareActivity
+        if (activity == null) {
+            promise.reject("NO_ACTIVITY", "A foreground activity is required to request notification permission")
+            return
+        }
+        if (permissionPromise != null) {
+            promise.reject("PERMISSION_IN_PROGRESS", "A notification permission request is already in progress")
+            return
+        }
+
+        permissionPromise = promise
+        activity.requestPermissions(
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            permissionRequestCode,
+            permissionListener
+        )
+    }
+
+    @ReactMethod
+    fun getPermissionStatus(promise: Promise) {
+        val status = if (pushPlatform.hasNotificationPermission()) "granted" else "denied"
+        promise.resolve(status)
     }
 
     private fun errorCode(error: SdkError): String {

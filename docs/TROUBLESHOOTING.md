@@ -90,13 +90,12 @@ yarn add @pushplatform/react-native --ignore-engines
 
 **Solution:**
 
-Ensure the native iOS SDK is included in your project. Check that `sdk-ios` is properly linked or available as a Swift Package/CocoaPod dependency.
+Ensure the native iOS SDK is included in your project from the separate `pushpilot-sdk-ios` repository.
 
-If using a local development setup:
+Inside the app target in `ios/Podfile`, add:
 
 ```ruby
-# In ios/Podfile
-pod 'PushPlatformSDK', :path => '../pushpilot-sdk-ios'
+pod 'PushPlatformSDK', :git => 'git@github.com:pushplatform/pushpilot-sdk-ios.git', :branch => 'main'
 ```
 
 ---
@@ -209,20 +208,14 @@ pod 'PushPlatformSDK', :path => '../pushpilot-sdk-ios'
 
 **Solution:**
 
-Ensure the Android SDK dependency is correctly referenced:
+Clone `pushpilot-sdk-android` next to the app directory and add this composite build substitution to `android/settings.gradle`:
 
 ```gradle
-// android/app/build.gradle
-dependencies {
-    implementation project(':sdk-android:sdk')
+includeBuild('../../pushpilot-sdk-android') {
+    dependencySubstitution {
+        substitute(module('com.pushplatform:sdk-android')).using(project(':sdk'))
+    }
 }
-```
-
-For local development, ensure `settings.gradle` includes:
-
-```gradle
-include ':sdk-android:sdk'
-project(':sdk-android:sdk').projectDir = new File(rootProject.projectDir, '../pushpilot-sdk-android/sdk')
 ```
 
 ---

@@ -27,7 +27,7 @@ import { ErrorCode, SDKError } from './types';
  * - React Native >= 0.77
  * - New Architecture (TurboModules) enabled
  * - iOS 13.0+
- * - Android API 21+
+ * - Android API 26+
  */
 export class PushPlatform {
   // @ts-expect-error - instance tracking for singleton pattern verification in tests
@@ -46,9 +46,11 @@ export class PushPlatform {
    * @example
    * ```typescript
    * await PushPlatform.initialize({
-   *   apiKey: 'your-api-key',
+   *   apiKey: 'YOUR_API_KEY',
+   *   applicationId: '00000000-0000-4000-8000-000000000000',
+   *   apiBaseURL: 'https://api.your-domain.example',
    *   environment: 'production',
-   *   debug: false,
+   *   debugMode: false,
    * });
    * ```
    */
@@ -312,7 +314,6 @@ export class PushPlatform {
    * ```
    */
   static onRegistrationUpdated(callback: () => void): Subscription {
-    PushPlatform.ensureInitialized();
     Logger.debug('Registering onRegistrationUpdated listener');
     return EventEmitter.onRegistrationUpdated(callback);
   }

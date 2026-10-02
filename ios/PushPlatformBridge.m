@@ -18,4 +18,10 @@ RCT_EXTERN_METHOD(logout:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(getInstallationId:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(requestPermissions:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getPermissionStatus:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end

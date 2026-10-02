@@ -27,22 +27,22 @@
   ],
   "author": "Push Platform Team",
   "license": "MIT",
-  "homepage": "https://github.com/yourorg/push-platform#readme",
+  "homepage": "https://github.com/pushplatform/pushpilot-sdk-react-native#readme",
   "peerDependencies": {
     "react": ">=18.0.0",
     "react-native": ">=0.77.0"
   },
   "devDependencies": {
-    "@react-native/eslint-config": "^0.73.2",
-    "@types/jest": "^30.0.0",
-    "@types/react": "^18.3.31",
-    "@types/react-native": "^0.72.8",
+    "@react-native/eslint-config": "^0.87.1",
+    "@types/jest": "^29.5.13",
+    "@types/react": "^19.2.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.1",
-    "jest": "^30.5.1",
+    "jest": "^29.7.0",
     "prettier": "^3.9.7",
-    "react-native": "^0.71.0",
+    "react": "19.2.3",
+    "react-native": "0.87.1",
     "ts-jest": "^29.4.12",
     "typescript": "^5.9.3"
   },
@@ -52,20 +52,10 @@
     "lib/**/*.d.ts.map",
     "!lib/**/*.test.*",
     "!lib/__tests__",
-    "ios/PushPlatformBridge.h",
     "ios/PushPlatformBridge.m",
     "ios/PushPlatformBridge.swift",
-    "android/src/main/AndroidManifest.xml",
-    "android/src/main/java/com/pushplatform/reactnative/",
-    "android/src/main/java/com/pushplatform/sdk/core/",
-    "android/src/main/java/com/pushplatform/sdk/models/",
-    "android/src/main/java/com/pushplatform/sdk/notifications/",
-    "!android/src/main/java/com/pushplatform/sdk/*Mock*",
+    "android/src/main/**",
     "android/build.gradle",
-    "android/gradle/",
-    "android/gradlew",
-    "android/gradlew.bat",
-    "android/settings.gradle",
     "PushPlatform.podspec",
     "react-native.config.js",
     "README.md",
@@ -73,10 +63,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourorg/push-platform.git",
+    "url": "https://github.com/pushplatform/pushpilot-sdk-react-native.git",
     "directory": "."
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   }
 }

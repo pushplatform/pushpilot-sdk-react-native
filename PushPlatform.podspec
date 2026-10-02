@@ -14,7 +14,7 @@ Pod::Spec.new do |s|
   s.authors      = package["author"]
 
   s.platforms    = { :ios => "13.0" }
-  s.source       = { :git => "https://github.com/pushplatform/react-native.git", :tag => "#{s.version}" }
+  s.source       = { :git => "https://github.com/pushplatform/pushpilot-sdk-react-native.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
   s.exclude_files = "ios/ContractTests/**/*", "ios/Tests/**/*", "ios/Package.swift", "ios/standalone_test.swift", "ios/PushPlatformSDKMock.swift"
@@ -22,9 +22,7 @@ Pod::Spec.new do |s|
 
   s.dependency "React-Core"
 
-  # PushPlatformSDK dependency - external consumers need to add the podspec repo
-  # or use local path during development:
-  # pod 'PushPlatformSDK', :path => '../pushpilot-sdk-ios'
+  # The host app resolves this dependency from pushpilot-sdk-ios in its Podfile.
   s.dependency "PushPlatformSDK", "~> 1.0"
 
   s.swift_version = "5.9"
