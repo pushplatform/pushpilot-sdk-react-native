@@ -96,7 +96,7 @@ If using a local development setup:
 
 ```ruby
 # In ios/Podfile
-pod 'PushPlatformSDK', :path => '../sdk-ios'
+pod 'PushPlatformSDK', :path => '../pushpilot-sdk-ios'
 ```
 
 ---
@@ -222,7 +222,7 @@ For local development, ensure `settings.gradle` includes:
 
 ```gradle
 include ':sdk-android:sdk'
-project(':sdk-android:sdk').projectDir = new File(rootProject.projectDir, '../../sdk-android/sdk')
+project(':sdk-android:sdk').projectDir = new File(rootProject.projectDir, '../pushpilot-sdk-android/sdk')
 ```
 
 ---

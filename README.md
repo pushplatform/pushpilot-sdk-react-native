@@ -41,7 +41,7 @@ This package requires PushPlatform native SDKs:
 pod 'PushPlatformSDK', '~> 1.0'
 
 # For local/monorepo development:
-pod 'PushPlatformSDK', :path => '../path/to/sdk-ios'
+pod 'PushPlatformSDK', :path => '../pushpilot-sdk-ios'
 ```
 
 **Android:**
@@ -51,7 +51,7 @@ Include the native Android SDK in your project:
 ```gradle
 // settings.gradle.kts (for monorepo)
 include ':pushplatform-sdk-android'
-project(':pushplatform-sdk-android').projectDir = file('../path/to/sdk-android/sdk')
+project(':pushplatform-sdk-android').projectDir = file('../pushpilot-sdk-android/sdk')
 
 // app/build.gradle
 dependencies {
