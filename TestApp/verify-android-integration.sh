@@ -4,9 +4,11 @@ set -e
 echo "=== Android Production Bridge Verification ==="
 echo ""
 
+ROOT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+
 # 1. Check build success
 echo "✅ Step 1: Android APK built successfully"
-APK_PATH="/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/TestApp/PushPlatformTestApp/android/app/build/outputs/apk/debug/app-debug.apk"
+APK_PATH="$ROOT_DIR/TestApp/PushPlatformTestApp/android/app/build/outputs/apk/debug/app-debug.apk"
 if [ -f "$APK_PATH" ]; then
     APK_SIZE=$(du -h "$APK_PATH" | cut -f1)
     echo "   - APK exists: $APK_SIZE"
@@ -29,7 +31,7 @@ echo ""
 
 # 3. Check PushPlatformPackage.kt compiled
 echo "✅ Step 3: PushPlatformPackage.kt registered in autolinking"
-PACKAGE_LIST="/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/TestApp/PushPlatformTestApp/android/app/build/generated/autolinking/src/main/java/com/facebook/react/PackageList.java"
+PACKAGE_LIST="$ROOT_DIR/TestApp/PushPlatformTestApp/android/app/build/generated/autolinking/src/main/java/com/facebook/react/PackageList.java"
 if grep -q "com.pushplatform.reactnative.PushPlatformPackage" "$PACKAGE_LIST"; then
     echo "   - PushPlatformPackage registered in PackageList.java"
 else
@@ -60,7 +62,7 @@ echo ""
 
 # 5. Check TypeScript bridge compiled
 echo "✅ Step 5: TypeScript bridge compiled to JavaScript"
-TS_BRIDGE="/Users/pavelvladimiroff/Documents/dev/MonoRepo/push-platform/sdk-react-native/lib/PushPlatform.js"
+TS_BRIDGE="$ROOT_DIR/lib/PushPlatform.js"
 if [ -f "$TS_BRIDGE" ]; then
     echo "   - lib/PushPlatform.js exists"
     if grep -q "NativeModule.initialize" "$TS_BRIDGE"; then
