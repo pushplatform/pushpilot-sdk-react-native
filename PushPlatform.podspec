@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
 
   # PushPlatformSDK dependency - external consumers need to add the podspec repo
   # or use local path during development:
-  # pod 'PushPlatformSDK', :path => '../sdk-ios'
+  # pod 'PushPlatformSDK', :path => '../pushpilot-sdk-ios'
   s.dependency "PushPlatformSDK", "~> 1.0"
 
   s.swift_version = "5.9"
