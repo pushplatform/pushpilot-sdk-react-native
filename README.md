@@ -1,4 +1,4 @@
-# PushPlatform React Native SDK
+# PushPilot React Native SDK
 
 TypeScript API and native bridges for the PushPlatform iOS and Android SDKs.
 
@@ -10,6 +10,56 @@ TypeScript API and native bridges for the PushPlatform iOS and Android SDKs.
 - Android API 26 or later with Kotlin 1.9+
 - Node.js 18 or later
 - Read access to the private PushPlatform GitHub repositories
+
+## Expo support
+
+Поддерживаемая Expo-связка для этой версии SDK: **Expo SDK 54.0.0 и React Native 0.81.4**. Это зафиксировано по официальной странице Expo SDK 54 и не меняет общий минимум пакета React Native `0.77+`. Expo Go не подходит: пакет содержит native iOS/Android code и требует development build или production/EAS build.
+
+Установка из текущего репозитория (пакет пока не опубликован в npm):
+
+```sh
+npm install git+ssh://git@github.com/pushplatform/pushpilot-sdk-react-native.git#feat/expo-support
+npx expo install expo-dev-client
+```
+
+Добавьте plugin в `app.json` или `app.config.ts`:
+
+```json
+{
+  "expo": {
+    "plugins": [["@pushplatform/react-native", {
+      "applicationId": "00000000-0000-4000-8000-000000000000",
+      "ios": {
+        "apsEnvironment": "development",
+        "sdkGitUrl": "git@github.com:pushplatform/pushpilot-sdk-ios.git",
+        "sdkGitBranch": "main"
+      },
+      "android": {
+        "sdkPath": "../pushpilot-sdk-android",
+        "googleServicesFile": "./google-services.json"
+      }
+    }]]
+  }
+}
+```
+
+`applicationId` — UUID приложения PushPilot, а не bundle ID/package name. Plugin валидирует UUID, добавляет `POST_NOTIFICATIONS`, `aps-environment`, `remote-notification`, Pod для реального `PushPlatformSDK`, composite Gradle substitution для checkout Android SDK и Google Services plugin, если задан `googleServicesFile`. Повторный `npx expo prebuild` не дублирует строки и не перезаписывает существующий `aps-environment`, `PushPlatformApplicationID`, `googleServicesFile` или пользовательские native настройки.
+
+Пример находится в [`example/expo-app`](example/expo-app). Заполните `.env` по `.env.example`, положите настоящий `google-services.json` (он не коммитится), затем:
+
+```sh
+cd example/expo-app
+npm install
+npx expo prebuild
+npx expo run:android   # локальный development build
+npx expo run:ios       # macOS + Xcode, локальный development build
+```
+
+Для EAS используйте `eas build --platform android --profile development` или `eas build --platform ios --profile development` после настройки credentials. EAS Build и локальный `expo run:*` собирают собственное native приложение; Expo Go не содержит PushPilot bridge и не может доставить APNs/FCM события.
+
+Android требует Firebase project с FCM, package name из `android.package` и настоящий `google-services.json`. Native Android SDK подключается из приватного checkout `pushpilot-sdk-android` через `sdkPath`; Maven artifact `com.pushplatform:sdk-android:1.0.0` пока не опубликован. iOS требует доступ к приватному Git checkout `pushpilot-sdk-ios`, Push Notifications capability и APNs key/certificate, настроенные в Apple Developer/EAS credentials.
+
+Plugin автоматически прокидывает APNs token и notification callbacks из стандартного Swift AppDelegate в native SDK. В существующем Objective-C AppDelegate эти callbacks нужно добавить вручную. Android native SDK регистрирует FCM token и передает notification events в RN bridge; token value в JavaScript не попадает.
 
 ## Install the React Native package
 
@@ -103,7 +153,7 @@ export async function initializePushPlatform() {
 }
 ```
 
-`initialize()` registers the app installation with the server and resolves with its installation ID available through `getInstallationId()`. After the OS provides an APNs or FCM token, the native SDK registers that token with the server and emits `onRegistrationUpdated`. Token values are never exposed to JavaScript. Remove the listener when it is no longer needed:
+`initialize()` registers the app installation with the server and resolves with its installation ID available through `getInstallationId()`. After the OS provides an APNs or FCM token, the native SDK registers that token with the server and emits `onRegistrationUpdated`. Token values are never exposed to JavaScript. `onNotificationReceived` and `onNotificationOpened` expose parsed notification metadata through the same native SDK transport. Remove listeners when they are no longer needed:
 
 ```ts
 registration.remove();
@@ -111,11 +161,14 @@ registration.remove();
 
 Use `environment: 'development'` with the development server URL when testing. On an Android emulator, use the host's reachable emulator address instead of `127.0.0.1`.
 
+Background and silent push behavior is OS-controlled. iOS background execution is best effort and requires `remote-notification` plus an appropriate APNs payload; Android data-only delivery can be delayed by Doze, OEM restrictions, or terminated-process policy. Do not treat JavaScript callbacks as a delivery guarantee. VoIP/PushKit is not promised by the Expo plugin: it requires a separate, verified native CallKit integration and entitlements.
+
 ## API and support
 
 - [API reference](docs/API.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 - [Compatibility](COMPATIBILITY.md)
+- [Expo support state and verification](docs/EXPO_SUPPORT.md)
 
 The React Native bridge calls `pushpilot-server` through the native SDKs. It does not send or publish push notifications on its own.
 

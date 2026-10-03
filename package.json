@@ -4,6 +4,10 @@
   "description": "Push Platform React Native SDK - TypeScript bridge for iOS and Android native SDKs",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "react-native": "lib/index.js",
+  "expo": {
+    "plugin": "./app.plugin.js"
+  },
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -11,6 +15,7 @@
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",
     "typecheck": "tsc --noEmit",
     "test": "jest",
+    "test:plugin": "node --test plugin/*.test.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "prepare": "npm run build"
@@ -29,8 +34,18 @@
   "license": "MIT",
   "homepage": "https://github.com/pushplatform/pushpilot-sdk-react-native#readme",
   "peerDependencies": {
+    "@expo/config-plugins": ">=8.0.0",
+    "expo": "~54.0.0",
     "react": ">=18.0.0",
     "react-native": ">=0.77.0"
+  },
+  "peerDependenciesMeta": {
+    "@expo/config-plugins": {
+      "optional": true
+    },
+    "expo": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@react-native/eslint-config": "^0.87.1",
@@ -52,12 +67,15 @@
     "lib/**/*.d.ts.map",
     "!lib/**/*.test.*",
     "!lib/__tests__",
+    "app.plugin.js",
+    "plugin/**/*.js",
     "ios/PushPlatformBridge.m",
     "ios/PushPlatformBridge.swift",
     "android/src/main/**",
     "android/build.gradle",
     "PushPlatform.podspec",
     "react-native.config.js",
+    "example/**",
     "README.md",
     "LICENSE"
   ],

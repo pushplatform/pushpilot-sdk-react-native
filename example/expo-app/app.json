@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "PushPilot Expo Example",
+    "slug": "pushpilot-expo-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "pushpilotexample",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "com.example.pushpilotexpo",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.example.pushpilotexpo"
+    },
+    "plugins": [
+      [
+        "@pushplatform/react-native",
+        {
+          "applicationId": "00000000-0000-4000-8000-000000000000",
+          "ios": {
+            "apsEnvironment": "development"
+          },
+          "android": {
+            "sdkPath": "../../../pushpilot-sdk-android",
+            "googleServicesFile": "./google-services.json"
+          }
+        }
+      ]
+    ]
+  }
+}
