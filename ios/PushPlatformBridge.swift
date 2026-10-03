@@ -262,7 +262,8 @@ extension PushPlatformBridge: PushPlatformDelegate {
         if hasListeners {
             var body: [String: Any] = [
                 "notification": serializeNotification(notification),
-                "foreground": context.isForeground
+                "foreground": context.isForeground,
+                "userInteraction": true
             ]
 
             if let actionId = action {

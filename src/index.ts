@@ -16,6 +16,7 @@ export type {
   NotificationContext,
   PermissionStatus,
   Subscription,
+  RegistrationUpdate,
 } from './types';
 
 export { SDKError, ErrorCode } from './types';

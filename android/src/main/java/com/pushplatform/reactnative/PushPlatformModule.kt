@@ -6,6 +6,8 @@ import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.PermissionAwareActivity
 import com.facebook.react.modules.core.PermissionListener
 import com.facebook.react.modules.core.DeviceEventManagerModule
+import android.os.Bundle
+import com.facebook.react.bridge.LifecycleEventListener
 import com.pushplatform.sdk.Environment
 import com.pushplatform.sdk.PushPlatform
 import com.pushplatform.sdk.PushPlatformDelegate
@@ -14,7 +16,7 @@ import com.pushplatform.sdk.models.SdkError
 import com.pushplatform.sdk.notifications.ParsedNotification
 
 class PushPlatformModule(reactContext: ReactApplicationContext) :
-    ReactContextBaseJavaModule(reactContext), PushPlatformDelegate {
+    ReactContextBaseJavaModule(reactContext), PushPlatformDelegate, LifecycleEventListener {
 
     private val pushPlatform = PushPlatform.getInstance()
     private var permissionPromise: Promise? = null
@@ -34,11 +36,44 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
 
     init {
         pushPlatform.delegate = this
+        reactContext.addLifecycleEventListener(this)
     }
 
     override fun getName(): String {
         return "PushPlatformBridge"
     }
+
+    override fun onHostResume() {
+        val activity = currentActivity ?: return
+        val intent = activity.intent ?: return
+        if (intent.getBooleanExtra("com.pushplatform.opened_emitted", false)) return
+        if (!intent.hasExtra("event_id") && !intent.hasExtra("call_id")) return
+
+        val extras: Bundle? = intent.extras
+        val data = Arguments.createMap()
+        extras?.keySet()?.forEach { key ->
+            if (key != "event_id" && key != "call_id") {
+                val value = extras.get(key)
+                if (value is String) data.putString(key, value)
+            }
+        }
+        val notification = Arguments.createMap().apply {
+            putString("id", extras?.getString("event_id") ?: extras?.getString("call_id") ?: "android-notification")
+            extras?.getString("call_id")?.let { putString("callId", it) }
+            putMap("data", data)
+        }
+        val event = Arguments.createMap().apply {
+            putMap("notification", notification)
+            putBoolean("foreground", false)
+            putBoolean("userInteraction", true)
+        }
+        sendEvent("onNotificationOpened", event)
+        intent.putExtra("com.pushplatform.opened_emitted", true)
+    }
+
+    override fun onHostPause() = Unit
+
+    override fun onHostDestroy() = Unit
 
     @ReactMethod
     fun initialize(config: ReadableMap, promise: Promise) {

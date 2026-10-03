@@ -6,7 +6,7 @@
 
 import type { EmitterSubscription } from 'react-native';
 import { NativeEvents } from './NativeModule';
-import type { NotificationContext, Subscription } from './types';
+import type { NotificationContext, RegistrationUpdate, Subscription } from './types';
 
 /**
  * Event names
@@ -27,10 +27,10 @@ export class EventEmitter {
    * Fired when push token registration completes successfully.
    * Note: Token value is NOT passed to JavaScript (security).
    */
-  static onRegistrationUpdated(callback: () => void): Subscription {
+  static onRegistrationUpdated(callback: (update: RegistrationUpdate) => void): Subscription {
     const subscription: EmitterSubscription = NativeEvents.addListener(
       EventNames.REGISTRATION_UPDATED,
-      callback
+      (payload) => callback(payload as RegistrationUpdate)
     );
 
     return {
@@ -48,7 +48,7 @@ export class EventEmitter {
   ): Subscription {
     const subscription: EmitterSubscription = NativeEvents.addListener(
       EventNames.NOTIFICATION_RECEIVED,
-      (payload) => callback(payload as NotificationContext)
+      (payload) => callback(normalizeNotificationContext(payload))
     );
 
     return {
@@ -66,7 +66,7 @@ export class EventEmitter {
   ): Subscription {
     const subscription: EmitterSubscription = NativeEvents.addListener(
       EventNames.NOTIFICATION_OPENED,
-      (payload) => callback(payload as NotificationContext)
+      (payload) => callback(normalizeNotificationContext(payload))
     );
 
     return {
@@ -82,4 +82,17 @@ export class EventEmitter {
     NativeEvents.removeAllListeners(EventNames.NOTIFICATION_RECEIVED);
     NativeEvents.removeAllListeners(EventNames.NOTIFICATION_OPENED);
   }
+}
+
+function normalizeNotificationContext(payload: unknown): NotificationContext {
+  const value = (payload && typeof payload === 'object' ? payload : {}) as Record<string, unknown>;
+  const isForegrounded = typeof value.isForegrounded === 'boolean'
+    ? value.isForegrounded
+    : value.foreground === true;
+  return {
+    notification: (value.notification || { data: {} }) as NotificationContext['notification'],
+    isForegrounded,
+    userInteraction: typeof value.userInteraction === 'boolean' ? value.userInteraction : false,
+    ...(typeof value.actionId === 'string' ? { actionId: value.actionId } : {}),
+  };
 }

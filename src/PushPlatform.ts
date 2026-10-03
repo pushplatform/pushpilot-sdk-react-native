@@ -13,6 +13,7 @@ import type {
   PermissionStatus,
   Subscription,
   NotificationContext,
+  RegistrationUpdate,
   JSONObject,
 } from './types';
 import { ErrorCode, SDKError } from './types';
@@ -55,16 +56,6 @@ export class PushPlatform {
    * ```
    */
   static async initialize(config: PushPlatformConfig): Promise<void> {
-    // Verify TurboModule is loaded (automatic check via codegen)
-    if (!NativeModule) {
-      throw new SDKError(
-        ErrorCode.UNSUPPORTED_ARCHITECTURE,
-        'PushPlatform TurboModule not available. ' +
-        'Ensure React Native >= 0.77 with New Architecture is enabled. ' +
-        'Legacy Architecture is not supported.'
-      );
-    }
-
     // Check if already initialized - must fail, not silently skip
     if (PushPlatform.initialized) {
       throw new SDKError(
@@ -313,7 +304,7 @@ export class PushPlatform {
    * subscription.remove();
    * ```
    */
-  static onRegistrationUpdated(callback: () => void): Subscription {
+  static onRegistrationUpdated(callback: (update: RegistrationUpdate) => void): Subscription {
     Logger.debug('Registering onRegistrationUpdated listener');
     return EventEmitter.onRegistrationUpdated(callback);
   }
