@@ -1,7 +1,5 @@
-const path = require('node:path');
-
 const APPLICATION_ID_META_DATA = 'com.pushplatform.application_id';
-const ANDROID_SDK_MARKER = '// PushPlatform native SDK composite build';
+const ANDROID_MAVEN_MARKER = '// PushPlatform native SDK local Maven repository';
 const POD_MARKER = '# PushPlatform native iOS SDK';
 
 function validateOptions(options = {}) {
@@ -34,11 +32,6 @@ function validateOptions(options = {}) {
   const sdkGitBranch = options.ios && options.ios.sdkGitBranch;
   if (sdkGitBranch !== undefined && (typeof sdkGitBranch !== 'string' || !/^[A-Za-z0-9._/-]+$/.test(sdkGitBranch))) {
     throw new TypeError('ios.sdkGitBranch must be a non-empty Git branch name.');
-  }
-
-  const sdkPath = options.android && options.android.sdkPath;
-  if (sdkPath !== undefined && (typeof sdkPath !== 'string' || sdkPath.trim() === '')) {
-    throw new TypeError('android.sdkPath must be a non-empty path to the pushpilot-sdk-android checkout.');
   }
 
   const googleServicesVersion = options.android && options.android.googleServicesPluginVersion;
@@ -129,22 +122,24 @@ function applyGoogleServicesPlugin(appGradle) {
   return `${appGradle.trimEnd()}\n\napply plugin: "com.google.gms.google-services"\n`;
 }
 
-function ensureAndroidCompositeBuild(settingsGradle, projectRoot, sdkPath) {
-  if (settingsGradle.includes(ANDROID_SDK_MARKER) || settingsGradle.includes('com.pushplatform:sdk-android')) {
-    return settingsGradle;
+function ensureAndroidMavenLocalRepository(projectGradle) {
+  if (projectGradle.includes(ANDROID_MAVEN_MARKER) || projectGradle.includes('mavenLocal()')) {
+    return projectGradle;
   }
-  const androidRoot = path.join(projectRoot, 'android');
-  const sdkRoot = path.resolve(projectRoot, sdkPath || '../pushpilot-sdk-android');
-  const relativePath = path.relative(androidRoot, sdkRoot).split(path.sep).join('/') || '.';
-  const block = [
-    ANDROID_SDK_MARKER,
-    `includeBuild("${relativePath}") {`,
-    '    dependencySubstitution {',
-    '        substitute(module("com.pushplatform:sdk-android")).using(project(":sdk"))',
-    '    }',
-    '}',
-  ].join('\n');
-  return `${settingsGradle.trimEnd()}\n\n${block}\n`;
+  const allProjects = /allprojects\s*\{/;
+  const match = allProjects.exec(projectGradle);
+  if (match) {
+    const openingBrace = match.index + match[0].lastIndexOf('{');
+    const repositories = /repositories\s*\{/g;
+    repositories.lastIndex = openingBrace + 1;
+    const repositoryMatch = repositories.exec(projectGradle);
+    if (repositoryMatch) {
+      const repoOpeningBrace = repositoryMatch.index + repositoryMatch[0].lastIndexOf('{');
+      return `${projectGradle.slice(0, repoOpeningBrace + 1)}\n        ${ANDROID_MAVEN_MARKER}\n        mavenLocal()${projectGradle.slice(repoOpeningBrace + 1)}`;
+    }
+    return `${projectGradle.slice(0, openingBrace + 1)}\n    repositories {\n        ${ANDROID_MAVEN_MARKER}\n        mavenLocal()\n    }${projectGradle.slice(openingBrace + 1)}`;
+  }
+  return `${ANDROID_MAVEN_MARKER}\nallprojects {\n    repositories {\n        mavenLocal()\n    }\n}\n${projectGradle}`;
 }
 
 function addIosPodDependency(podfile, sdkGitUrl, sdkGitBranch) {
@@ -207,13 +202,13 @@ function configureAppDelegate(contents) {
     contents,
     'didRegisterForRemoteNotificationsWithDeviceToken',
     'PushPlatform.shared.didRegisterAPNsToken(deviceToken)',
-    'override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {\n        PushPlatform.shared.didRegisterAPNsToken(deviceToken)\n    }'
+    'public override func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {\n        PushPlatform.shared.didRegisterAPNsToken(deviceToken)\n    }'
   );
   contents = addForwardingToMethod(
     contents,
     'didFinishLaunchingWithOptions',
     'UNUserNotificationCenter.current().delegate = self',
-    'override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {\n        UNUserNotificationCenter.current().delegate = self\n        return true\n    }'
+    'public override func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {\n        UNUserNotificationCenter.current().delegate = self\n        return true\n    }'
   );
   contents = contents.replace(
     /class AppDelegate\s*:\s*([^\{\n]+)/,
@@ -225,19 +220,19 @@ function configureAppDelegate(contents) {
     contents,
     'userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification',
     'PushPlatform.shared.handleForegroundNotification(notification, completionHandler: completionHandler)',
-    'func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {\n        PushPlatform.shared.handleForegroundNotification(notification, completionHandler: completionHandler)\n    }'
+    'public func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {\n        PushPlatform.shared.handleForegroundNotification(notification, completionHandler: completionHandler)\n    }'
   );
   contents = addForwardingToMethod(
     contents,
     'userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse',
     'PushPlatform.shared.handleNotificationResponse(response, completionHandler: completionHandler)',
-    'func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {\n        PushPlatform.shared.handleNotificationResponse(response, completionHandler: completionHandler)\n    }'
+    'public func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {\n        PushPlatform.shared.handleNotificationResponse(response, completionHandler: completionHandler)\n    }'
   );
   contents = addForwardingToMethod(
     contents,
     'didFailToRegisterForRemoteNotificationsWithError',
     'PushPlatform.shared.didFailToRegisterAPNs(error)',
-    'override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {\n        PushPlatform.shared.didFailToRegisterAPNs(error)\n    }'
+    'public override func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {\n        PushPlatform.shared.didFailToRegisterAPNs(error)\n    }'
   );
   return contents;
 }
@@ -249,7 +244,7 @@ module.exports = {
   applyGoogleServicesPlugin,
   configureAppDelegate,
   ensureAndroidApplicationId,
-  ensureAndroidCompositeBuild,
+  ensureAndroidMavenLocalRepository,
   ensureAndroidPermission,
   ensureApsEntitlement,
   ensureIosApplicationId,

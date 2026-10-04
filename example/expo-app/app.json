@@ -19,11 +19,10 @@
         {
           "applicationId": "00000000-0000-4000-8000-000000000000",
           "ios": {
-            "apsEnvironment": "development"
-          },
-          "android": {
-            "sdkPath": "../../../pushpilot-sdk-android",
-            "googleServicesFile": "./google-services.json"
+          "apsEnvironment": "development"
+        },
+        "android": {
+          "googleServicesFile": "./google-services.json"
           }
         }
       ]

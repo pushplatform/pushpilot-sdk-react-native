@@ -7,7 +7,6 @@ const {
   withInfoPlist,
   withPodfile,
   withProjectBuildGradle,
-  withSettingsGradle,
 } = require('@expo/config-plugins');
 const {
   addGoogleServicesPlugin,
@@ -15,7 +14,7 @@ const {
   applyGoogleServicesPlugin,
   configureAppDelegate,
   ensureAndroidApplicationId,
-  ensureAndroidCompositeBuild,
+  ensureAndroidMavenLocalRepository,
   ensureAndroidPermission,
   ensureApsEntitlement,
   ensureIosApplicationId,
@@ -33,7 +32,6 @@ const DEFAULTS = {
     enableBackgroundRemoteNotifications: true,
   },
   android: {
-    sdkPath: '../pushpilot-sdk-android',
     googleServicesPluginVersion: '4.4.2',
   },
 };
@@ -69,12 +67,8 @@ function withPushPlatform(config, options = {}) {
     });
   }
 
-  config = withSettingsGradle(config, (mod) => {
-    mod.modResults.contents = ensureAndroidCompositeBuild(
-      mod.modResults.contents,
-      mod.modRequest.projectRoot,
-      androidOptions.sdkPath
-    );
+  config = withProjectBuildGradle(config, (mod) => {
+    mod.modResults.contents = ensureAndroidMavenLocalRepository(mod.modResults.contents);
     return mod;
   });
 

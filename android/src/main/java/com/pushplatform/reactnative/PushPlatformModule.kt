@@ -44,7 +44,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     }
 
     override fun onHostResume() {
-        val activity = currentActivity ?: return
+        val activity = reactApplicationContext.currentActivity ?: return
         val intent = activity.intent ?: return
         if (intent.getBooleanExtra("com.pushplatform.opened_emitted", false)) return
         if (!intent.hasExtra("event_id") && !intent.hasExtra("call_id")) return
@@ -171,7 +171,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
             return
         }
 
-        val activity = currentActivity as? PermissionAwareActivity
+        val activity = reactApplicationContext.currentActivity as? PermissionAwareActivity
         if (activity == null) {
             promise.reject("NO_ACTIVITY", "A foreground activity is required to request notification permission")
             return
