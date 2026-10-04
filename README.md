@@ -20,7 +20,17 @@ TypeScript API and native bridges for the PushPlatform iOS and Android SDKs.
 ```sh
 npm install git+ssh://git@github.com/pushplatform/pushpilot-sdk-react-native.git#feat/expo-support
 npx expo install expo-dev-client
+
+# Checkout private native SDK repositories with your GitHub SSH access.
+git clone git@github.com:pushplatform/pushpilot-sdk-android.git ../pushpilot-sdk-android
+git -C ../pushpilot-sdk-android checkout main
+git ls-remote git@github.com:pushplatform/pushpilot-sdk-ios.git refs/heads/main
+
+# Build and install the unpublished Android SDK artifact into Maven Local.
+(cd ../pushpilot-sdk-android && ./gradlew :sdk:publishReleasePublicationToMavenLocal)
 ```
+
+The iOS Pod is fetched from the private Git repository by CocoaPods. The Android SDK checkout is built into Maven Local because its AAR is not published; the config plugin adds Maven Local to the host Android repositories. Keep both private checkouts readable by the account running installation/builds. If the React Native package itself is not readable through GitHub SSH, configure GitHub SSH access before running `npm install`.
 
 Добавьте plugin в `app.json` или `app.config.ts`:
 
@@ -35,7 +45,6 @@ npx expo install expo-dev-client
         "sdkGitBranch": "main"
       },
       "android": {
-        "sdkPath": "../pushpilot-sdk-android",
         "googleServicesFile": "./google-services.json"
       }
     }]]
@@ -43,13 +52,14 @@ npx expo install expo-dev-client
 }
 ```
 
-`applicationId` — UUID приложения PushPilot, а не bundle ID/package name. Plugin валидирует UUID, добавляет `POST_NOTIFICATIONS`, `aps-environment`, `remote-notification`, Pod для реального `PushPlatformSDK`, composite Gradle substitution для checkout Android SDK и Google Services plugin, если задан `googleServicesFile`. Повторный `npx expo prebuild` не дублирует строки и не перезаписывает существующий `aps-environment`, `PushPlatformApplicationID`, `googleServicesFile` или пользовательские native настройки.
+`applicationId` — UUID приложения PushPilot, а не bundle ID/package name. Plugin валидирует UUID, добавляет `POST_NOTIFICATIONS`, `aps-environment`, `remote-notification`, Pod для реального `PushPlatformSDK`, локальный Maven repository для Android SDK и Google Services plugin, если задан `googleServicesFile`. Повторный `npx expo prebuild` не дублирует записи и не перезаписывает существующий `aps-environment`, `PushPlatformApplicationID`, `googleServicesFile` или пользовательские native настройки.
 
 Пример находится в [`example/expo-app`](example/expo-app). Заполните `.env` по `.env.example`, положите настоящий `google-services.json` (он не коммитится), затем:
 
 ```sh
 cd example/expo-app
 npm install
+(cd ../../../pushpilot-sdk-android && ./gradlew :sdk:publishReleasePublicationToMavenLocal)
 npx expo prebuild
 npx expo run:android   # локальный development build
 npx expo run:ios       # macOS + Xcode, локальный development build
@@ -57,39 +67,33 @@ npx expo run:ios       # macOS + Xcode, локальный development build
 
 Для EAS используйте `eas build --platform android --profile development` или `eas build --platform ios --profile development` после настройки credentials. EAS Build и локальный `expo run:*` собирают собственное native приложение; Expo Go не содержит PushPilot bridge и не может доставить APNs/FCM события.
 
-Android требует Firebase project с FCM, package name из `android.package` и настоящий `google-services.json`. Native Android SDK подключается из приватного checkout `pushpilot-sdk-android` через `sdkPath`; Maven artifact `com.pushplatform:sdk-android:1.0.0` пока не опубликован. iOS требует доступ к приватному Git checkout `pushpilot-sdk-ios`, Push Notifications capability и APNs key/certificate, настроенные в Apple Developer/EAS credentials.
+Android требует Firebase project с FCM, package name из `android.package` и настоящий `google-services.json`. Native Android SDK подключается по координате `com.pushplatform:sdk-android:1.0.0`, которую необходимо собрать из приватного checkout командой `:sdk:publishReleasePublicationToMavenLocal`; она пока не опубликована в удалённом Maven repository. iOS требует доступ к приватному Git checkout `pushpilot-sdk-ios`, Push Notifications capability и APNs key/certificate, настроенные в Apple Developer/EAS credentials.
 
 Plugin автоматически прокидывает APNs token и notification callbacks из стандартного Swift AppDelegate в native SDK. В существующем Objective-C AppDelegate эти callbacks нужно добавить вручную. Android native SDK регистрирует FCM token и передает notification events в RN bridge; token value в JavaScript не попадает.
 
-## Install the React Native package
+## Установка React Native пакета
 
-Install the current integration branch from GitHub:
+Пакет пока не опубликован в npm. Используйте ветку `feat/expo-support` из команды выше или установите локальный `.tgz` командой `npm install /path/to/pushplatform-react-native-1.0.0.tgz`. React Native autolinking обнаруживает iOS podspec и Android Gradle module.
 
-```sh
-npm install git+ssh://git@github.com/pushplatform/pushpilot-sdk-react-native.git#sdk/rn-installation
-```
+## Подключение native SDK
 
-The package builds its TypeScript entry points during installation. React Native autolinking discovers the iOS podspec and Android Gradle module.
-
-## Connect the native SDKs
-
-The native SDKs are separate private repositories. They are not bundled into this package, and the Android Maven artifact is not published yet.
+Native SDK находятся в отдельных приватных репозиториях и не включены в этот npm tarball. Android Maven artifact пока не опубликован.
 
 ### iOS
 
-Inside the application target in `ios/Podfile`, add the native SDK source. Keep the line inside the same target where React Native calls `use_native_modules!`:
+Expo plugin добавляет Pod из приватного Git repository в application target. Для ручного подключения добавьте строку в тот же target `ios/Podfile`, где вызывается React Native `use_native_modules!`:
 
 ```ruby
 pod 'PushPlatformSDK', :git => 'git@github.com:pushplatform/pushpilot-sdk-ios.git', :branch => 'main'
 ```
 
-Then install pods:
+Затем установите Pods:
 
 ```sh
 cd ios && pod install
 ```
 
-Enable the Push Notifications capability and the required `aps-environment` entitlement in Xcode. Forward the APNs token callbacks from the app delegate to the native SDK:
+Включите Push Notifications capability и entitlement `aps-environment` в Xcode. Передавайте APNs token callbacks из AppDelegate в native SDK:
 
 ```swift
 import PushPlatformSDK
@@ -107,23 +111,17 @@ func application(_ application: UIApplication,
 
 ### Android
 
-Clone the native SDK next to the React Native application directory:
+Clone and build the private native SDK checkout before building the application:
 
 ```sh
 git clone git@github.com:pushplatform/pushpilot-sdk-android.git ../pushpilot-sdk-android
+git -C ../pushpilot-sdk-android checkout main
+(cd ../pushpilot-sdk-android && ./gradlew :sdk:publishReleasePublicationToMavenLocal)
 ```
 
-In the application's `android/settings.gradle`, include its Gradle build and substitute the native SDK coordinate with its `:sdk` project. The path below assumes the clone is a sibling of the app directory:
+Expo config plugin добавляет `mavenLocal()` в сгенерированные Android repositories. Сборка разрешает объявленную координату SDK из локально опубликованного artifact и не обращается к `node_modules` соседнего checkout. После обновления native SDK повторно выполните команду публикации перед сборкой приложения.
 
-```groovy
-includeBuild('../../pushpilot-sdk-android') {
-    dependencySubstitution {
-        substitute(module('com.pushplatform:sdk-android')).using(project(':sdk'))
-    }
-}
-```
-
-Configure Firebase for the Android application: add its `google-services.json`, apply the Google Services Gradle plugin, and enable Firebase Cloud Messaging. The native SDK contributes its FCM service and runtime dependencies.
+Создайте Firebase project и Android app с тем же package name, скачайте `google-services.json` и укажите его в plugin config. Plugin добавит Google Services Gradle plugin; native SDK содержит FCM service и runtime dependencies. Клиентский `google-services.json` не заменяет серверные credentials отправки.
 
 ## Initialize and register an installation
 
