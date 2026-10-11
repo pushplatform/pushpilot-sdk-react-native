@@ -46,3 +46,7 @@ example/.expo-shared/
 .env
 .env.local
 local.properties
+
+# Native release payload is assembled from pinned native SDK commits.
+native/
+.release-sources/

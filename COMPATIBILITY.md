@@ -58,19 +58,19 @@ There is no migration path for Legacy Architecture - New Architecture is require
 ## Native SDK Dependencies
 
 ### iOS
-- PushPlatformSDK 1.0.0+
-- CocoaPods dependency from the separate `pushpilot-sdk-ios` GitHub repository
+- PushPlatformSDK 1.0.0
+- CocoaPods dependency from `native/ios` inside the prepared npm tarball
 
 ### Android  
-- PushPlatform Android SDK 1.0.0+
-- Gradle composite build from the separate `pushpilot-sdk-android` GitHub repository
-- The Maven artifact is not published yet; use the composite-build substitution in the README
+- PushPlatform Android SDK 1.0.0
+- AAR plus Maven metadata in `native/android/maven` inside the prepared npm tarball
+- Expo config plugin configures the bundled repository; bare RN setup is in `docs/INSTALLATION.md`
 
 ## Known Limitations
 
 1. **Legacy Architecture**: Intentionally not supported
 2. **RN < 0.77**: No compatibility layer planned
-3. **Android Maven**: Not yet published to a Maven registry; the GitHub source checkout is required.
+3. **Distribution**: npm publication is pending; use a prepared release tarball. An unprepared Git checkout does not contain the native payload.
 
 ## Support Policy
 

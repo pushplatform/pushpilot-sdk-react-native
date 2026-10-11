@@ -44,7 +44,7 @@ dependencies {
     // Do not resolve it from a sibling node_modules directory.
     compileOnly "com.facebook.react:react-android:+"
 
-    // Resolved from the native SDK's local Maven publication in the host build.
+    // Resolved from native/android/maven inside this npm package.
     implementation "com.pushplatform:sdk-android:1.0.0"
 
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"

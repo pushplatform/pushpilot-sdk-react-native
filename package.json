@@ -18,7 +18,10 @@
     "test:plugin": "node --test plugin/*.test.js",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "prepare": "npm run build"
+    "release:stage": "node scripts/stage-native.mjs",
+    "release:check": "node scripts/check-package.mjs",
+    "prepack": "npm run build && npm run release:check",
+    "prepublishOnly": "npm run release:check"
   },
   "keywords": [
     "react-native",
@@ -69,14 +72,16 @@
     "!lib/**/*.test.*",
     "!lib/__tests__",
     "app.plugin.js",
-    "plugin/**/*.js",
+    "plugin/helpers.js",
+    "plugin/withPushPlatform.js",
     "ios/PushPlatformBridge.m",
     "ios/PushPlatformBridge.swift",
     "android/src/main/**",
     "android/build.gradle",
     "PushPlatform.podspec",
     "react-native.config.js",
-    "example/**",
+    "native/**",
+    "docs/INSTALLATION.md",
     "README.md",
     "LICENSE"
   ],
@@ -87,5 +92,9 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   }
 }

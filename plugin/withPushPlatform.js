@@ -1,3 +1,4 @@
+const path = require('node:path');
 const {
   createRunOncePlugin,
   withAndroidManifest,
@@ -14,7 +15,7 @@ const {
   applyGoogleServicesPlugin,
   configureAppDelegate,
   ensureAndroidApplicationId,
-  ensureAndroidMavenLocalRepository,
+  ensureAndroidMavenRepository,
   ensureAndroidPermission,
   ensureApsEntitlement,
   ensureIosApplicationId,
@@ -26,8 +27,6 @@ const packageJson = require('../package.json');
 
 const DEFAULTS = {
   ios: {
-    sdkGitUrl: 'git@github.com:pushplatform/pushpilot-sdk-ios.git',
-    sdkGitBranch: 'main',
     apsEnvironment: 'development',
     enableBackgroundRemoteNotifications: true,
   },
@@ -68,7 +67,10 @@ function withPushPlatform(config, options = {}) {
   }
 
   config = withProjectBuildGradle(config, (mod) => {
-    mod.modResults.contents = ensureAndroidMavenLocalRepository(mod.modResults.contents);
+    mod.modResults.contents = ensureAndroidMavenRepository(
+      mod.modResults.contents,
+      path.relative(mod.modRequest.platformProjectRoot, path.join(__dirname, '../native/android/maven'))
+    );
     return mod;
   });
 
@@ -92,11 +94,7 @@ function withPushPlatform(config, options = {}) {
   });
 
   config = withPodfile(config, (mod) => {
-    mod.modResults.contents = addIosPodDependency(
-      mod.modResults.contents,
-      iosOptions.sdkGitUrl,
-      iosOptions.sdkGitBranch
-    );
+    mod.modResults.contents = addIosPodDependency(mod.modResults.contents);
     return mod;
   });
 

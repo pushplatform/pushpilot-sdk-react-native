@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const {
   addIosPodDependency,
   configureAppDelegate,
-  ensureAndroidMavenLocalRepository,
+  ensureAndroidMavenRepository,
   ensureAndroidPermission,
   ensureApsEntitlement,
   validateOptions,
@@ -17,12 +17,27 @@ test('validates the application UUID and rejects invalid options', () => {
   assert.throws(() => validateOptions({ ios: { apsEnvironment: 'sandbox' } }), /apsEnvironment/);
 });
 
-test('adds the local Maven repository once for native Android SDK resolution', () => {
+test('adds the bundled Maven repository once, even if the app uses Maven Local', () => {
   const gradle = 'allprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n';
-  const once = ensureAndroidMavenLocalRepository(gradle);
-  const twice = ensureAndroidMavenLocalRepository(once);
+  const once = ensureAndroidMavenRepository(gradle, '../node_modules/@pushplatform/react-native/native/android/maven');
+  const twice = ensureAndroidMavenRepository(once, '../node_modules/@pushplatform/react-native/native/android/maven');
   assert.equal(twice, once);
-  assert.equal((twice.match(/mavenLocal\(\)/g) || []).length, 1);
+  assert.doesNotMatch(twice, /mavenLocal/);
+  assert.match(twice, /includeModule\('com.pushplatform', 'sdk-android'\)/);
+  assert.match(ensureAndroidMavenRepository(gradle.replace('google()', 'mavenLocal()'), '../native'), /bundled native SDK/);
+});
+
+test('migrates previous generated private Git and Maven Local entries', () => {
+  const oldGradle = 'allprojects { repositories {\n// PushPlatform native SDK local Maven repository\nmavenLocal()\n} }';
+  const updated = ensureAndroidMavenRepository(oldGradle, '../native/android/maven');
+  assert.doesNotMatch(updated, /mavenLocal/);
+  assert.equal(ensureAndroidMavenRepository(updated, '../native/android/maven'), updated);
+  const oldPod = "target 'App' do\n  # PushPlatform native iOS SDK\n  pod 'PushPlatformSDK', :git => 'git@github.com:pushplatform/pushpilot-sdk-ios.git', :branch => 'main'\nend";
+  const updatedPod = addIosPodDependency(oldPod);
+  assert.doesNotMatch(updatedPod, /:git|:branch/);
+  assert.match(updatedPod, /require.resolve/);
+  assert.equal(addIosPodDependency(updatedPod), updatedPod);
+  assert.throws(() => validateOptions({ ios: { sdkGitBranch: 'main' } }), /no longer used/);
 });
 
 test('generates public notification delegate methods for Expo AppDelegate', () => {
@@ -47,8 +62,9 @@ test('native config mutations are idempotent and preserve existing values', () =
   assert.equal(entitlements['aps-environment'], 'production');
 
   const podfile = "target 'App' do\nend\n";
-  const once = addIosPodDependency(podfile, 'git@github.com:pushplatform/pushpilot-sdk-ios.git', 'main');
-  const twice = addIosPodDependency(once, 'git@github.com:pushplatform/pushpilot-sdk-ios.git', 'main');
+  const once = addIosPodDependency(podfile);
+  const twice = addIosPodDependency(once);
   assert.equal(twice, once);
   assert.equal((twice.match(/PushPlatformSDK/g) || []).length, 1);
+  assert.match(twice, /:path/);
 });

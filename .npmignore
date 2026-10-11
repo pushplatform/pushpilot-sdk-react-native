@@ -51,8 +51,7 @@ yarn-error.log*
 # CI
 .github/
 
-# Documentation (keep only README)
-docs/
+# Installation guide is also included through package.json files.
 
 # Examples and test apps
 example/

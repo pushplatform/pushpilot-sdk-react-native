@@ -1,6 +1,6 @@
 # Expo support state
 
-Дата состояния: 2026-10-04.
+Дата состояния: 2026-10-11. Ветка: `feat/expo-support`.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -16,19 +16,21 @@
 `app.plugin.js` экспортирует `withPushPlatform` через стандартную точку входа пакета. Во время prebuild он:
 
 - добавляет `POST_NOTIFICATIONS` и PushPilot application metadata в Android Manifest;
-- добавляет Maven Local для разрешения `com.pushplatform:sdk-android:1.0.0`, собранного из приватного Android SDK checkout;
+- добавляет Maven repository из установленного npm пакета (`native/android/maven`) для `com.pushplatform:sdk-android:1.0.0`; Maven Local пользователю не нужен;
 - при `android.googleServicesFile` добавляет Google Services Gradle plugin и оставляет путь к конфигу в Expo config;
-- добавляет `aps-environment`, `remote-notification`, application UUID и Pod `PushPlatformSDK` из приватного `pushpilot-sdk-ios`;
+- добавляет `aps-environment`, `remote-notification`, application UUID и Pod `PushPlatformSDK` из `native/ios` установленного npm пакета; приватный Git пользователю не нужен;
 - прокидывает APNs token, foreground notification и notification response через стандартный Swift AppDelegate;
 - проверяет параметры и использует маркеры/проверки для идемпотентного повторного prebuild.
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
-Native SDK coordinates не выдуманы: iOS — `PushPlatformSDK` 1.0.0 из Git repository, Android — source checkout с Gradle project `:sdk`, публикуемый coordinate пока отсутствует.
+Native SDK coordinates: iOS — `PushPlatformSDK` 1.0.0; Android — `com.pushplatform:sdk-android:1.0.0`. Release payload собирается из pinned native commits в `release/native-lock.json`. AAR, Maven metadata, Swift sources и лицензии входят в tarball. Удалённые Maven/CocoaPods releases не требуются. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
 
-## Проверки
+## Проверки native интеграции — история 2026-10-04
 
-План команд:
+Следующие команды и результаты относятся к прежней схеме с private native dependencies. Они уже выполнены; повторять их для восстановления состояния не нужно. Текущие инструкции установки — [INSTALLATION.md](INSTALLATION.md), упаковки — [RELEASING.md](RELEASING.md).
+
+Исторический план команд:
 
 ```sh
 npm ci
@@ -73,10 +75,25 @@ xcodebuild -workspace ios/App.xcworkspace -scheme App -configuration Debug \
 
 Статус интеграции: **BUILD VERIFIED** для Expo SDK 54.0.0 / React Native 0.81.4 на Android debug и iOS Simulator. Android debug build использовал локально опубликованный SDK artifact, но Firebase app config не задавался; iOS simulator build не использовал signing credentials. Это проверяет генерацию и компиляцию native проекта, но не реальную APNs/FCM доставку. Реальные push, EAS jobs, npm publish и deploy не выполнялись.
 
+## Подготовка распространения — 2026-10-11
+
+- Исходное состояние: чистая ветка `feat/expo-support`, HEAD `7433f40`; предыдущие native builds сохранены как подтверждённые результаты. Полные prebuild/Android/iOS builds не повторялись.
+- Native SDK зафиксированы: Android `aef4a5122245360771cd0e172f11824ed1259ad3`, iOS `dd759a5878cba045c50f1c4aec82069374106313`. При локальной проверке использованы сохранённые Android build outputs и их Maven metadata; AAR и sources JAR прошли проверку SHA-256 по `.module`. Native checkouts не изменялись.
+- Владелец выбрал MIT для собственного native кода обоих SDK. Тексты сохранены в `release/licenses/`; сторонние лицензии и notices описаны в `release/THIRD_PARTY_NOTICES.md`, архивы и source headers копируются без изменения.
+- Добавлены staging/check scripts, `prepack`/`prepublishOnly` guards, release workflow с ручным запуском и `publish=false` по умолчанию, pinned private checkouts, candidate artifact и отдельным OIDC publish job через environment `npm-release`. Обычный CI проверяет типы, RN tests, plugin tests и JS build.
+- `npm run typecheck`, `npm run build`, RN tests **96/96**, plugin tests **5/5** проходят. YAML и shell syntax обоих workflows проверены локально.
+- `npm pack` создал `dist/pushplatform-react-native-1.0.0.tgz`: 67 файлов, включая native payload и установочную инструкцию; tests, example app, secrets и build directories исключены. Проверка **самого архива** по manifest/checksums проходит.
+- Проверка целостности также отклонила отдельный тестовый архив с намеренно изменённым AAR (`Checksum mismatch`); рабочий release tarball не изменялся.
+- Tarball установлен обычным `npm install` во внешний consumer в `/tmp`, без install scripts и без загрузки RN peer dependencies. Native dependency probes проверяют отдельно новый путь распространения; они не являются повторной сборкой приложения.
+- `prepare` hook удалён: JS собирается через `prepack`, а установка готового tarball не выполняет SDK build и не требует разрешения install scripts. Для работы с исходниками используйте `npm run build`.
+- Android: Gradle 8.13 `verifyBundledSDK` прошёл offline с обычными `google()` / `mavenCentral()`, разрешил AAR непосредственно из `node_modules/@pushplatform/react-native/native/android/maven`; `mavenLocal()` и private checkout отсутствовали в consumer config. iOS: standalone `pod install --no-repo-update` установил `PushPlatformSDK (1.0.0)` из `native/ios`, без Git и компиляции приложения. Эти проверки сохранены в `scripts/verify-distribution.mjs` и Android-проверка включена в release workflow.
+
+Workflows в GitHub не запускались, GitHub environments/secrets и npm Trusted Publisher не настраивались. npm/Maven/CocoaPods publication, EAS jobs и проверка реальных push не выполнялись. Конкретные доступы и действия владельца перечислены в [RELEASING.md](RELEASING.md).
+
 ## Ограничения
 
 - Для iOS нужен Apple Developer provisioning и реальный device для APNs; для Android нужен Firebase project и настоящий `google-services.json`.
-- Android Maven artifact не опубликован удалённо; перед сборкой приложения выполните `:sdk:publishReleasePublicationToMavenLocal` в приватном checkout. iOS Pod остаётся в приватном Git repository и требует SSH access.
+- npm publication пока не выполнена. Используйте подготовленный release tarball из `dist/`; старый tarball в корне репозитория и неподготовленный Git checkout не содержат bundled native payload.
 - Background/silent push зависит от ОС, payload, power policy и состояния процесса. Prebuild или native build не проверяют доставку.
 - Expo plugin не обещает VoIP/PushKit/CallKit; это отдельная нативная интеграция.
-- При недоступной сети npm registry, Expo CLI или приватных native repositories соответствующая проверка блокируется и должна быть отмечена отдельно, без подмены результата локальным mock.
+- Release workflow требует read access к двум private native repositories только для сборщика. Пользовательские установки из tarball/npm этого доступа не требуют. При недоступной сети публичные npm/Gradle dependencies могут блокировать установку.

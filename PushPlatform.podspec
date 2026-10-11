@@ -22,8 +22,8 @@ Pod::Spec.new do |s|
 
   s.dependency "React-Core"
 
-  # The host app resolves this dependency from pushpilot-sdk-ios in its Podfile.
-  s.dependency "PushPlatformSDK", "~> 1.0"
+  # The host Podfile resolves this Pod from native/ios inside the npm package.
+  s.dependency "PushPlatformSDK", "1.0.0"
 
   s.swift_version = "5.9"
 

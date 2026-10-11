@@ -1,0 +1,131 @@
+name: Prepare / publish React Native SDK
+
+# No publication on push, tag creation or release creation.
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Publish the prepared tarball to npm (requires a vVERSION tag and npm-release environment)'
+        type: boolean
+        default: false
+      dist_tag:
+        description: 'npm dist-tag'
+        type: choice
+        options:
+          - next
+          - latest
+        default: next
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rn-sdk-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    # Keep private native checkout credentials out of ordinary PR CI.
+    environment: sdk-release-build
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - name: Read pinned native commits
+        id: native
+        run: |
+          node --input-type=module <<'JS' >> "$GITHUB_OUTPUT"
+          import fs from 'node:fs';
+          const lock = JSON.parse(fs.readFileSync('release/native-lock.json'));
+          for (const platform of ['android', 'ios']) {
+            if (!/^[a-f0-9]{40}$/.test(lock[platform].commit)) throw new Error('Expected full native commit SHA');
+            console.log(`${platform}=${lock[platform].commit}`);
+          }
+          JS
+      - uses: actions/checkout@v4
+        with:
+          repository: pushplatform/pushpilot-sdk-android
+          ref: ${{ steps.native.outputs.android }}
+          path: .release-sources/android
+          token: ${{ secrets.NATIVE_SDK_READ_TOKEN }}
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          repository: pushplatform/pushpilot-sdk-ios
+          ref: ${{ steps.native.outputs.ios }}
+          path: .release-sources/ios
+          token: ${{ secrets.NATIVE_SDK_READ_TOKEN }}
+          persist-credentials: false
+      - name: Build native Android release into isolated staging repository
+        working-directory: .release-sources/android
+        run: ./gradlew :sdk:publishReleasePublicationToMavenLocal --no-daemon -Dmaven.repo.local="$RUNNER_TEMP/pushpilot-maven"
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test -- --runInBand --watchman=false
+      - run: npm run test:plugin
+      - name: Stage pinned native payload
+        run: npm run release:stage -- --android-repo .release-sources/android --ios-repo .release-sources/ios --maven-repo "$RUNNER_TEMP/pushpilot-maven"
+      - name: Pack and verify the exact distribution archive
+        run: |
+          mkdir -p dist
+          npm pack --pack-destination dist --json > dist/pack.json
+          node scripts/check-package.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
+          sha256sum dist/*.tgz > dist/SHA256SUMS
+          cp native/manifest.json dist/native-manifest.json
+          printf '%s\n' "$GITHUB_SHA" > dist/source-commit.txt
+      - name: Resolve bundled SDK from an external npm consumer
+        run: node scripts/verify-distribution.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")" --gradle .release-sources/android/gradlew
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rn-sdk-candidate
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  publish:
+    if: ${{ inputs.publish }}
+    needs: prepare
+    runs-on: ubuntu-latest
+    environment: npm-release
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require a version tag
+        run: |
+          test "$GITHUB_REF" = "refs/tags/v$(node -p "require('./package.json').version")"
+      - uses: actions/download-artifact@v4
+        with:
+          name: rn-sdk-candidate
+          path: dist
+      - name: Verify candidate integrity and source identity
+        run: |
+          test "$(cat dist/source-commit.txt)" = "$GITHUB_SHA"
+          sha256sum --check dist/SHA256SUMS
+          node scripts/check-package.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
+      - name: Install OIDC-capable npm CLI
+        run: npm install --global npm@11.15.0
+      - name: Publish the verified archive through npm trusted publishing
+        env:
+          RELEASE_DIST_TAG: ${{ inputs.dist_tag }}
+        # Use an empty working directory: do not execute source package lifecycle scripts.
+        run: |
+          archive="$GITHUB_WORKSPACE/$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
+          cd "$RUNNER_TEMP"
+          npm publish "$archive" --access public --tag "$RELEASE_DIST_TAG" --ignore-scripts

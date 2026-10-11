@@ -90,12 +90,13 @@ yarn add @pushplatform/react-native --ignore-engines
 
 **Solution:**
 
-Ensure the native iOS SDK is included in your project from the separate `pushpilot-sdk-ios` repository.
+Ensure you installed a prepared release tarball with `native/ios/PushPlatformSDK.podspec`. For Expo, remove old `sdkGitUrl`/`sdkGitBranch` options and run prebuild.
 
 Inside the app target in `ios/Podfile`, add:
 
 ```ruby
-pod 'PushPlatformSDK', :git => 'git@github.com:pushplatform/pushpilot-sdk-ios.git', :branch => 'main'
+pushpilot_package = File.dirname(`node --print "require.resolve('@pushplatform/react-native/package.json')"`.strip)
+pod 'PushPlatformSDK', :path => File.join(pushpilot_package, 'native/ios')
 ```
 
 ---
