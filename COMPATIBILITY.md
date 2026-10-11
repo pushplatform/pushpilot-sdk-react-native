@@ -7,7 +7,7 @@
 | React Native | 0.77.0 | New Architecture (TurboModules) | ✅ Supported |
 | React Native | 0.87.1+ | New Architecture (TurboModules) | ✅ Supported |
 | iOS | 13.0 | - | ✅ Supported |
-| Android | API 21 (5.0) | - | ✅ Supported |
+| Android | API 26 (8.0) | - | ✅ Supported |
 
 ## Unsupported Versions
 
@@ -58,19 +58,19 @@ There is no migration path for Legacy Architecture - New Architecture is require
 ## Native SDK Dependencies
 
 ### iOS
-- PushPlatformSDK 1.0.0+
-- Delivered via CocoaPods
+- PushPlatformSDK 1.0.0
+- CocoaPods dependency from `native/ios` inside the prepared npm tarball
 
 ### Android  
-- PushPlatform Android SDK 1.0.0+
-- Currently: project dependency (monorepo)
-- Future: Maven Central distribution
+- PushPlatform Android SDK 1.0.0
+- AAR plus Maven metadata in `native/android/maven` inside the prepared npm tarball
+- Expo config plugin configures the bundled repository; bare RN setup is in `docs/INSTALLATION.md`
 
 ## Known Limitations
 
 1. **Legacy Architecture**: Intentionally not supported
 2. **RN < 0.77**: No compatibility layer planned
-3. **Android Maven**: Not yet published to Maven Central (monorepo setup required)
+3. **Distribution**: npm publication is pending; use a prepared release tarball. An unprepared Git checkout does not contain the native payload.
 
 ## Support Policy
 

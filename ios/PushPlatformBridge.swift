@@ -1,6 +1,8 @@
 import Foundation
 import React
 import PushPlatformSDK
+import UIKit
+import UserNotifications
 
 @objc(PushPlatformBridge)
 class PushPlatformBridge: RCTEventEmitter {
@@ -129,6 +131,40 @@ class PushPlatformBridge: RCTEventEmitter {
         }
     }
 
+    @objc(requestPermissions:rejecter:)
+    func requestPermissions(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+            if let error = error {
+                reject("PERMISSION_ERROR", error.localizedDescription, error)
+                return
+            }
+            DispatchQueue.main.async {
+                if granted {
+                    UIApplication.shared.registerForRemoteNotifications()
+                }
+                resolve(granted)
+            }
+        }
+    }
+
+    @objc(getPermissionStatus:rejecter:)
+    func getPermissionStatus(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            let status: String
+            switch settings.authorizationStatus {
+            case .authorized, .provisional:
+                status = "granted"
+            case .denied:
+                status = "denied"
+            case .notDetermined:
+                status = "not-determined"
+            @unknown default:
+                status = "not-determined"
+            }
+            resolve(status)
+        }
+    }
+
     // MARK: - Helpers
 
     private func parseEnvironment(_ string: String) -> Environment? {
@@ -226,7 +262,8 @@ extension PushPlatformBridge: PushPlatformDelegate {
         if hasListeners {
             var body: [String: Any] = [
                 "notification": serializeNotification(notification),
-                "foreground": context.isForeground
+                "foreground": context.isForeground,
+                "userInteraction": true
             ]
 
             if let actionId = action {

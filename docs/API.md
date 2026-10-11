@@ -46,8 +46,9 @@ static initialize(config: PushPlatformConfig): Promise<void>
 
 ```typescript
 await PushPlatform.initialize({
-  apiKey: '<set API key from dashboard>',
-  appId: 'com.example.myapp',
+  apiKey: 'YOUR_API_KEY',
+  applicationId: '00000000-0000-4000-8000-000000000000',
+  apiBaseURL: 'https://api.your-domain.example',
   environment: 'production',
   debugMode: false,
 });
@@ -218,20 +219,20 @@ SDK initialization configuration.
 ```typescript
 interface PushPlatformConfig {
   apiKey: string;
-  appId: string;
+  applicationId?: string;
+  apiBaseURL: string;
   environment: 'development' | 'production';
   debugMode?: boolean;
-  baseURL?: string;
 }
 ```
 
 **Fields:**
 
 - `apiKey` — API key from Push Platform dashboard (required)
-- `appId` — Your application identifier (required)
+- `applicationId` — Application UUID used to register the installation. Required by the native iOS and Android SDKs for server registration.
+- `apiBaseURL` — Base URL of the PushPlatform API (required)
 - `environment` — Target environment: `'development'` or `'production'` (required)
 - `debugMode` — Enable verbose logging (optional, default: `false`)
-- `baseURL` — Custom API base URL (optional, default: production URL)
 
 ---
 

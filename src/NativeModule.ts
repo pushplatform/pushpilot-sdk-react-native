@@ -53,20 +53,31 @@ export interface PushPlatformNativeModule {
  */
 const { PushPlatformBridge } = NativeModules;
 
-if (!PushPlatformBridge) {
-  throw new Error(
-    'PushPlatformBridge native module is not available. ' +
-    'Make sure you have run `pod install` (iOS) or synced Gradle (Android) ' +
-    'and rebuilt your app.'
-  );
-}
+const unavailableError = new Error(
+  'PushPlatformBridge native module is not available. Expo Go is unsupported. ' +
+  'Install the native dependencies, run `npx expo prebuild`, and rebuild the development app.'
+);
+
+const unavailableNativeModule: PushPlatformNativeModule = {
+  initialize: () => Promise.reject(unavailableError),
+  getInstallationId: () => Promise.reject(unavailableError),
+  login: () => Promise.reject(unavailableError),
+  logout: () => Promise.reject(unavailableError),
+  requestPermissions: () => Promise.reject(unavailableError),
+  getPermissionStatus: () => Promise.reject(unavailableError),
+};
 
 /**
  * Typed native module
  */
-export const NativeModule: PushPlatformNativeModule = PushPlatformBridge;
+export const NativeModule: PushPlatformNativeModule = PushPlatformBridge || unavailableNativeModule;
 
 /**
  * Native event emitter instance
  */
-export const NativeEvents = new NativeEventEmitter(PushPlatformBridge);
+export const NativeEvents = PushPlatformBridge
+  ? new NativeEventEmitter(PushPlatformBridge)
+  : {
+      addListener: () => ({ remove: () => undefined }),
+      removeAllListeners: () => undefined,
+    } as unknown as NativeEventEmitter;

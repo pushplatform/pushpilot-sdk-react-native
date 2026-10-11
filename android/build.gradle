@@ -38,27 +38,19 @@ android {
     }
 }
 
-repositories {
-    google()
-    mavenCentral()
-    maven {
-        url "$rootDir/../node_modules/react-native/android"
-    }
-}
-
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compileOnly "com.facebook.react:react-native:+"
+    // React Native is supplied by the host application (Expo/RN Gradle plugin).
+    // Do not resolve it from a sibling node_modules directory.
+    compileOnly "com.facebook.react:react-android:+"
 
-    // PushPlatform Android SDK
-    // For monorepo: project dependency (configured in test app's settings.gradle)
-    // For external: Maven Central (coming soon)
+    // Resolved from native/android/maven inside this npm package.
     implementation "com.pushplatform:sdk-android:1.0.0"
 
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.mockito:mockito-core:5.5.0"
     testImplementation "org.mockito.kotlin:mockito-kotlin:5.1.0"
-    testImplementation "com.facebook.react:react-native:+"
+    testImplementation "com.facebook.react:react-android:+"
     testImplementation "org.robolectric:robolectric:4.11.1"
 }
