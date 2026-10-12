@@ -1,7 +1,7 @@
 {
   "name": "@pushplatform/react-native",
-  "version": "1.0.0",
-  "description": "Push Platform React Native SDK - TypeScript bridge for iOS and Android native SDKs",
+  "version": "1.0.1",
+  "description": "PushPilot для React Native и Expo: push-уведомления на iOS и Android, регистрация устройств и обработка событий",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "react-native": "lib/index.js",

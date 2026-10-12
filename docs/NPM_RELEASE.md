@@ -66,3 +66,34 @@ cache и отключены переменные `NODE_AUTH_TOKEN` / `NPM_TOKEN`
   Эти изменения документации в repository не изменяют уже опубликованный архив.
 
 Повторные тесты SDK, Expo prebuild, native builds и проверка push не запускались.
+
+## Пользовательская документация: patch 1.0.1
+
+README и публикуемая INSTALLATION.md приведены к пользовательским инструкциям
+PushPilot на русском. Из публичного вступления удалены статусы candidate,
+история архивов и подготовка checkout; ограничения установки и платформ оставлены
+в соответствующих разделах. Default import в примере назван PushPilot;
+экспорты и код SDK не изменены. Description npm-пакета обновлён.
+
+Подготовлена версия `1.0.1` для обновления npm README/description; package.json
+и корневой lockfile согласованы, registry подтвердил отсутствие этой версии.
+Для обновления README требуется новый publish:
+[правило npm](https://docs.npmjs.com/about-package-readme-files/#updating-an-existing-package-readmemd-file).
+
+Исполняемый payload переиспользуется из ранее проверенного npm consumer
+`/private/tmp/pushpilot-npm-installed-release.Jyt62L`: lib и native 1.0.0.
+Source/plugin/bridge/podspec/native-lock исходники совпадают с release source
+`ad1edc1`. Архив `dist/pushplatform-react-native-1.0.1.tgz` упаковывается без
+scripts; JS, native, plugin и bridges остаются побайтно прежними. Native manifest
+и версии native SDK не меняются. Сборки, установка и уже пройденные тесты
+не повторяются. Новая версия не опубликована, старый npm архив неизменяем.
+
+Команда владельцу после ревью/merge документации:
+
+```sh
+npm publish /private/tmp/pushpilot-rn-public-readme/dist/pushplatform-react-native-1.0.1.tgz --ignore-scripts --access public --tag next --registry=https://registry.npmjs.org
+```
+
+При запросе 2FA добавить `--otp=YOUR_2FA_CODE`. Это документационный patch;
+реальная APNs/FCM доставка не заявляется проверенной. Deploy, release workflow
+и push-доставка не запускались.

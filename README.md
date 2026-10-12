@@ -1,37 +1,33 @@
 # PushPilot React Native SDK
 
-TypeScript API and native bridges for the PushPlatform iOS and Android SDKs.
+PushPilot подключает push-уведомления к приложениям React Native на iOS и Android:
+регистрирует установку и токен устройства, запрашивает разрешения и передаёт
+события получения и открытия уведомлений. В пакет входят native SDK и Expo plugin.
 
-## Requirements
-
-- React Native 0.77 or later with the New Architecture enabled
-- React 18 or later
-- iOS 13 or later with CocoaPods
-- Android API 26 or later with Kotlin 1.9+
-- Node.js 18 or later
-
-## Установка и Expo
-
-Поддерживаемая Expo-связка: **Expo SDK 54 / React Native 0.81.4**. Expo Go не поддерживается: используйте development build или production/EAS build.
-
-Первый публичный выпуск — [@pushplatform/react-native 1.0.0](https://www.npmjs.com/package/@pushplatform/react-native/v/1.0.0). Dist-tag `next` указывает на `1.0.0`:
+## Установка
 
 ```sh
-npm install @pushplatform/react-native@1.0.0
+npm install @pushplatform/react-native@next
+```
+
+Для Expo используйте development build или EAS build. Expo Go не содержит
+необходимые native модули.
+
+```sh
 npx expo install expo-dev-client
 ```
 
-Для установки по тегу используйте `npm install @pushplatform/react-native@next`. Данные выпуска и ограничения — [docs/NPM_RELEASE.md](docs/NPM_RELEASE.md).
+## Настройка Expo
 
-Приватный Git-доступ, checkout native SDK и ручная публикация в Maven Local пользователям не нужны. Android AAR, Maven POM/Gradle metadata и iOS Pod с исходниками входят в release tarball. Обычный checkout этой ветки нужно сначала подготовить по [release-инструкции](docs/RELEASING.md); старый tarball в корне репозитория не содержит native payload.
-
-Добавьте plugin в `app.json` или `app.config.ts`:
+В `app.json` укажите UUID приложения PushPilot и Firebase config:
 
 ```json
 {
   "expo": {
+    "ios": { "bundleIdentifier": "com.example.app" },
+    "android": { "package": "com.example.app" },
     "plugins": [["@pushplatform/react-native", {
-      "applicationId": "00000000-0000-4000-8000-000000000000",
+      "applicationId": "YOUR_APPLICATION_UUID",
       "ios": { "apsEnvironment": "development" },
       "android": { "googleServicesFile": "./google-services.json" }
     }]]
@@ -39,7 +35,10 @@ npx expo install expo-dev-client
 }
 ```
 
-`applicationId` — UUID приложения PushPilot, а не bundle ID/package name. Удалите прежние `ios.sdkGitUrl` и `ios.sdkGitBranch`. Plugin добавляет bundled Maven repository, локальный Pod из установленного npm пакета, notification permissions/entitlements и callbacks стандартного Swift AppDelegate. При повторном prebuild он переводит собственные старые Git/Maven Local записи на bundled SDK, сохраняет пользовательские настройки и не дублирует записи.
+`applicationId` — UUID приложения PushPilot, а не bundle ID или Android package
+name. `google-services.json` должен соответствовать вашему Android-приложению.
+Для iOS настройте Push Notifications capability и provisioning с соответствующим
+APNs environment; для production используйте `apsEnvironment: "production"`.
 
 ```sh
 npx expo prebuild
@@ -47,59 +46,98 @@ npx expo run:android
 npx expo run:ios
 ```
 
-Для EAS: `eas build --platform android --profile development` или `eas build --platform ios --profile development` после настройки app credentials и профиля. EAS устанавливает npm dependency и получает native SDK из того же опубликованного tarball; отдельный upload локального архива не требуется.
+Plugin подключает native SDK из установленного npm-пакета, разрешения уведомлений
+и callbacks стандартного Swift AppDelegate. Для EAS настройте профиль build и app
+credentials. [Установка Expo и bare React Native](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/docs/INSTALLATION.md).
 
-Android требует настоящий Firebase `google-services.json` с package name приложения. iOS требует Push Notifications capability, Apple Developer provisioning и APNs key/certificate; для реальной доставки нужен device. Эти app credentials не нужны для упаковки SDK.
+## Минимальный пример
 
-Пример: [example/expo-app](example/expo-app). Подробная установка Expo и bare RN: [docs/INSTALLATION.md](docs/INSTALLATION.md). В существующем Objective-C AppDelegate callbacks APNs нужно прокинуть вручную; VoIP/PushKit/CallKit остаётся отдельной native интеграцией.
-
-## Initialize and register an installation
-
-Get `apiKey` and the application UUID from PushPlatform. `apiBaseURL` is the base URL of your PushPlatform server. `applicationId` must be the application's UUID; the native SDKs use it to register the installation.
+Вызывайте `initializePushPilot()` один раз при запуске приложения. Запрос
+разрешения привяжите к кнопке интерфейса:
 
 ```tsx
-import PushPlatform from '@pushplatform/react-native';
+import PushPilot from '@pushplatform/react-native';
 
-export async function initializePushPlatform() {
-  // Subscribe first so an early APNs/FCM registration event is not missed.
-  const registration = PushPlatform.onRegistrationUpdated(() => {
-    console.info('Push token registration updated');
+export async function initializePushPilot() {
+  const registration = PushPilot.onRegistrationUpdated(() => {
+    console.info('Регистрация push-токена обновлена');
+  });
+  const opened = PushPilot.onNotificationOpened(notification => {
+    // Откройте нужный экран через навигацию вашего приложения.
+    console.info('Открыто уведомление', notification.id);
   });
 
-  await PushPlatform.initialize({
-    apiKey: 'YOUR_API_KEY',
-    applicationId: '00000000-0000-4000-8000-000000000000',
-    apiBaseURL: 'https://api.your-domain.example',
-    environment: 'production',
-    debugMode: __DEV__,
-  });
+  try {
+    await PushPilot.initialize({
+      apiBaseURL: 'https://api.example.com/mobile-pushpilot',
+      apiKey: 'YOUR_MOBILE_GATEWAY_CREDENTIAL',
+      applicationId: 'YOUR_APPLICATION_UUID',
+      environment: 'production',
+      debugMode: __DEV__,
+    });
+  } catch (error) {
+    registration.remove();
+    opened.remove();
+    throw error;
+  }
 
-  const installationId = await PushPlatform.getInstallationId();
-  const permissionGranted = await PushPlatform.requestPermissions();
+  return () => {
+    registration.remove();
+    opened.remove();
+  };
+}
 
-  return { installationId, permissionGranted, registration };
+// Используйте в onPress вашей кнопки; обработайте ошибку в интерфейсе приложения.
+export function requestPushPermission() {
+  return PushPilot.requestPermissions();
 }
 ```
 
-`initialize()` registers the app installation with the server and resolves with its installation ID available through `getInstallationId()`. After the OS provides an APNs or FCM token, the native SDK registers that token with the server and emits `onRegistrationUpdated`. Token values are never exposed to JavaScript. `onNotificationReceived` and `onNotificationOpened` expose parsed notification metadata through the same native SDK transport. Remove listeners when they are no longer needed:
+`apiBaseURL` и credential должны соответствовать настройке клиентского шлюза
+вашего сервера. Шлюз принимает маршруты Device Registry native SDK, проверяет
+сессию и владение installation и хранит проектный ключ на сервере.
+SDK не создаёт этот шлюз; настройте его перед использованием примера.
 
-```ts
-registration.remove();
-```
+`getInstallationId()` возвращает ID установки. Native SDK регистрирует полученный
+от APNs или FCM токен в API; `onRegistrationUpdated` сообщает об обновлении.
+`onNotificationReceived` передаёт событие получения, а `onNotificationOpened` —
+открытия уведомления. Удаляйте listeners, когда они больше не нужны.
 
-Use `environment: 'development'` with the development server URL when testing. On an Android emulator, use the host's reachable emulator address instead of `127.0.0.1`.
+## Поддержка и ограничения
 
-Background and silent push behavior is OS-controlled. iOS background execution is best effort and requires `remote-notification` plus an appropriate APNs payload; Android data-only delivery can be delayed by Doze, OEM restrictions, or terminated-process policy. Do not treat JavaScript callbacks as a delivery guarantee. VoIP/PushKit is not promised by the Expo plugin: it requires a separate, verified native CallKit integration and entitlements.
+- React Native 0.77+ с New Architecture, React 18+, iOS 13+, Android API 26+,
+  CocoaPods и Node.js 18+. Для Expo используйте SDK 54 / React Native 0.81.4.
+- Для Android нужен Firebase config приложения, для iOS — signing и APNs
+  credentials. APNs private key и серверные ключи провайдеров хранятся на сервере.
+- Любая credential внутри мобильного приложения доступна при анализе приложения.
+  Не встраивайте проектный `devices:write` key или ключи отправки/администрирования;
+  используйте клиентский шлюз с ограничением операций своей установкой.
+- Запрос разрешения и регистрация токена не подтверждают доставку уведомления.
+  Показ и background/silent поведение зависят от ОС, payload, Doze и ограничений
+  производителя устройства. JavaScript callback не является гарантией доставки.
+- В существующем Objective-C AppDelegate требуется ручная передача APNs callbacks.
+  VoIP/PushKit/CallKit требует отдельной native интеграции; Expo plugin её не настраивает.
+- Для локального API на Android emulator используйте доступный адрес хоста,
+  а не `127.0.0.1`. Development APNs и production APNs требуют соответствующего
+  окружения приложения и сервера.
 
-## API and support
+## Совместимость
 
-- [API reference](docs/API.md)
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
-- [Compatibility](COMPATIBILITY.md)
-- [Expo support state and verification](docs/EXPO_SUPPORT.md)
+Default import можно назвать `PushPilot`, как в примере. Именованный экспорт
+`PushPlatform` и native имена `PushPlatformSDK` сохраняются в API интеграции.
+RN SDK использует native Device Registry; опция `browserAuth` Web SDK здесь
+не применяется.
 
-The React Native bridge calls `pushpilot-server` through the native SDKs. It does not send or publish push notifications on its own.
+При обновлении прежней Expo-конфигурации удалите `ios.sdkGitUrl` и `ios.sdkGitBranch`
+и запустите prebuild. Plugin использует native SDK из npm-пакета.
+[Миграция установки](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/docs/INSTALLATION.md#обновление-предыдущей-expo-интеграции).
 
-## License
+## Документация
 
-MIT
+- [Установка Expo и bare React Native](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/docs/INSTALLATION.md).
+- [API](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/docs/API.md).
+- [Устранение проблем](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/docs/TROUBLESHOOTING.md).
+- [Совместимость платформ](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/COMPATIBILITY.md).
+- [Пример Expo-приложения](https://github.com/pushplatform/pushpilot-sdk-react-native/tree/main/example/expo-app).
+
+Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).

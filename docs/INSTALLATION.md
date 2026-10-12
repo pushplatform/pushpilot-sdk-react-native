@@ -1,16 +1,14 @@
-# Установка RN / Expo SDK
+# Установка PushPilot для React Native и Expo
 
-Установите публичный [выпуск 1.0.0](https://www.npmjs.com/package/@pushplatform/react-native/v/1.0.0):
+Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.0.0
+npm install @pushplatform/react-native@next
 ```
 
-По тегу: `npm install @pushplatform/react-native@next` (`next` сейчас указывает на `1.0.0`).
-Данные выпуска и ограничения — [NPM_RELEASE.md](NPM_RELEASE.md).
-Native SDK уже включены: `native/ios` содержит Pod с Swift sources, а
-`native/android/maven` — AAR, POM, Gradle metadata и sources JAR.
-Пользователю не нужны приватный Git-доступ, Maven Local, Maven credentials или CocoaPods trunk account.
+Для фиксации версии укажите её вместо `next` в команде установки.
+Native SDK включены в пакет: `native/ios` содержит Pod с Swift sources, а
+`native/android/maven` — Maven repository для Android SDK.
 Нужна сеть для обычных публичных зависимостей React Native, AndroidX и Firebase.
 
 ## Expo SDK 54
@@ -38,11 +36,11 @@ npx expo install expo-dev-client
 Замените UUID на приложение PushPilot и укажите настоящий Firebase config.
 Затем `npx expo prebuild`, `npx expo run:android` / `npx expo run:ios`.
 Expo Go не содержит native bridge. Для production iOS используйте правильный
-APNs environment/signing profile. API key передаётся в runtime `initialize()`.
+APNs environment/signing profile. Клиентская credential передаётся в runtime
+`initialize()`; проектный API key хранится на сервере клиентского шлюза.
 
 Для EAS настройте development/production profile и app credentials. npm-пакет
 попадает в remote build обычной установкой dependencies из публичного npm.
-Приватные native repositories на EAS не клонируются.
 
 ## Bare React Native
 
@@ -105,6 +103,7 @@ Plugin заменяет собственную старую Pod Git-запись
 Если приватный Pod или `mavenLocal()` добавлялись вручную, замените их по
 инструкции выше; вручную заданный Pod plugin сохраняет.
 
-Если отсутствует `native/manifest.json` или bundled AAR/Pod, установлен старый
-или неподготовленный пакет: установите `@pushplatform/react-native@1.0.0` из npm. Старый
-`pushplatform-react-native-1.0.0.tgz` в корне SDK репозитория для этой схемы не подходит.
+Если отсутствует `native/manifest.json` или Android AAR/iOS Pod, проверьте источник
+пакета и переустановите нужную версию из npm. Native SDK должны находиться внутри
+установленного `@pushplatform/react-native`; путь Pod и Maven repository должен
+указывать на него.
