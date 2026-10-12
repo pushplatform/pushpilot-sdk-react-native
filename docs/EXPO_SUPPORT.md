@@ -1,6 +1,8 @@
 # Expo support state
 
-Дата состояния: 2026-10-11. Ветка: `feat/expo-support`.
+Дата состояния: 2026-10-11. PR #1 из `feat/expo-support` смерджен в `main`;
+локальный `main` обновлён через `git pull --ff-only` до
+`bf23672f6812a6e012ba629067eb28ab6541ea2c`.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -88,7 +90,14 @@ xcodebuild -workspace ios/App.xcworkspace -scheme App -configuration Debug \
 - `prepare` hook удалён: JS собирается через `prepack`, а установка готового tarball не выполняет SDK build и не требует разрешения install scripts. Для работы с исходниками используйте `npm run build`.
 - Android: Gradle 8.13 `verifyBundledSDK` прошёл offline с обычными `google()` / `mavenCentral()`, разрешил AAR непосредственно из `node_modules/@pushplatform/react-native/native/android/maven`; `mavenLocal()` и private checkout отсутствовали в consumer config. iOS: standalone `pod install --no-repo-update` установил `PushPlatformSDK (1.0.0)` из `native/ios`, без Git и компиляции приложения. Эти проверки сохранены в `scripts/verify-distribution.mjs` и Android-проверка включена в release workflow.
 
-Workflows в GitHub не запускались, GitHub environments/secrets и npm Trusted Publisher не настраивались. npm/Maven/CocoaPods publication, EAS jobs и проверка реальных push не выполнялись. Конкретные доступы и действия владельца перечислены в [RELEASING.md](RELEASING.md).
+Обычные GitHub Checks зелёные по сообщению владельца; PR #1 смерджен.
+Release workflow в рамках подготовки не запускался; GitHub environments/secrets
+и npm Trusted Publisher агентом не настраивались. Следующий шаг — настройка
+`sdk-release-build` владельцем и candidate из `main` с `publish=false`.
+Локальный tarball из предыдущего шага относится к feature HEAD `8866fba`,
+а не к merge commit. npm/Maven/CocoaPods publication, EAS jobs и проверка
+реальных push не выполнялись. Конкретные настройки и команда следующего шага
+сохранены в [RELEASING.md](RELEASING.md).
 
 ## Ограничения
 
