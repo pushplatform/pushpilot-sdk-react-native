@@ -1,18 +1,18 @@
 # Quick Start
 
-Install the prepared release tarball in your application (npm publication is still pending):
+Install the public [@pushplatform/react-native 1.0.0 release](https://www.npmjs.com/package/@pushplatform/react-native/v/1.0.0) in your application:
 
 ```sh
-npm install /absolute/path/to/pushplatform-react-native-1.0.0.tgz
+npm install @pushplatform/react-native@1.0.0
 ```
 
-Use the tarball from the `rn-sdk-candidate` release artifact. The old tarball in the SDK repository root does not contain the bundled native payload. After npm publication, install with `npm install @pushplatform/react-native` instead.
+The `next` tag currently points to `1.0.0`; use `npm install @pushplatform/react-native@next` to follow that tag. See the [release record](NPM_RELEASE.md) for verification and limitations. The old tarball in the SDK repository root does not contain the bundled native payload.
 
 The package includes both native SDKs: the Android Maven repository is in `native/android/maven`, and the iOS Pod sources are in `native/ios`. Application developers do not need private Git access or a manual Maven Local publication. Public React Native, AndroidX and Firebase dependencies still require their usual registry access.
 
 Complete the platform setup in [INSTALLATION.md](INSTALLATION.md):
 
-- **Expo SDK 54:** install `expo-dev-client`, add `@pushplatform/react-native` to the Expo plugins with your application UUID, APNs environment and Firebase config, then run `npx expo prebuild` and `npx expo run:android` / `npx expo run:ios`. The plugin configures the bundled native dependencies and iOS callbacks. Use a development build; Expo Go does not include this native bridge. For EAS before npm publication, include the tarball in the application upload as described in the installation guide.
+- **Expo SDK 54:** install `expo-dev-client`, add `@pushplatform/react-native` to the Expo plugins with your application UUID, APNs environment and Firebase config, then run `npx expo prebuild` and `npx expo run:android` / `npx expo run:ios`. The plugin configures the bundled native dependencies and iOS callbacks. Use a development build; Expo Go does not include this native bridge. EAS installs the published npm dependency normally.
 - **Bare React Native:** autolinking connects the RN bridge; add the bundled Maven repository to the Android repositories and the local `PushPlatformSDK` Pod to the iOS application target, then run `pod install`. Configure Firebase and iOS capabilities/callbacks using the installation guide.
 
 Initialize the SDK once during app startup:

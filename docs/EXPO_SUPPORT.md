@@ -2,7 +2,9 @@
 
 Дата состояния: 2026-10-12. PR #1 из `feat/expo-support` и исправления release
 workflow из PR #2 / #3 смерджены в `main`. Подготовка release candidate на GitHub
-подтверждена владельцем: **prepare PASS**, **publish Skipped**; пакет не опубликован.
+подтверждена владельцем: **prepare PASS**, **publish Skipped**. Первый публичный
+npm-релиз `@pushplatform/react-native@1.0.0` опубликован отдельно владельцем;
+установка из публичного registry подтверждена. [Запись выпуска](NPM_RELEASE.md).
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -107,19 +109,32 @@ xcodebuild -workspace ios/App.xcworkspace -scheme App -configuration Debug \
 - Проверка зафиксирована по сообщению владельца, без повторного запуска workflow
   агентом. Run URL, source SHA и checksum скачанного artifact не передавались;
   агент не проверял скачанный GitHub candidate отдельно.
-- OIDC/npm publication ещё не проверена. Полные локальные prebuild/Android/iOS
+- На этапе prepare OIDC/npm publication ещё не проверялась. Полные локальные prebuild/Android/iOS
   builds не повторялись; GitHub prepare на Linux не проверяет iOS build.
 
 Локальный tarball предыдущего шага относится к feature HEAD `8866fba`;
 для следующего решения о выпуске сохраните artifact конкретного успешного run
 и проверьте его `source-commit.txt` / `SHA256SUMS`.
-npm/Maven/CocoaPods publication, EAS jobs и проверка реальных push не выполнялись.
+На этапе prepare npm/Maven/CocoaPods publication, EAS jobs и проверка реальных push не выполнялись.
 Инструкции и подтверждённый статус сохранены в [RELEASING.md](RELEASING.md).
+
+## Первый npm-релиз — 2026-10-12
+
+- Владелец опубликовал `@pushplatform/react-native@1.0.0` из GitHub candidate
+  с source SHA `ad1edc19cc050e29176253b2afcf140bfb4e1fff`, подтвердив 2FA.
+- Публичный registry подтвердил версию и теги `next` / `latest`, оба указывают
+  на `1.0.0`; integrity опубликованного tarball совпал с проверенным candidate.
+- Одна установка из публичного npm в чистый проект без npm-входа прошла;
+  JS/types/plugin/native bridges и bundled payload присутствуют, 27 native
+  checksums совпали. Повторные тесты и сборки не запускались.
+- Команда установки: `npm install @pushplatform/react-native@1.0.0`.
+  Подробности и ограничения — [NPM_RELEASE.md](NPM_RELEASE.md).
+- Реальная доставка push, EAS и OIDC publish не объявляются проверенными.
 
 ## Ограничения
 
 - Для iOS нужен Apple Developer provisioning и реальный device для APNs; для Android нужен Firebase project и настоящий `google-services.json`.
-- npm publication пока не выполнена. Используйте подготовленный release tarball из `dist/`; старый tarball в корне репозитория и неподготовленный Git checkout не содержат bundled native payload.
+- Установите публичный `@pushplatform/react-native@1.0.0`; старый tarball в корне репозитория и неподготовленный Git checkout не содержат bundled native payload.
 - Background/silent push зависит от ОС, payload, power policy и состояния процесса. Prebuild или native build не проверяют доставку.
 - Expo plugin не обещает VoIP/PushKit/CallKit; это отдельная нативная интеграция.
 - Release workflow требует read access к двум private native repositories только для сборщика. Пользовательские установки из tarball/npm этого доступа не требуют. При недоступной сети публичные npm/Gradle dependencies могут блокировать установку.

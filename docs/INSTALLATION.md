@@ -1,12 +1,13 @@
 # Установка RN / Expo SDK
 
-До npm-публикации установите **подготовленный release tarball**:
+Установите публичный [выпуск 1.0.0](https://www.npmjs.com/package/@pushplatform/react-native/v/1.0.0):
 
 ```sh
-npm install /absolute/path/to/pushplatform-react-native-1.0.0.tgz
+npm install @pushplatform/react-native@1.0.0
 ```
 
-После публикации: `npm install @pushplatform/react-native`.
+По тегу: `npm install @pushplatform/react-native@next` (`next` сейчас указывает на `1.0.0`).
+Данные выпуска и ограничения — [NPM_RELEASE.md](NPM_RELEASE.md).
 Native SDK уже включены: `native/ios` содержит Pod с Swift sources, а
 `native/android/maven` — AAR, POM, Gradle metadata и sources JAR.
 Пользователю не нужны приватный Git-доступ, Maven Local, Maven credentials или CocoaPods trunk account.
@@ -40,9 +41,7 @@ Expo Go не содержит native bridge. Для production iOS исполь�
 APNs environment/signing profile. API key передаётся в runtime `initialize()`.
 
 Для EAS настройте development/production profile и app credentials. npm-пакет
-попадает в remote build обычной установкой dependencies. До публикации положите
-tarball в `vendor/` приложения, включите его в EAS upload и используйте
-`"@pushplatform/react-native": "file:./vendor/pushplatform-react-native-1.0.0.tgz"`.
+попадает в remote build обычной установкой dependencies из публичного npm.
 Приватные native repositories на EAS не клонируются.
 
 ## Bare React Native
@@ -107,5 +106,5 @@ Plugin заменяет собственную старую Pod Git-запись
 инструкции выше; вручную заданный Pod plugin сохраняет.
 
 Если отсутствует `native/manifest.json` или bundled AAR/Pod, установлен старый
-или неподготовленный пакет: используйте новый release tarball. Старый
+или неподготовленный пакет: установите `@pushplatform/react-native@1.0.0` из npm. Старый
 `pushplatform-react-native-1.0.0.tgz` в корне SDK репозитория для этой схемы не подходит.
