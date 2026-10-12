@@ -1,12 +1,13 @@
 # Подготовка и выпуск RN / Expo SDK
 
-Статус на 2026-10-11: PR #1 смерджен в `main`
-(`bf23672f6812a6e012ba629067eb28ab6541ea2c`); GitHub Checks зелёные по сообщению владельца.
-Release workflow доступен в `main`; публикации npm, Maven и CocoaPods не выполнялись.
+Статус на 2026-10-12: **RELEASE PREPARE VERIFIED** — владелец подтвердил
+`prepare: PASS`, `publish: Skipped` для подготовки без публикации на `main`.
+PR #1 и исправления release workflow из PR #2 / #3 смерджены в `main`.
+Публикации npm, Maven и CocoaPods не выполнялись; OIDC publish job ещё не проверен.
 Prebuild и Android/iOS builds, записанные 2026-10-04, уже подтверждены; их не нужно
 повторять для восстановления состояния. Bundled tarball, установка во внешний
 npm consumer, Gradle resolution и local Pod installation также уже проверены.
-Остаётся первый запуск release workflow на GitHub после настройки доступов.
+Первый успешный запуск подготовки candidate на GitHub подтверждён ниже.
 
 ## Схема пакета
 
@@ -30,7 +31,11 @@ Maven repository runner, а не в удалённый registry.
 
 ## Доступы и настройки владельца
 
-### Сейчас: доступ для подготовки candidate
+### Доступ для подготовки candidate
+
+Владелец уже создал PAT и сохранил его в environment `sdk-release-build` как
+`NATIVE_SDK_READ_TOKEN`; успешный prepare подтвердил доступ к pinned native checkouts.
+Инструкция ниже сохранена для восстановления и ротации доступа.
 
 Нужны права владельца/admin на `pushplatform/pushpilot-sdk-react-native` и
 read access к двум native repositories. Значение токена сохраните в GitHub,
@@ -127,7 +132,7 @@ repositories со своими исходными notices. При обновле
 ## Подготовка без публикации
 
 Workflow `.github/workflows/release.yml` запускается только вручную.
-После настройки `sdk-release-build` следующий шаг — candidate из merged `main`:
+Для подготовки нового candidate из merged `main`:
 
 ```sh
 gh workflow run release.yml \
@@ -138,12 +143,36 @@ gh workflow run release.yml \
 ```
 
 Эквивалентные параметры ручного запуска в Actions: branch `main`, **publish=false**,
-dist_tag `next`. Команда выше подготовлена как инструкция; в этой задаче она не запускалась.
-Он проверит RN tests/plugin/types, соберёт pinned Android SDK, упакует и
+dist_tag `next`. Команда выше — инструкция для нового запуска; успешный запуск
+владельца уже зафиксирован ниже, повторять его для восстановления состояния не нужно.
+Workflow проверит RN tests/plugin/types, соберёт pinned Android SDK, упакует и
 проверит архив, установит его во внешний npm consumer и разрешит bundled
 AAR через Gradle без Maven Local, затем сохранит artifact `rn-sdk-candidate` на 30 дней.
 Artifact включает tarball, `pack.json`, `SHA256SUMS`, native manifest и source commit.
 Ни push ветки, ни создание тега не запускают публикацию.
+
+### Успешная проверка — 2026-10-12
+
+По сообщению владельца после исправлений workflow:
+
+- Подготовка без публикации на `main`: **prepare PASS**, **publish Skipped**.
+- Успешный prepare включает checkout обоих pinned native SDK, Android release
+  build в изолированный staging Maven repository, RN tests/plugin/types, упаковку
+  и проверку tarball, внешний npm consumer и разрешение bundled AAR через Gradle,
+  а также загрузку artifact `rn-sdk-candidate`.
+- Установка Android SDK явно запрашивает `platform-tools`, `platforms;android-34`
+  и `build-tools;35.0.0`, без устаревшего пакета `tools` (PR #2).
+- Publish job требует ручного запуска, явного `inputs.publish == true` и ref
+  `refs/tags/v…`; на `main` весь job пропускается. Точная проверка `vVERSION`
+  внутри job сохранена (PR #3).
+- Публикация не запускалась. Этот результат подтверждает подготовку candidate
+  и пропуск publish job, но не npm permissions, Trusted Publisher или OIDC publish.
+
+Ссылка на run, source SHA и SHA-256 candidate в сообщении не передавались;
+отдельная проверка скачанного artifact агентом не выполнялась. Их следует
+сохранить из конкретного успешного run перед решением о публикации.
+GitHub workflow на Linux не выполняет iOS Pod installation/build;
+ранее успешные локальные iOS проверки остаются отдельным подтверждением.
 
 После успешного prepare скачайте `rn-sdk-candidate`, проверьте `SHA256SUMS` и
 `source-commit.txt` по SHA выбранного workflow run. Сохранённый локальный candidate
@@ -197,5 +226,6 @@ Maven Local artifact вместо свежей publication pinned checkout.
 Tagged run заново готовит candidate и публикует архив из **своего** prepare job;
 архив из предыдущего запуска на `main` автоматически не переиспользуется.
 
-В этой задаче release workflow не запускался, настройки аккаунтов не менялись,
-теги не создавались и публикация не выполнялась.
+Подготовка workflow подтверждена владельцем; publish job был пропущен.
+Пакет остаётся неопубликованным. Следующий шаг — сохранить candidate из успешного
+run и проверить его source identity/checksums; публикация требует отдельного решения.

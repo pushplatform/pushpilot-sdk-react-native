@@ -1,8 +1,8 @@
 # Expo support state
 
-Дата состояния: 2026-10-11. PR #1 из `feat/expo-support` смерджен в `main`;
-локальный `main` обновлён через `git pull --ff-only` до
-`bf23672f6812a6e012ba629067eb28ab6541ea2c`.
+Дата состояния: 2026-10-12. PR #1 из `feat/expo-support` и исправления release
+workflow из PR #2 / #3 смерджены в `main`. Подготовка release candidate на GitHub
+подтверждена владельцем: **prepare PASS**, **publish Skipped**; пакет не опубликован.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -90,14 +90,31 @@ xcodebuild -workspace ios/App.xcworkspace -scheme App -configuration Debug \
 - `prepare` hook удалён: JS собирается через `prepack`, а установка готового tarball не выполняет SDK build и не требует разрешения install scripts. Для работы с исходниками используйте `npm run build`.
 - Android: Gradle 8.13 `verifyBundledSDK` прошёл offline с обычными `google()` / `mavenCentral()`, разрешил AAR непосредственно из `node_modules/@pushplatform/react-native/native/android/maven`; `mavenLocal()` и private checkout отсутствовали в consumer config. iOS: standalone `pod install --no-repo-update` установил `PushPlatformSDK (1.0.0)` из `native/ios`, без Git и компиляции приложения. Эти проверки сохранены в `scripts/verify-distribution.mjs` и Android-проверка включена в release workflow.
 
-Обычные GitHub Checks зелёные по сообщению владельца; PR #1 смерджен.
-Release workflow в рамках подготовки не запускался; GitHub environments/secrets
-и npm Trusted Publisher агентом не настраивались. Следующий шаг — настройка
-`sdk-release-build` владельцем и candidate из `main` с `publish=false`.
-Локальный tarball из предыдущего шага относится к feature HEAD `8866fba`,
-а не к merge commit. npm/Maven/CocoaPods publication, EAS jobs и проверка
-реальных push не выполнялись. Конкретные настройки и команда следующего шага
-сохранены в [RELEASING.md](RELEASING.md).
+## Проверка release workflow — 2026-10-12
+
+- Владелец создал PAT и добавил environment secret `NATIVE_SDK_READ_TOKEN`
+  в `sdk-release-build`.
+- В PR #2 исправлен Android SDK setup: вместо default `tools platform-tools`
+  устанавливаются `platform-tools`, `platforms;android-34`, `build-tools;35.0.0`
+  согласно pinned native SDK (`compileSdk=34`, AGP `8.11.1`).
+- В PR #3 publish guard заменён на явное `inputs.publish == true` с проверкой
+  ручного запуска и ref `refs/tags/v…`. Branch runs пропускают весь publish job;
+  проверка точного version tag внутри job сохранена.
+- После исправлений владелец подтвердил подготовку без публикации на `main`:
+  **prepare PASS**, **publish Skipped**. Release prepare проверил pinned native
+  checkouts, Android staging build, RN tests/plugin/types, tarball и bundled
+  Gradle resolution во внешнем npm consumer, затем сохранил `rn-sdk-candidate`.
+- Проверка зафиксирована по сообщению владельца, без повторного запуска workflow
+  агентом. Run URL, source SHA и checksum скачанного artifact не передавались;
+  агент не проверял скачанный GitHub candidate отдельно.
+- OIDC/npm publication ещё не проверена. Полные локальные prebuild/Android/iOS
+  builds не повторялись; GitHub prepare на Linux не проверяет iOS build.
+
+Локальный tarball предыдущего шага относится к feature HEAD `8866fba`;
+для следующего решения о выпуске сохраните artifact конкретного успешного run
+и проверьте его `source-commit.txt` / `SHA256SUMS`.
+npm/Maven/CocoaPods publication, EAS jobs и проверка реальных push не выполнялись.
+Инструкции и подтверждённый статус сохранены в [RELEASING.md](RELEASING.md).
 
 ## Ограничения
 
