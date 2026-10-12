@@ -14,18 +14,14 @@ TypeScript API and native bridges for the PushPlatform iOS and Android SDKs.
 
 Поддерживаемая Expo-связка: **Expo SDK 54 / React Native 0.81.4**. Expo Go не поддерживается: используйте development build или production/EAS build.
 
-Пакет пока не опубликован. Для установки до релиза используйте подготовленный release tarball, содержащий оба native SDK:
+Первый публичный выпуск — [@pushplatform/react-native 1.0.0](https://www.npmjs.com/package/@pushplatform/react-native/v/1.0.0). Dist-tag `next` указывает на `1.0.0`:
 
 ```sh
-npm install /absolute/path/to/pushplatform-react-native-1.0.0.tgz
+npm install @pushplatform/react-native@1.0.0
 npx expo install expo-dev-client
 ```
 
-После публикации tarball будет доступен через npm:
-
-```sh
-npm install @pushplatform/react-native
-```
+Для установки по тегу используйте `npm install @pushplatform/react-native@next`. Данные выпуска и ограничения — [docs/NPM_RELEASE.md](docs/NPM_RELEASE.md).
 
 Приватный Git-доступ, checkout native SDK и ручная публикация в Maven Local пользователям не нужны. Android AAR, Maven POM/Gradle metadata и iOS Pod с исходниками входят в release tarball. Обычный checkout этой ветки нужно сначала подготовить по [release-инструкции](docs/RELEASING.md); старый tarball в корне репозитория не содержит native payload.
 
@@ -51,7 +47,7 @@ npx expo run:android
 npx expo run:ios
 ```
 
-Для EAS: `eas build --platform android --profile development` или `eas build --platform ios --profile development` после настройки app credentials и профиля. EAS получает native SDK из того же npm tarball. До npm-публикации включите tarball в архив приложения и задайте dependency `file:./vendor/pushplatform-react-native-1.0.0.tgz`; абсолютный локальный путь на EAS недоступен.
+Для EAS: `eas build --platform android --profile development` или `eas build --platform ios --profile development` после настройки app credentials и профиля. EAS устанавливает npm dependency и получает native SDK из того же опубликованного tarball; отдельный upload локального архива не требуется.
 
 Android требует настоящий Firebase `google-services.json` с package name приложения. iOS требует Push Notifications capability, Apple Developer provisioning и APNs key/certificate; для реальной доставки нужен device. Эти app credentials не нужны для упаковки SDK.
 

@@ -1,9 +1,13 @@
 # Подготовка и выпуск RN / Expo SDK
 
-Статус на 2026-10-12: **RELEASE PREPARE VERIFIED** — владелец подтвердил
+Статус на 2026-10-12: **NPM RELEASE PUBLISHED** — публичный
+[@pushplatform/react-native@1.0.0](https://www.npmjs.com/package/@pushplatform/react-native/v/1.0.0)
+доступен в registry, `next` указывает на `1.0.0`. [Запись выпуска](NPM_RELEASE.md).
+Release prepare ранее подтверждён владельцем:
 `prepare: PASS`, `publish: Skipped` для подготовки без публикации на `main`.
 PR #1 и исправления release workflow из PR #2 / #3 смерджены в `main`.
-Публикации npm, Maven и CocoaPods не выполнялись; OIDC publish job ещё не проверен.
+Первый npm publish выполнен владельцем интерактивно с 2FA из готового candidate.
+Отдельные Maven/CocoaPods releases не выполнялись; OIDC publish job ещё не проверен.
 Prebuild и Android/iOS builds, записанные 2026-10-04, уже подтверждены; их не нужно
 повторять для восстановления состояния. Bundled tarball, установка во внешний
 npm consumer, Gradle resolution и local Pod installation также уже проверены.
@@ -15,7 +19,7 @@ npm consumer, Gradle resolution и local Pod installation также уже пр
 RN bridges, Expo plugin, native Android Maven payload и native iOS Pod sources.
 Это устраняет приватный Git-доступ и ручной Maven Local у пользователей;
 не требуется запускать отдельные Maven Central / CocoaPods releases.
-Native source code iOS станет доступен в публичном npm tarball.
+Native source code iOS доступен в публичном npm tarball.
 
 `release/native-lock.json` фиксирует реальные commit SHA и версии обоих SDK.
 Изменение native SDK требует обновления lock, dependency в RN Gradle/podspec
@@ -68,7 +72,7 @@ read access к двум native repositories. Значение токена со�
    Права обычного `GITHUB_TOKEN` оставьте read-only; publish job отдельно запрашивает
    `id-token: write`. Нужны также право запускать Actions и доступные hosted runner minutes.
 
-### До публикации: npm и environment для OIDC
+### Для следующих публикаций: npm и environment для OIDC
 
 1. В RN repository создайте environment **`npm-release`**. Выберите **Selected branches
    and tags** и добавьте только правило **Tag `v*`**. Если тариф поддерживает required
@@ -78,11 +82,9 @@ read access к двум native repositories. Значение токена со�
    **`@pushplatform`** и управлять его настройками; включите 2FA. GitHub-доступ сам по
    себе не даёт npm-права. Если scope принадлежит npm organization, нужен соответствующий
    доступ в этой organization, а после создания пакета — write access к пакету.
-3. Публичный registry для `@pushplatform/react-native` на 2026-10-11 вернул **404**.
-   Это не подтверждает владение scope и не исключает private package. Проверьте пакет
-   под своим npm-аккаунтом. Если его ещё нет и настройки Trusted Publisher недоступны,
-   первая публикация потребует отдельного решения владельца и интерактивного npm login/2FA
-   из проверенного candidate tarball. Сейчас её не выполнять; `NPM_TOKEN` в GitHub не нужен.
+3. Первый bootstrap publish версии `1.0.0` уже выполнен владельцем с npm login/2FA
+   из проверенного candidate tarball. Организация npm `pushplatform` создана,
+   права owner подтверждены перед публикацией. `NPM_TOKEN` в GitHub не добавлялся.
 4. Когда пакет существует и готов следующий OIDC-релиз, откройте его npm
    **Settings → Trusted Publisher → GitHub Actions** и задайте:
 
@@ -168,9 +170,10 @@ Artifact включает tarball, `pack.json`, `SHA256SUMS`, native manifest и
 - Публикация не запускалась. Этот результат подтверждает подготовку candidate
   и пропуск publish job, но не npm permissions, Trusted Publisher или OIDC publish.
 
-Ссылка на run, source SHA и SHA-256 candidate в сообщении не передавались;
-отдельная проверка скачанного artifact агентом не выполнялась. Их следует
-сохранить из конкретного успешного run перед решением о публикации.
+На этапе prepare ссылка на run, source SHA и SHA-256 candidate в сообщении
+не передавались. Перед первым publish владелец предоставил artifact;
+source SHA, checksum и подтверждение публичной npm-установки сохранены
+в [NPM_RELEASE.md](NPM_RELEASE.md). Ссылка на run не передавалась.
 GitHub workflow на Linux не выполняет iOS Pod installation/build;
 ранее успешные локальные iOS проверки остаются отдельным подтверждением.
 
@@ -226,6 +229,7 @@ Maven Local artifact вместо свежей publication pinned checkout.
 Tagged run заново готовит candidate и публикует архив из **своего** prepare job;
 архив из предыдущего запуска на `main` автоматически не переиспользуется.
 
-Подготовка workflow подтверждена владельцем; publish job был пропущен.
-Пакет остаётся неопубликованным. Следующий шаг — сохранить candidate из успешного
-run и проверить его source identity/checksums; публикация требует отдельного решения.
+Подготовка workflow подтверждена владельцем; его publish job был пропущен.
+Первый выпуск `1.0.0` опубликован отдельно владельцем из готового artifact с 2FA;
+registry integrity совпадает с candidate. Повторно публиковать `1.0.0` нельзя.
+OIDC для следующей версии ещё не проверен; будущая публикация требует отдельного решения.
