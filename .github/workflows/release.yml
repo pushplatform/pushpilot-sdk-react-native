@@ -40,7 +40,12 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
-      - uses: android-actions/setup-android@v3
+      - name: Set up Android SDK for the pinned native build
+        uses: android-actions/setup-android@v3
+        with:
+          # Pinned native SDK: compileSdk 34, AGP 8.11.1 (Build Tools 35.0.0).
+          # Override the action default so sdkmanager never requests obsolete 'tools'.
+          packages: 'platform-tools platforms;android-34 build-tools;35.0.0'
       - name: Read pinned native commits
         id: native
         run: |
