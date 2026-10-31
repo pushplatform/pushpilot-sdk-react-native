@@ -6,7 +6,11 @@ The native fix passed 16 targeted Robolectric/MockWebServer tests, including a r
 
 Local npm authentication currently returns 401; publication uses the existing explicitly dispatched `release.yml` OIDC workflow with the `npm-release` environment, matching version tag and verified candidate artifact. Both native source repositories are public; checkout uses the job's read-only GitHub token rather than requiring a separate private native credential. No force push, merge or deployment.
 
-Publication outcome and archive integrity will be recorded after the workflow completes.
+The existing release workflow run 41195924644 completed preparation successfully (typecheck/Jest/plugin checks, tagged source identity, staged native payload and external consumer). Publication returned `ENEEDAUTH`; local `npm whoami` returns HTTP 401. The package is not published yet. User sign-in was requested; this is an authentication blocker, not a request for publication permission.
+
+The exact downloaded CI candidate is `/tmp/pushpilot-rn-fcm-ci-candidate/pushplatform-react-native-1.0.2.tgz`, SHA-256 `e9ff52a7716e9fcca413b6db708b28f9cccbcb88a7b06f67c695476591bb71d8`. `SHA256SUMS`, npm sha512 integrity and source commit `d6ca7a3c1195b61a5f1db35a299a1d042010d2e3` are verified. Its bundled Android AAR is byte-for-byte equal to the public Maven 1.0.1 AAR. The iOS source is unchanged. After npm authentication, publish this exact archive with `npm publish ARCHIVE --access public --tag latest --ignore-scripts`, then verify the public registry artifact and update this report. Do not rerun the native tests or rebuild the candidate without a code change.
+
+Companions: Android PR https://github.com/pushplatform/pushpilot-sdk-android/pull/2 ; Flutter PR https://github.com/pushplatform/pushpilot-sdk-flutter/pull/3 .
 
 ---
 Historical release report follows.
