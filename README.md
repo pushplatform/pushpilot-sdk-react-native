@@ -7,7 +7,7 @@ PushPilot подключает push-уведомления к приложени
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native@next
+npm install @pushplatform/react-native@1.0.2
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
@@ -141,3 +141,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 - [Пример Expo-приложения](https://github.com/pushplatform/pushpilot-sdk-react-native/tree/main/example/expo-app).
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
+
+### Android FCM в 1.0.2
+
+В пакет включён Android SDK 1.0.1. `initialize()` запускает получение текущего токена Firebase и его регистрацию после создания установки. Ранний `onNewToken` больше не теряется; используются environment и package name приложения. `onRegistrationUpdated` сообщает подтверждённый backend результат; сам токен в JavaScript не передаётся. Ручной вызов API регистрации токена не нужен. После обновления переустановите зависимости и пересоберите native приложение / Expo development build. iOS SDK не изменён.

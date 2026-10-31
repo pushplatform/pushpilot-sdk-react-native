@@ -1,10 +1,10 @@
 {
   "android": {
     "repository": "pushplatform/pushpilot-sdk-android",
-    "commit": "aef4a5122245360771cd0e172f11824ed1259ad3",
+    "commit": "5e53471c204f0ae9012b532da4bf9fa8b2a53549",
     "group": "com.pushplatform",
     "artifact": "sdk-android",
-    "version": "1.0.0"
+    "version": "1.0.1"
   },
   "ios": {
     "repository": "pushplatform/pushpilot-sdk-ios",

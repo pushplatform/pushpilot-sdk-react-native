@@ -62,14 +62,14 @@ jobs:
           repository: pushplatform/pushpilot-sdk-android
           ref: ${{ steps.native.outputs.android }}
           path: .release-sources/android
-          token: ${{ secrets.NATIVE_SDK_READ_TOKEN }}
+          token: ${{ github.token }}
           persist-credentials: false
       - uses: actions/checkout@v4
         with:
           repository: pushplatform/pushpilot-sdk-ios
           ref: ${{ steps.native.outputs.ios }}
           path: .release-sources/ios
-          token: ${{ secrets.NATIVE_SDK_READ_TOKEN }}
+          token: ${{ github.token }}
           persist-credentials: false
       - name: Build native Android release into isolated staging repository
         working-directory: .release-sources/android

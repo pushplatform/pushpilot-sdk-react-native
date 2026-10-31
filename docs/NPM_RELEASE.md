@@ -1,3 +1,16 @@
+# Patch 1.0.2 — initial Android FCM registration
+
+Source branch: `release/rn-fcm-1.0.2`. Published 1.0.1 bundled Android SDK 1.0.0, so Android/Expo clients inherited its missing current-token lookup. This patch bundles Android 1.0.1 from the pinned source commit in `release/native-lock.json`. iOS commit, sources and bridge APIs remain unchanged.
+
+The native fix passed 16 targeted Robolectric/MockWebServer tests, including a red test against old 1.0.0 and green assertions on actual token HTTP payloads/scopes/events. No console/owner E2E or physical push is repeated. Release checks verify bundled AAR SHA-256, sources, manifest, Maven resolution and archive contents.
+
+Local npm authentication currently returns 401; publication uses the existing explicitly dispatched `release.yml` OIDC workflow with the `npm-release` environment, matching version tag and verified candidate artifact. Both native source repositories are public; checkout uses the job's read-only GitHub token rather than requiring a separate private native credential. No force push, merge or deployment.
+
+Publication outcome and archive integrity will be recorded after the workflow completes.
+
+---
+Historical release report follows.
+
 # Первый публичный npm-релиз RN / Expo SDK
 
 Статус на 2026-10-12: **PUBLISHED / NPM INSTALL VERIFIED**.
