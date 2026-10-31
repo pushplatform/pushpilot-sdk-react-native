@@ -3,7 +3,7 @@
 Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.0.2
+npm install @pushplatform/react-native@1.0.3
 ```
 
 Для фиксации версии укажите её вместо `next` в команде установки.

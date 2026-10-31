@@ -38,7 +38,8 @@ export class PushPlatform {
   /**
    * Initialize the SDK
    *
-   * Must be called once before using any other SDK methods.
+   * Must be called before using any other SDK methods.
+   * Subsequent calls succeed without changing the existing configuration.
    * Delegates to native SDK for actual initialization.
    *
    * @param config - SDK configuration
@@ -56,12 +57,8 @@ export class PushPlatform {
    * ```
    */
   static async initialize(config: PushPlatformConfig): Promise<void> {
-    // Check if already initialized - must fail, not silently skip
     if (PushPlatform.initialized) {
-      throw new SDKError(
-        ErrorCode.ALREADY_INITIALIZED,
-        'PushPlatform already initialized'
-      );
+      return;
     }
 
     // Validate configuration
