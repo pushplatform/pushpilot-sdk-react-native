@@ -124,7 +124,11 @@ describe('PushPlatform Core API', () => {
       );
     });
 
-    test('should prevent double initialization', async () => {
+    test.each([
+      ['the same configuration', {}],
+      ['a different configuration', { apiKey: 'another-api-key' }],
+      ['an invalid configuration', { apiKey: '' }],
+    ])('should succeed on repeated initialization with %s', async (_, overrides) => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
 
       const config: PushPlatformConfig = {
@@ -134,9 +138,9 @@ describe('PushPlatform Core API', () => {
       };
 
       await PushPlatform.initialize(config);
-      await expect(PushPlatform.initialize(config)).rejects.toThrow(
-        'PushPlatform already initialized'
-      );
+      await expect(
+        PushPlatform.initialize({ ...config, ...overrides })
+      ).resolves.toBeUndefined();
 
       expect(mockNativeModule.initialize).toHaveBeenCalledTimes(1);
     });

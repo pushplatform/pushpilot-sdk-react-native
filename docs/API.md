@@ -28,7 +28,9 @@ Main SDK class for Push Platform integration.
 
 Initialize the SDK with your API credentials.
 
-**Must be called once before using any other SDK methods.**
+**Must be called before using any other SDK methods.**
+
+If the SDK is already initialized, subsequent calls resolve successfully without changing the existing configuration.
 
 ```typescript
 static initialize(config: PushPlatformConfig): Promise<void>
