@@ -1,3 +1,22 @@
+# Patch 1.0.2 — initial Android FCM registration
+
+Source branch: `release/rn-fcm-1.0.2`. Published 1.0.1 bundled Android SDK 1.0.0, so Android/Expo clients inherited its missing current-token lookup. This patch bundles Android 1.0.1 from the pinned source commit in `release/native-lock.json`. iOS commit, sources and bridge APIs remain unchanged.
+
+The native fix passed 16 targeted Robolectric/MockWebServer tests, including a red test against old 1.0.0 and green assertions on actual token HTTP payloads/scopes/events. No console/owner E2E or physical push is repeated. Release checks verify bundled AAR SHA-256, sources, manifest, Maven resolution and archive contents.
+
+The existing tagged release workflow 41195924644 prepared and verified the candidate successfully. Its OIDC publish step returned `ENEEDAUTH`. After the owner restored local npm login and completed npm's browser authentication, the **same CI archive** was published with `--ignore-scripts`, without rebuilding or repacking. No credentials were added to source or workflow settings.
+
+**Publication complete:** `@pushplatform/react-native@1.0.2` is publicly available from npm. `latest` and the existing `next` channel point to 1.0.2. The public tarball is byte-for-byte identical to the verified CI candidate; registry sha1/sha512 integrity matches. SHA-256: `e9ff52a7716e9fcca413b6db708b28f9cccbcb88a7b06f67c695476591bb71d8`. It contains 68 files. All bundled iOS files are unchanged. The bundled Android AAR matches the public Maven 1.0.1 AAR exactly.
+
+Source release tag `v1.0.2` points to `d6ca7a3c1195b61a5f1db35a299a1d042010d2e3`. Candidate: `/tmp/pushpilot-rn-fcm-ci-candidate/pushplatform-react-native-1.0.2.tgz`. The public registry briefly returned 404 while processing the accepted publish, then exposed the version and archive; publication was not repeated. No tests or builds were repeated after authentication was restored.
+
+Install: `npm install @pushplatform/react-native@1.0.2`, then rebuild the native app/Expo development build. No token-registration API workaround is required. Physical Firebase delivery was not exercised; the native HTTP registration path and package distribution were verified as described above.
+
+Companions: Android PR https://github.com/pushplatform/pushpilot-sdk-android/pull/2 ; Flutter PR https://github.com/pushplatform/pushpilot-sdk-flutter/pull/3 .
+
+---
+Historical release report follows.
+
 # Первый публичный npm-релиз RN / Expo SDK
 
 Статус на 2026-10-12: **PUBLISHED / NPM INSTALL VERIFIED**.

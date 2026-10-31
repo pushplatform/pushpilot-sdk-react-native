@@ -1,7 +1,7 @@
 {
   "name": "@pushplatform/react-native",
-  "version": "1.0.1",
-  "description": "PushPilot для React Native и Expo: push-уведомления на iOS и Android, регистрация устройств и обработка событий",
+  "version": "1.0.2",
+  "description": "PushPilot \u0434\u043b\u044f React Native \u0438 Expo: push-\u0443\u0432\u0435\u0434\u043e\u043c\u043b\u0435\u043d\u0438\u044f \u043d\u0430 iOS \u0438 Android, \u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0430\u0446\u0438\u044f \u0443\u0441\u0442\u0440\u043e\u0439\u0441\u0442\u0432 \u0438 \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0430 \u0441\u043e\u0431\u044b\u0442\u0438\u0439",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "react-native": "lib/index.js",

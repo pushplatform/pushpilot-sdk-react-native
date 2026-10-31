@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.2 — 2026-10-31
+
+- Android native SDK обновлён до 1.0.1: при configure автоматически запрашивается текущий FCM-токен, ранние callback дожидаются регистрации установки; development/production и package name передаются из приложения.
+- Никакого ручного API-обхода для первоначального токена. Нативные события успешной/неуспешной регистрации сохраняют прежний контракт и не раскрывают токен в JS/Dart.
+- iOS SDK и публичные методы обёртки не менялись.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
