@@ -50,3 +50,8 @@ local.properties
 # Native release payload is assembled from pinned native SDK commits.
 native/
 .release-sources/
+
+# Local disposable consumer signing/toolchain outputs
+/TestApp/PushPlatformTestApp/android/app/debug.keystore
+/TestApp/PushPlatformTestApp/ios/.xcode.env
+/TestApp/PushPlatformTestApp/ios/Podfile.lock

@@ -3,7 +3,7 @@
 Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.0.3
+npm install @pushplatform/react-native@1.1.0
 ```
 
 Для фиксации версии укажите её вместо `next` в команде установки.
@@ -36,8 +36,7 @@ npx expo install expo-dev-client
 Замените UUID на приложение PushPilot и укажите настоящий Firebase config.
 Затем `npx expo prebuild`, `npx expo run:android` / `npx expo run:ios`.
 Expo Go не содержит native bridge. Для production iOS используйте правильный
-APNs environment/signing profile. Клиентская credential передаётся в runtime
-`initialize()`; проектный API key хранится на сервере клиентского шлюза.
+APNs entitlement/signing profile. В `initialize()` передайте общий ключ приложения из PushPilot; отдельный шлюз не требуется.
 
 Для EAS настройте development/production profile и app credentials. npm-пакет
 попадает в remote build обычной установкой dependencies из публичного npm.

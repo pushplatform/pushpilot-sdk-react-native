@@ -82,7 +82,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
                 ?: return promise.reject("INVALID_CONFIG", "Missing apiKey")
 
             val environmentString = config.getString("environment")
-                ?: return promise.reject("INVALID_CONFIG", "Missing environment")
+                ?: "production"
 
             val environment = when (environmentString.lowercase()) {
                 "development" -> Environment.DEVELOPMENT

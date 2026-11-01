@@ -45,7 +45,7 @@ dependencies {
     compileOnly "com.facebook.react:react-android:+"
 
     // Resolved from native/android/maven inside this npm package.
-    implementation "com.pushplatform:sdk-android:1.0.1"
+    implementation "com.pushplatform:sdk-android:1.1.0"
 
     testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     testImplementation "junit:junit:4.13.2"

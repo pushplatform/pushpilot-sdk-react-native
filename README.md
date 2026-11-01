@@ -7,7 +7,7 @@ PushPilot подключает push-уведомления к приложени
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native@1.0.3
+npm install @pushplatform/react-native@1.1.0
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
@@ -69,10 +69,10 @@ export async function initializePushPilot() {
 
   try {
     await PushPilot.initialize({
-      apiBaseURL: 'https://api.example.com/mobile-pushpilot',
-      apiKey: 'YOUR_MOBILE_GATEWAY_CREDENTIAL',
+      apiBaseURL: 'https://api.example.com',
+      apiKey: 'APPLICATION_KEY',
       applicationId: 'YOUR_APPLICATION_UUID',
-      environment: 'production',
+
       debugMode: __DEV__,
     });
   } catch (error) {
@@ -93,10 +93,7 @@ export function requestPushPermission() {
 }
 ```
 
-`apiBaseURL` и credential должны соответствовать настройке клиентского шлюза
-вашего сервера. Шлюз принимает маршруты Device Registry native SDK, проверяет
-сессию и владение installation и хранит проектный ключ на сервере.
-SDK не создаёт этот шлюз; настройте его перед использованием примера.
+`apiBaseURL` — адрес API PushPilot. `applicationId` и `APPLICATION_KEY` скопируйте из одного приложения в консоли. iOS, Android, Web и сервер используют один ключ. Ключ извлекаем из приложения и даёт право отправки только в этом приложении; владельца и платёжные настройки он не администрирует. Приватные APNs/FCM/VAPID credentials остаются на сервере. Отдельный клиентский шлюз не нужен.
 
 `getInstallationId()` возвращает ID установки. Native SDK регистрирует полученный
 от APNs или FCM токен в API; `onRegistrationUpdated` сообщает об обновлении.
@@ -110,8 +107,7 @@ SDK не создаёт этот шлюз; настройте его перед 
 - Для Android нужен Firebase config приложения, для iOS — signing и APNs
   credentials. APNs private key и серверные ключи провайдеров хранятся на сервере.
 - Любая credential внутри мобильного приложения доступна при анализе приложения.
-  Не встраивайте проектный `devices:write` key или ключи отправки/администрирования;
-  используйте клиентский шлюз с ограничением операций своей установкой.
+  Общий ключ приложения намеренно разрешает регистрацию и отправку в одном приложении. Не встраивайте платформенные административные credentials или секреты APNs/FCM.
 - Запрос разрешения и регистрация токена не подтверждают доставку уведомления.
   Показ и background/silent поведение зависят от ОС, payload, Doze и ограничений
   производителя устройства. JavaScript callback не является гарантией доставки.
@@ -145,3 +141,10 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 ### Android FCM в 1.0.2
 
 В пакет включён Android SDK 1.0.1. `initialize()` запускает получение текущего токена Firebase и его регистрацию после создания установки. Ранний `onNewToken` больше не теряется; используются environment и package name приложения. `onRegistrationUpdated` сообщает подтверждённый backend результат; сам токен в JavaScript не передаётся. Ручной вызов API регистрации токена не нужен. После обновления переустановите зависимости и пересоберите native приложение / Expo development build. iOS SDK не изменён.
+
+
+### Unified applications · 1.1.0
+
+One PushPilot application contains iOS, Android and Web providers. Use the same application ID and permanent application key in SDKs and server code. The key is extractable from the client and allows sending only in that application; it cannot administer the organization or billing. Rotate/revoke it in the console.
+Omit `environment` during initialization. iOS derives APNs transport from the simulator/build entitlement; Android uses the unified registration scope. The optional legacy argument remains compatible.
+Native SDKs report actual model, OS/SDK/app version, language, time zone, permission and physical/simulator/emulator kind (unknown where unavailable). Test subscription is an independent console marker. Metadata refreshes on foreground and permission changes.
