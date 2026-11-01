@@ -36,6 +36,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Require publicly resolvable native iOS dependency
+        run: node scripts/verify-ios-publication.mjs
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

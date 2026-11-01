@@ -43,15 +43,14 @@ APNs entitlement/signing profile. В `initialize()` передайте общи�
 
 ## Bare React Native
 
-Autolinking подключает RN bridge. Для native SDK добавьте в application target
-`ios/Podfile` рядом с `use_native_modules!`:
+Autolinking подключает RN bridge и его зависимость `PushPlatformSDK` из публичного CocoaPods. Дополнительная строка `pod 'PushPlatformSDK'` и локальные пути в Podfile не требуются.
 
-```ruby
-pushpilot_package = File.dirname(`node --print "require.resolve('@pushplatform/react-native/package.json')"`.strip)
-pod 'PushPlatformSDK', :path => File.join(pushpilot_package, 'native/ios')
+```sh
+cd ios
+bundle exec pod install --repo-update
 ```
 
-Выполните `cd ios && pod install`. Включите Push Notifications, `aps-environment`
+Если проект не использует Bundler, выполните `pod install --repo-update`. Включите Push Notifications, `aps-environment`
 и background mode `remote-notification`; передавайте APNs token и notification
 callbacks из AppDelegate в `PushPlatform.shared`, как в API native SDK.
 

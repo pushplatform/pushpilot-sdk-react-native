@@ -1,3 +1,15 @@
+# CocoaPods dependency gate — 2026-11-01
+
+Bare React Native autolinking resolves `PushPlatformSDK` as a normal public CocoaPods dependency. The bundled `native/ios` tree is used by the Expo plugin/offline path; its existence does not satisfy the bare Podfile resolver. Therefore each native iOS version referenced by `PushPlatform.podspec` must be published to CocoaPods and visible in **both the public version index and the podspec endpoint** before releasing the RN package.
+
+`npm run release:verify-ios` checks the index, version and public source/tag against `release/native-lock.json`. It runs in ordinary CI, before release preparation, in prepack and prepublishOnly. `npm run test:release` covers missing index entries, unavailable registry and mismatched source tags. macOS CI additionally creates a clean app from the checked-in bare template, installs the candidate and runs actual CocoaPods/RN autolinking with isolated CocoaPods home/cache and no private Git configuration. It asserts native SDK provenance from public trunk and rejects an explicit SDK Podfile entry. The demo Podfile no longer masks the dependency with a local SDK path.
+
+For already verified archives published with `--ignore-scripts`, run `npm run release:verify-ios` explicitly before publication. Do not interpret a passing bundled-Pod probe as bare autolinking acceptance. No new RN runtime is required to resolve the missing 1.1.0 native Pod; publishing that exact immutable native release repairs the installed RN 1.1.0 package as soon as the CDN index propagates.
+
+---
+
+The following historical release procedure predates this gate; statements that CocoaPods publication is unnecessary apply only to bundled-native integration, not bare autolinking.
+
 # Подготовка и выпуск RN / Expo SDK
 
 Статус на 2026-10-12: **NPM RELEASE PUBLISHED** — публичный

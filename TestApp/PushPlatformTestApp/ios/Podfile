@@ -17,7 +17,6 @@ end
 target 'PushPlatformTestApp' do
   config = use_native_modules!
 
-  pod 'PushPlatformSDK', :path => '../../../native/ios'
 
   use_react_native!(
     :path => config[:reactNativePath],
