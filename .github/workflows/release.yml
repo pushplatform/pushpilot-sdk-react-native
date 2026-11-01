@@ -99,11 +99,48 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+
+  verify-ios:
+    needs: prepare
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - linkage: default
+            args: '--upgrade-from 1.0.3 --reinstall'
+          - linkage: static
+            args: ''
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - run: gem install cocoapods -v 1.16.2 --no-document
+      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: rn-sdk-candidate
+          path: dist
+      - name: Verify the exact archive and source identity
+        run: |
+          test "$(cat dist/source-commit.txt)" = "$GITHUB_SHA"
+          shasum -a 256 --check dist/SHA256SUMS
+          node scripts/check-package.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
+      - name: Install and build the exact candidate through ordinary CocoaPods
+        run: node scripts/verify-ios-autolinking.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")" --fixture rn083-firebase-nitro --linkage ${{ matrix.linkage }} --build ${{ matrix.args }}
+
   publish:
     # Require explicit boolean opt-in; a non-empty string 'false' must not enable publishing.
     # Reject branch runs before requesting the npm-release environment or an OIDC token.
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish == true && startsWith(github.ref, 'refs/tags/v') }}
-    needs: prepare
+    needs: [prepare, verify-ios]
     runs-on: ubuntu-latest
     environment: npm-release
     permissions:

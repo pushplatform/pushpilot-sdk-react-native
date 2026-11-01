@@ -3,13 +3,16 @@
 Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.1.0
+npm install @pushplatform/react-native@1.2.0
 ```
 
 Для фиксации версии укажите её вместо `next` в команде установки.
-Native SDK включены в пакет: `native/ios` содержит Pod с Swift sources, а
-`native/android/maven` — Maven repository для Android SDK.
-Нужна сеть для обычных публичных зависимостей React Native, AndroidX и Firebase.
+Схема установки такая же, как в 1.0.3: RN autolinking подключает bridge,
+CocoaPods разрешает `PushPlatformSDK` как обычную публичную зависимость.
+Android/iOS native SDK остаются версии 1.1.0 с новой функциональностью.
+Для Expo в npm также сохранены закреплённые исходники iOS и Maven-артефакты Android.
+Дополнительная строка Podfile, XCFramework и исправления node_modules не требуются.
+Для обычных публичных зависимостей CocoaPods, React Native, AndroidX и Firebase нужна сеть.
 
 ## Expo SDK 54
 
