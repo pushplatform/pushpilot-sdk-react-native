@@ -47,12 +47,10 @@ export class PushPlatform {
    *
    * @example
    * ```typescript
+   * await PushPlatform.initialize('00000000-0000-4000-8000-000000000000');
    * await PushPlatform.initialize({
-   *   apiKey: 'YOUR_API_KEY',
    *   applicationId: '00000000-0000-4000-8000-000000000000',
-   *   apiBaseURL: 'https://api.your-domain.example',
-   *   environment: 'production',
-   *   debugMode: false,
+   *   url: 'https://api.your-domain.example',
    * });
    * ```
    */
