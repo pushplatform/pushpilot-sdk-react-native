@@ -1,3 +1,8 @@
+# 1.3.0 — 2026-11-01
+
+- `initialize` takes an application id or `{applicationId, url, environment}`. No API key and no `apiBaseURL`.
+- Depends on PushPlatformSDK 1.2.0.
+
 # 1.2.0
 
 - Preserve the 1.0.3 installation contract: normal RN autolinking and a transitive CocoaPods dependency. No XCFramework, node_modules patch or additional native Podfile entry.

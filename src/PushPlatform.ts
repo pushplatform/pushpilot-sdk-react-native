@@ -56,12 +56,12 @@ export class PushPlatform {
    * });
    * ```
    */
-  static async initialize(config: PushPlatformConfig): Promise<void> {
+  static async initialize(input: string | PushPlatformConfig): Promise<void> {
     if (PushPlatform.initialized) {
       return;
     }
+    const config: PushPlatformConfig = typeof input === 'string' ? { applicationId: input } : input;
 
-    // Validate configuration
     validateConfig(config);
 
     // Enable debug logging if requested
@@ -73,11 +73,11 @@ export class PushPlatform {
 
     try {
       // Normalize config with defaults
+      const explicitURL = config.url || config.apiBaseURL;
       const normalizedConfig = {
-        apiKey: config.apiKey,
         applicationId: config.applicationId,
-        apiBaseURL: config.apiBaseURL,
-        ...(config.environment ? { environment: config.environment } : {}),
+        ...(explicitURL ? { url: explicitURL } : {}),
+        ...(config.environment ? { environment: config.environment } : explicitURL ? { environment: 'development' as const } : {}),
         debugMode: config.debugMode ?? false,
       };
 

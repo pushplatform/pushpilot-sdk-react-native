@@ -25,7 +25,7 @@ describe('PushPlatform Core API', () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
 
       const config: PushPlatformConfig = {
-        apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
         debugMode: true,
@@ -33,45 +33,32 @@ describe('PushPlatform Core API', () => {
 
       await PushPlatform.initialize(config);
 
-      expect(mockNativeModule.initialize).toHaveBeenCalledWith(config);
+      expect(mockNativeModule.initialize).toHaveBeenCalledWith({
+        applicationId: config.applicationId,
+        url: config.apiBaseURL,
+        environment: 'development',
+        debugMode: true,
+      });
       expect(mockNativeModule.initialize).toHaveBeenCalledTimes(1);
     });
 
-    test('should reject initialization with missing apiKey', async () => {
+    test('accepts an application id string', async () => {
+      mockNativeModule.initialize.mockResolvedValue(undefined);
+      await PushPlatform.initialize('11111111-1111-1111-1111-111111111111');
+      expect(mockNativeModule.initialize).toHaveBeenCalledWith({
+        applicationId: '11111111-1111-1111-1111-111111111111',
+        debugMode: false,
+      });
+    });
+
+    test('should reject initialization with missing applicationId', async () => {
       const config = {
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       } as PushPlatformConfig;
 
       await expect(PushPlatform.initialize(config)).rejects.toThrow(
-        'apiKey is required'
-      );
-
-      expect(mockNativeModule.initialize).not.toHaveBeenCalled();
-    });
-
-    test('should reject initialization with empty apiKey', async () => {
-      const config: PushPlatformConfig = {
-        apiKey: '',
-        apiBaseURL: 'https://api.test.pushplatform.example',
-        environment: 'development',
-      };
-
-      await expect(PushPlatform.initialize(config)).rejects.toThrow(
-        'apiKey is required'
-      );
-
-      expect(mockNativeModule.initialize).not.toHaveBeenCalled();
-    });
-
-    test('should reject initialization with missing apiBaseURL', async () => {
-      const config = {
-        apiKey: 'test-api-key',
-        environment: 'development',
-      } as PushPlatformConfig;
-
-      await expect(PushPlatform.initialize(config)).rejects.toThrow(
-        'apiBaseURL is required'
+        'applicationId is required'
       );
 
       expect(mockNativeModule.initialize).not.toHaveBeenCalled();
@@ -80,6 +67,7 @@ describe('PushPlatform Core API', () => {
     test('should reject initialization with invalid apiBaseURL', async () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'not-a-url',
         environment: 'development',
       };
@@ -96,14 +84,16 @@ describe('PushPlatform Core API', () => {
 
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.pushplatform.example',
       };
 
       await PushPlatform.initialize(config);
 
       expect(mockNativeModule.initialize).toHaveBeenCalledWith({
-        ...config,
-        applicationId: undefined,
+        applicationId: config.applicationId,
+        url: config.apiBaseURL,
+        environment: 'development',
         debugMode: false,
       });
     });
@@ -115,6 +105,7 @@ describe('PushPlatform Core API', () => {
 
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       };
@@ -133,6 +124,7 @@ describe('PushPlatform Core API', () => {
 
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       };
@@ -151,6 +143,7 @@ describe('PushPlatform Core API', () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -208,6 +201,7 @@ describe('PushPlatform Core API', () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -247,6 +241,7 @@ describe('PushPlatform Core API', () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -289,6 +284,7 @@ describe('PushPlatform Core API', () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
