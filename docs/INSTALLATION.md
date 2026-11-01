@@ -3,13 +3,16 @@
 Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.1.0
+npm install @pushplatform/react-native@1.2.0
 ```
 
 Для фиксации версии укажите её вместо `next` в команде установки.
-Native SDK включены в пакет: `native/ios` содержит Pod с Swift sources, а
-`native/android/maven` — Maven repository для Android SDK.
-Нужна сеть для обычных публичных зависимостей React Native, AndroidX и Firebase.
+Схема установки такая же, как в 1.0.3: RN autolinking подключает bridge,
+CocoaPods разрешает `PushPlatformSDK` как обычную публичную зависимость.
+Android/iOS native SDK остаются версии 1.1.0 с новой функциональностью.
+Для Expo в npm также сохранены закреплённые исходники iOS и Maven-артефакты Android.
+Дополнительная строка Podfile, XCFramework и исправления node_modules не требуются.
+Для обычных публичных зависимостей CocoaPods, React Native, AndroidX и Firebase нужна сеть.
 
 ## Expo SDK 54
 
@@ -53,6 +56,18 @@ bundle exec pod install --repo-update
 Если проект не использует Bundler, выполните `pod install --repo-update`. Включите Push Notifications, `aps-environment`
 и background mode `remote-notification`; передавайте APNs token и notification
 callbacks из AppDelegate в `PushPlatform.shared`, как в API native SDK.
+
+### Обновление с RN SDK 1.0.x
+
+В 1.0.x использовался native iOS SDK 1.0.0. Новая кодовая база использует native 1.1.0, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
+
+```sh
+npm install @pushplatform/react-native@1.2.0
+cd ios
+bundle exec pod update PushPlatform PushPlatformSDK --repo-update
+```
+
+Другие версии Pods сохраняются. После этого повторные установки используют обычный `pod install`. Удаление npm-пакета не удаляет зафиксированные версии CocoaPods. Для нового проекта без старого lockfile достаточно команды `pod install` из предыдущего раздела.
 
 Минимальное forwarding APNs token в Swift AppDelegate:
 

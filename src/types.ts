@@ -33,15 +33,18 @@ export interface PushPlatformConfig {
   /**
    * API key for backend authentication (handled by native SDK, never exposed to JS)
    */
-  apiKey: string;
+  apiKey?: string;
 
-  /** Backend application UUID required by iOS installation registration. */
-  applicationId?: string;
+  /** Backend application UUID. */
+  applicationId: string;
+
+  /** Server address. Omitted requests use https://api.pushpilot.ru. */
+  url?: string;
 
   /**
-   * Base URL for backend API
+   * @deprecated Use url.
    */
-  apiBaseURL: string;
+  apiBaseURL?: string;
 
   /**
    * Environment: development or production (optional, defaults to production)

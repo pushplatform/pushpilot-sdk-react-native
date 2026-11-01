@@ -12,7 +12,7 @@ describe('Validation Utilities', () => {
   describe('validateConfig', () => {
     test('should validate correct configuration', () => {
       const config: PushPlatformConfig = {
-        apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
         debugMode: true,
@@ -21,47 +21,27 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).not.toThrow();
     });
 
-    test('should throw on missing apiKey', () => {
+    test('does not require an API key', () => {
+      const config: PushPlatformConfig = {
+        applicationId: '11111111-1111-1111-1111-111111111111',
+        apiBaseURL: 'https://api.test.pushplatform.example',
+        environment: 'development',
+      };
+      expect(() => validateConfig(config)).not.toThrow();
+    });
+
+    test('should throw on missing applicationId', () => {
       const config = {
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       } as PushPlatformConfig;
 
-      expect(() => validateConfig(config)).toThrow('apiKey is required');
-    });
-
-    test('should throw on empty apiKey', () => {
-      const config: PushPlatformConfig = {
-        apiKey: '',
-        apiBaseURL: 'https://api.test.pushplatform.example',
-        environment: 'development',
-      };
-
-      expect(() => validateConfig(config)).toThrow('apiKey is required');
-    });
-
-    test('should throw on whitespace-only apiKey', () => {
-      const config: PushPlatformConfig = {
-        apiKey: '   ',
-        apiBaseURL: 'https://api.test.pushplatform.example',
-        environment: 'development',
-      };
-
-      expect(() => validateConfig(config)).toThrow('apiKey cannot be empty');
-    });
-
-    test('should throw on missing apiBaseURL', () => {
-      const config = {
-        apiKey: 'test-api-key',
-        environment: 'development',
-      } as PushPlatformConfig;
-
-      expect(() => validateConfig(config)).toThrow('apiBaseURL is required');
+      expect(() => validateConfig(config)).toThrow('applicationId is required');
     });
 
     test('should throw on invalid apiBaseURL', () => {
       const config: PushPlatformConfig = {
-        apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'not-a-url',
         environment: 'development',
       };
@@ -71,7 +51,7 @@ describe('Validation Utilities', () => {
 
     test('should throw on non-HTTPS apiBaseURL in production', () => {
       const config: PushPlatformConfig = {
-        apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'http://api.pushplatform.example',
         environment: 'production',
       };
@@ -84,13 +64,14 @@ describe('Validation Utilities', () => {
     test('allows the Android emulator host bridge only in explicit debug mode', () => {
       const config: PushPlatformConfig = { apiKey: 'app-key', applicationId: '11111111-1111-1111-1111-111111111111', apiBaseURL: 'http://10.0.2.2:18086', debugMode: true };
       expect(() => validateConfig(config)).not.toThrow();
-      expect(() => validateConfig({ ...config, debugMode: false })).toThrow('HTTPS');
-      expect(() => validateConfig({ ...config, apiBaseURL: 'http://remote.example' })).toThrow('HTTPS');
+      expect(() => validateConfig({ ...config, debugMode: false, environment: 'production' })).toThrow('HTTPS');
+      expect(() => validateConfig({ ...config, apiBaseURL: 'http://remote.example', environment: 'production' })).toThrow('HTTPS');
     });
 
     test('should allow HTTP in development', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'http://localhost:8080',
         environment: 'development',
       };
@@ -101,6 +82,7 @@ describe('Validation Utilities', () => {
     test('should default environment to production if missing', () => {
       const config = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.pushplatform.example',
       } as PushPlatformConfig;
 
@@ -110,6 +92,7 @@ describe('Validation Utilities', () => {
     test('should validate development environment', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.dev.pushplatform.example',
         environment: 'development',
       };
@@ -120,6 +103,7 @@ describe('Validation Utilities', () => {
     test('should reject invalid environment', () => {
       const config = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.pushplatform.example',
         environment: 'invalid',
       } as any;
@@ -130,6 +114,7 @@ describe('Validation Utilities', () => {
     test('should validate debugMode boolean', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.pushplatform.example',
         environment: 'development',
         debugMode: true,
@@ -141,6 +126,7 @@ describe('Validation Utilities', () => {
     test('should default debugMode to false', () => {
       const config = {
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.pushplatform.example',
         environment: 'production',
       } as PushPlatformConfig;
@@ -287,6 +273,7 @@ describe('Validation Utilities', () => {
     test('should trim whitespace in validation', () => {
       const config: PushPlatformConfig = {
         apiKey: '  test-api-key  ',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: '  https://api.pushplatform.example  ',
         environment: 'development',
       };
