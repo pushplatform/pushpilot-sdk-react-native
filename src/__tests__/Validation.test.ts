@@ -81,6 +81,13 @@ describe('Validation Utilities', () => {
       );
     });
 
+    test('allows the Android emulator host bridge only in explicit debug mode', () => {
+      const config: PushPlatformConfig = { apiKey: 'app-key', applicationId: '11111111-1111-1111-1111-111111111111', apiBaseURL: 'http://10.0.2.2:18086', debugMode: true };
+      expect(() => validateConfig(config)).not.toThrow();
+      expect(() => validateConfig({ ...config, debugMode: false })).toThrow('HTTPS');
+      expect(() => validateConfig({ ...config, apiBaseURL: 'http://remote.example' })).toThrow('HTTPS');
+    });
+
     test('should allow HTTP in development', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',

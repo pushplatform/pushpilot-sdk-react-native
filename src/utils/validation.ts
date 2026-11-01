@@ -37,7 +37,7 @@ export function validateConfig(config: PushPlatformConfig): void {
 
   // Validate HTTPS in production
   const environment = config.environment || 'production';
-  const localDebug = config.debugMode === true && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(config.apiBaseURL).hostname);
+  const localDebug = config.debugMode === true && ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'].includes(new URL(config.apiBaseURL).hostname);
   if (environment === 'production' && !config.apiBaseURL.startsWith('https://') && !localDebug) {
     throw new SDKError(
       ErrorCode.INVALID_CONFIG,

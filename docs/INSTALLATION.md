@@ -106,3 +106,5 @@ Plugin заменяет собственную старую Pod Git-запись
 пакета и переустановите нужную версию из npm. Native SDK должны находиться внутри
 установленного `@pushplatform/react-native`; путь Pod и Maven repository должен
 указывать на него.
+
+Локальный API: в Android Emulator адрес хоста — `10.0.2.2`, а не `127.0.0.1` ([Android network address space](https://developer.android.com/studio/run/emulator-networking-address)). Для локального HTTP включите `debugMode: true`; release требует HTTPS. На настоящем устройстве используйте доступный HTTPS URL API. Выбор клиентского окружения PushPilot для этого не требуется.
