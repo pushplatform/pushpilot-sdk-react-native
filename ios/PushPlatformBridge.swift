@@ -44,15 +44,15 @@ class PushPlatformBridge: RCTEventEmitter {
     func initialize(_ config: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         NSLog("[PushPlatformBridge] initialize() called from JavaScript")
         DispatchQueue.main.async {
-            guard let apiKey = config["apiKey"] as? String,
-                  let environmentString = config["environment"] as? String else {
+            guard let apiKey = config["apiKey"] as? String else {
                 NSLog("[PushPlatformBridge] Missing required config fields")
                 reject("INVALID_CONFIG", "Missing required configuration fields", nil)
                 return
             }
 
-            guard let environment = self.parseEnvironment(environmentString) else {
-                NSLog("[PushPlatformBridge] Invalid environment: %@", environmentString)
+            let environmentString = config["environment"] as? String
+            guard let environment = environmentString == nil ? Environment.automatic : self.parseEnvironment(environmentString!) else {
+                NSLog("[PushPlatformBridge] Invalid environment")
                 reject("INVALID_ENVIRONMENT", "Invalid environment value", nil)
                 return
             }
@@ -142,6 +142,7 @@ class PushPlatformBridge: RCTEventEmitter {
                 if granted {
                     UIApplication.shared.registerForRemoteNotifications()
                 }
+                PushPlatform.shared.refreshMetadata()
                 resolve(granted)
             }
         }

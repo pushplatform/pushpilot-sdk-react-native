@@ -3,7 +3,7 @@
 Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.0.3
+npm install @pushplatform/react-native@1.1.0
 ```
 
 Для фиксации версии укажите её вместо `next` в команде установки.
@@ -36,8 +36,7 @@ npx expo install expo-dev-client
 Замените UUID на приложение PushPilot и укажите настоящий Firebase config.
 Затем `npx expo prebuild`, `npx expo run:android` / `npx expo run:ios`.
 Expo Go не содержит native bridge. Для production iOS используйте правильный
-APNs environment/signing profile. Клиентская credential передаётся в runtime
-`initialize()`; проектный API key хранится на сервере клиентского шлюза.
+APNs entitlement/signing profile. В `initialize()` передайте общий ключ приложения из PushPilot; отдельный шлюз не требуется.
 
 Для EAS настройте development/production profile и app credentials. npm-пакет
 попадает в remote build обычной установкой dependencies из публичного npm.
@@ -107,3 +106,5 @@ Plugin заменяет собственную старую Pod Git-запись
 пакета и переустановите нужную версию из npm. Native SDK должны находиться внутри
 установленного `@pushplatform/react-native`; путь Pod и Maven repository должен
 указывать на него.
+
+Локальный API: в Android Emulator адрес хоста — `10.0.2.2`, а не `127.0.0.1` ([Android network address space](https://developer.android.com/studio/run/emulator-networking-address)). Для локального HTTP включите `debugMode: true`; release требует HTTPS. На настоящем устройстве используйте доступный HTTPS URL API. Выбор клиентского окружения PushPilot для этого не требуется.

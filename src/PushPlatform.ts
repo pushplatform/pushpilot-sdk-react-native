@@ -77,7 +77,7 @@ export class PushPlatform {
         apiKey: config.apiKey,
         applicationId: config.applicationId,
         apiBaseURL: config.apiBaseURL,
-        environment: config.environment || 'production',
+        ...(config.environment ? { environment: config.environment } : {}),
         debugMode: config.debugMode ?? false,
       };
 

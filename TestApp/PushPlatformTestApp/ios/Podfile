@@ -17,7 +17,7 @@ end
 target 'PushPlatformTestApp' do
   config = use_native_modules!
 
-  pod 'PushPlatformSDK', :git => 'git@github.com:pushplatform/pushpilot-sdk-ios.git', :branch => 'main'
+  pod 'PushPlatformSDK', :path => '../../../native/ios'
 
   use_react_native!(
     :path => config[:reactNativePath],

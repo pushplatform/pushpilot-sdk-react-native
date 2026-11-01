@@ -91,7 +91,7 @@ describe('PushPlatform Core API', () => {
       expect(mockNativeModule.initialize).not.toHaveBeenCalled();
     });
 
-    test('should default to production environment if not specified', async () => {
+    test('leaves omitted environment to the native APNs entitlement detection', async () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
 
       const config: PushPlatformConfig = {
@@ -103,7 +103,7 @@ describe('PushPlatform Core API', () => {
 
       expect(mockNativeModule.initialize).toHaveBeenCalledWith({
         ...config,
-        environment: 'production',
+        applicationId: undefined,
         debugMode: false,
       });
     });

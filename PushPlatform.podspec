@@ -23,7 +23,7 @@ Pod::Spec.new do |s|
   s.dependency "React-Core"
 
   # The host Podfile resolves this Pod from native/ios inside the npm package.
-  s.dependency "PushPlatformSDK", "1.0.0"
+  s.dependency "PushPlatformSDK", "1.1.0"
 
   s.swift_version = "5.9"
 
