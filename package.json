@@ -20,8 +20,11 @@
     "test:coverage": "jest --coverage",
     "release:stage": "node scripts/stage-native.mjs",
     "release:check": "node scripts/check-package.mjs",
-    "prepack": "npm run build && npm run release:check",
-    "prepublishOnly": "npm run release:check"
+    "prepack": "npm run build && npm run release:check && npm run release:verify-ios",
+    "prepublishOnly": "npm run release:check && npm run release:verify-ios",
+    "release:verify-ios": "node scripts/verify-ios-publication.mjs",
+    "test:release": "node --test scripts/verify-ios-publication.test.mjs",
+    "test:ios-autolinking": "node scripts/verify-ios-autolinking.mjs"
   },
   "keywords": [
     "react-native",

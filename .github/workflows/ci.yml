@@ -14,7 +14,26 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run release:verify-ios
+      - run: npm run test:release
       - run: npm run typecheck
       - run: npm test -- --runInBand --watchman=false
       - run: npm run test:plugin
       - run: npm run build
+
+  ios-autolinking:
+    needs: package
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.3'
+      - run: gem install cocoapods -v 1.16.2 --no-document
+      - run: npm ci
+      - run: npm run build
+      - run: npm run test:ios-autolinking
