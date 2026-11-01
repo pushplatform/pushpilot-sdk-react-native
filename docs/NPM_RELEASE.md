@@ -1,3 +1,21 @@
+# Release 1.1.0 — unified application integration (2026-11-01)
+
+**Published and anonymously verified:** `@pushplatform/react-native@1.1.0`; npm `latest` points to 1.1.0.
+
+```sh
+npm install @pushplatform/react-native@1.1.0
+```
+
+One application ID/key is shared by iOS/Android/Web and server integration. Native Android/iOS SDK 1.1.0 payload is bundled; no customer project/environment selection is required. The key is deliberately extractable and grants device registration/read and message send/history access only inside its application. Expo Go is unsupported; rebuild the native app/development build after updating. See [installation](INSTALLATION.md).
+
+Source: merged PR #9, release tag `v1.1.0`, commit `ef93dc72787c6fe1bcf5109c14455cda22e5d49e`. Previously checked candidate `/tmp/pushplatform-react-native-1.1.0.tgz` was published with `--ignore-scripts` after npm login/browser confirmation. All 70 archived files matched the merged source/build output before publication, including native checksums. Public registry archive is byte-for-byte identical; SHA-1/SHA-512 integrity matches. SHA-256: `61a796c37a72d67c1045da94ac6f2830fb8f96f1c80acb9b454605afc6e5dc80`.
+
+The duplicate trusted-publishing workflow run 41302802599 was cancelled before publication once local login succeeded. It did not publish anything; OIDC publishing is not claimed as verified. Previously passed tests/builds were not repeated for publication. No real APNs/FCM notification was sent.
+
+Companion Flutter `push_platform_flutter` 1.1.1 is already published on pub.dev with native Android/iOS 1.1.0. Its PR #4 and RN PR #9 are merged.
+
+---
+
 # Patch 1.0.2 — initial Android FCM registration
 
 Source branch: `release/rn-fcm-1.0.2`. Published 1.0.1 bundled Android SDK 1.0.0, so Android/Expo clients inherited its missing current-token lookup. This patch bundles Android 1.0.1 from the pinned source commit in `release/native-lock.json`. iOS commit, sources and bridge APIs remain unchanged.
