@@ -15,10 +15,12 @@ const fixture = fixtureName ? JSON.parse(fs.readFileSync(path.join(root, 'test/f
 const linkage = option('--linkage') || 'default';
 assert(['default', 'static'].includes(linkage), 'Unsupported framework linkage');
 const upgradeFrom = option('--upgrade-from');
+const resumeAfterBaseline = args.includes('--resume-after-baseline');
 assert(!upgradeFrom || /^\d+\.\d+\.\d+$/.test(upgradeFrom), 'Invalid baseline release');
 let candidateArchive = archiveOption && path.resolve(archiveOption);
 const index = args.indexOf('--consumer');
 const supplied = index >= 0 ? fs.realpathSync(args[index + 1]) : null;
+assert(!resumeAfterBaseline || supplied && upgradeFrom, 'Resume requires the controlled baseline consumer and version');
 if (supplied) {
   assert(supplied.startsWith(fs.realpathSync(os.tmpdir()) + path.sep), 'Existing probe must be inside the temporary directory');
   assert(path.basename(supplied).startsWith('pushpilot-rn-cocoapods-regression-'), 'Only a controlled regression probe can be reused');
@@ -56,7 +58,12 @@ const ios = path.join(consumer, 'ios');
 const podfile = fs.readFileSync(path.join(ios, 'Podfile'), 'utf8');
 assert(podfile.includes('use_native_modules!'), 'Probe must use actual RN autolinking');
 assert(!/pod\s+['"]PushPlatformSDK['"]/.test(podfile), 'Explicit native SDK dependency would hide the bare autolinking defect');
-assert(!fs.existsSync(path.join(ios, 'Podfile.lock')), 'Probe must start without an existing lockfile');
+if (!resumeAfterBaseline) assert(!fs.existsSync(path.join(ios, 'Podfile.lock')), 'Probe must start without an existing lockfile');
+else {
+  const baseline = fs.readFileSync(path.join(consumer, 'baseline-Podfile.lock'), 'utf8');
+  assert(baseline.includes(`PushPlatform (${upgradeFrom})`), 'Wrong migration baseline');
+  assert.equal(fs.readFileSync(path.join(ios, 'Podfile.lock'), 'utf8'), baseline, 'Baseline lockfile changed before migration');
+}
 const podEnv = { ...process.env,
   CP_HOME_DIR: path.join(consumer, '.cocoapods'), CP_CACHE_DIR: path.join(consumer, '.pod-cache'),
   COCOAPODS_DISABLE_STATS: 'true', GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_NOSYSTEM: '1', GIT_TERMINAL_PROMPT: '0',
@@ -64,7 +71,7 @@ const podEnv = { ...process.env,
 if (linkage === 'static') podEnv.USE_FRAMEWORKS = 'static';
 else delete podEnv.USE_FRAMEWORKS;
 const installPods = () => run('pod', ['install', '--repo-update'], ios, podEnv);
-if (upgradeFrom) {
+if (upgradeFrom && !resumeAfterBaseline) {
   installPods();
   const baseline = fs.readFileSync(path.join(ios, 'Podfile.lock'), 'utf8');
   assert(baseline.includes(`PushPlatform (${upgradeFrom})`), 'Baseline package was not installed');
@@ -78,7 +85,9 @@ const evaluatedSpec = JSON.parse(execFileSync('pod', ['ipc', 'spec', path.join(i
 const lockedIos = JSON.parse(fs.readFileSync(path.join(root, 'release/native-lock.json'))).ios;
 assert.equal(evaluatedSpec.version, installedPackage.version, 'Pod/npm package versions differ');
 assert.equal(evaluatedSpec.source.tag, `v${installedPackage.version}`, 'Podspec references the wrong source release tag');
-assert.deepEqual(evaluatedSpec.dependencies[lockedIos.pod], [`= ${lockedIos.version}`], 'Evaluated native dependency differs from the source lock');
+const nativeRequirement = evaluatedSpec.dependencies[lockedIos.pod];
+assert.equal(nativeRequirement?.length, 1, 'Expected a single exact native requirement');
+assert.equal(nativeRequirement[0].replace(/^=\s*/, ''), lockedIos.version, 'Evaluated native dependency differs from the source lock');
 
 installPods();
 if (args.includes('--reinstall')) {
