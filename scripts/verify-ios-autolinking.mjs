@@ -70,7 +70,7 @@ const podEnv = { ...process.env,
 };
 if (linkage === 'static') podEnv.USE_FRAMEWORKS = 'static';
 else delete podEnv.USE_FRAMEWORKS;
-const installPods = () => run('pod', ['install', '--repo-update'], ios, podEnv);
+const installPods = (updating = false) => run('pod', updating ? ['update', 'PushPlatform', 'PushPlatformSDK', '--repo-update'] : ['install', '--repo-update'], ios, podEnv);
 if (upgradeFrom && !resumeAfterBaseline) {
   installPods();
   const baseline = fs.readFileSync(path.join(ios, 'Podfile.lock'), 'utf8');
@@ -89,7 +89,7 @@ const nativeRequirement = evaluatedSpec.dependencies[lockedIos.pod];
 assert.equal(nativeRequirement?.length, 1, 'Expected a single exact native requirement');
 assert.equal(nativeRequirement[0].replace(/^=\s*/, ''), lockedIos.version, 'Evaluated native dependency differs from the source lock');
 
-installPods();
+installPods(Boolean(upgradeFrom));
 if (args.includes('--reinstall')) {
   run('npm', ['uninstall', '--no-audit', '--no-fund', '@pushplatform/react-native'], consumer);
   run('npm', ['install', '--no-audit', '--no-fund', candidateArchive], consumer);
@@ -97,6 +97,13 @@ if (args.includes('--reinstall')) {
 }
 const lock = JSON.parse(execFileSync('ruby', ['-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.load_file(ARGV[0]))', path.join(ios, 'Podfile.lock')], { encoding: 'utf8' }));
 const native = JSON.parse(fs.readFileSync(path.join(root, 'release/native-lock.json'))).ios;
+if (upgradeFrom) {
+  const baseline = JSON.parse(execFileSync('ruby', ['-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.load_file(ARGV[0]))', path.join(consumer, 'baseline-Podfile.lock')], { encoding: 'utf8' }));
+  const unrelated = values => values.map(pod => typeof pod === 'string' ? pod : Object.keys(pod)[0])
+    .filter(pod => !pod.startsWith('PushPlatform (') && !pod.startsWith('PushPlatformSDK (')).sort();
+  assert.deepEqual(unrelated(lock.PODS), unrelated(baseline.PODS), 'Targeted SDK upgrade changed unrelated native versions');
+}
+
 assert(lock.PODS.some(pod => pod === `${native.pod} (${native.version})`), 'Locked native pod version differs from the release');
 assert(!lock['EXTERNAL SOURCES']?.[native.pod], 'Native dependency must resolve publicly, not through a local or private override');
 assert(Object.entries(lock['SPEC REPOS']).some(([repo, pods]) => (repo === 'trunk' || repo === 'https://cdn.cocoapods.org/') && pods.includes(native.pod)), 'Native dependency is absent from public trunk');

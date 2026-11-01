@@ -57,6 +57,18 @@ bundle exec pod install --repo-update
 и background mode `remote-notification`; передавайте APNs token и notification
 callbacks из AppDelegate в `PushPlatform.shared`, как в API native SDK.
 
+### Обновление с RN SDK 1.0.x
+
+В 1.0.x использовался native iOS SDK 1.0.0. Новая кодовая база использует native 1.1.0, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
+
+```sh
+npm install @pushplatform/react-native@1.2.0
+cd ios
+bundle exec pod update PushPlatform PushPlatformSDK --repo-update
+```
+
+Другие версии Pods сохраняются. После этого повторные установки используют обычный `pod install`. Удаление npm-пакета не удаляет зафиксированные версии CocoaPods. Для нового проекта без старого lockfile достаточно команды `pod install` из предыдущего раздела.
+
 Минимальное forwarding APNs token в Swift AppDelegate:
 
 ```swift

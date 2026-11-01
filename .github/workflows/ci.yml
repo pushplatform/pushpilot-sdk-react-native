@@ -1,9 +1,13 @@
 name: react-native-sdk-ci
 on:
   push:
+    branches: [main]
   pull_request:
 permissions:
   contents: read
+concurrency:
+  group: rn-sdk-ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   package:
     runs-on: ubuntu-latest
