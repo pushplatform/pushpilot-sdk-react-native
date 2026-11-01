@@ -31,12 +31,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - scenario: baseline
-            args: ''
-          - scenario: rn083-firebase-nitro-default
-            args: '--fixture rn083-firebase-nitro --linkage default --upgrade-from 1.0.3 --reinstall --build'
-          - scenario: rn083-firebase-nitro-static
-            args: '--fixture rn083-firebase-nitro --linkage static --build'
+          - scenario: current
+            args: '--build'
+          - scenario: current-static
+            args: '--linkage static --build'
     name: ios-autolinking (${{ matrix.scenario }})
     runs-on: macos-latest
     steps:

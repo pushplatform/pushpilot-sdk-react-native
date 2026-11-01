@@ -12,13 +12,13 @@ Source corrections: the wrapper podspec references the real vVERSION source tag 
 
 - [x] Compare 1.0.3/1.1.0/current installation contracts and native pins.
 - [x] Build/package the candidate; native checksums, sources and package entries verified.
-- [ ] Actual TOP configuration in an independent temporary copy: matching npm lock, Ruby 3.3.10, Bundler 2.7.1, CocoaPods 1.16.2 and Gemfile.lock, Firebase static framework flag, VisionCamera/Nitro; original project/configuration unchanged.
+- [ ] Current repository test app in an independent temporary copy. No second application's lockfile, Firebase flag, Vision Camera or Nitro pin.
 - [ ] Normal pod install and native build in that copy, without a native SDK override.
-- [ ] RN 0.83.1 / Firebase 24.1.1 / VisionCamera 5.0.11 / Nitro 0.35.10 profile: 1.0.3 migration and uninstall/reinstall, then native build.
+- [ ] Upgrade and reinstall on that same current app, then native build.
 - [ ] Static-framework profile installation and native build.
 - [ ] CI on the final source and exact release archive.
 - [ ] Publication and anonymous public archive verification; no new source changes hidden after candidate acceptance.
 
-CI retains the existing baseline and adds the reported dependency/linkage profiles. The release workflow now requires the prepared archive to pass macOS installation/build before its publish job can run. Public source metadata alone does not constitute installation/build acceptance.
+CI installs and builds the current test app with default and static linkage. The release workflow requires that same app to pass before its publish job can run. Public source metadata alone does not constitute installation/build acceptance.
 
 No real push, app launch against a production account, changes to the original TOP files, database changes, or owner-console changes are part of this release.

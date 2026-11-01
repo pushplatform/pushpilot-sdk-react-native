@@ -134,7 +134,7 @@ jobs:
           shasum -a 256 --check dist/SHA256SUMS
           node scripts/check-package.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
       - name: Install and build the exact candidate through ordinary CocoaPods
-        run: node scripts/verify-ios-autolinking.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")" --fixture rn083-firebase-nitro --linkage ${{ matrix.linkage }} --build ${{ matrix.args }}
+        run: node scripts/verify-ios-autolinking.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")" --linkage ${{ matrix.linkage }} --build ${{ matrix.args }}
 
   publish:
     # Require explicit boolean opt-in; a non-empty string 'false' must not enable publishing.

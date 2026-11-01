@@ -9,9 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
 const option = name => { const index = args.indexOf(name); return index < 0 ? null : args[index + 1]; };
 const archiveOption = option('--archive');
-const fixtureName = option('--fixture');
-assert(!fixtureName || fixtureName === 'rn083-firebase-nitro', 'Unknown iOS fixture');
-const fixture = fixtureName ? JSON.parse(fs.readFileSync(path.join(root, 'test/fixtures/ios', fixtureName + '.json'))) : null;
+assert(!option('--fixture'), 'Autolinking is checked on the current test app, not a pinned application stack');
 const linkage = option('--linkage') || 'default';
 assert(['default', 'static'].includes(linkage), 'Unsupported framework linkage');
 const upgradeFrom = option('--upgrade-from');
@@ -43,14 +41,10 @@ if (!supplied) {
   const archive = candidateArchive;
   const packageJson = {
     name: templatePackage.name, private: true, version: '0.0.1',
-    dependencies: { ...(fixture?.dependencies || templatePackage.dependencies), '@pushplatform/react-native': upgradeFrom || `file:${archive}` },
-    devDependencies: fixture?.devDependencies || Object.fromEntries(Object.entries(templatePackage.devDependencies).filter(([name]) => name.startsWith('@react-native-community/cli'))),
+    dependencies: { ...templatePackage.dependencies, '@pushplatform/react-native': upgradeFrom || `file:${archive}` },
+    devDependencies: Object.fromEntries(Object.entries(templatePackage.devDependencies).filter(([name]) => name.startsWith('@react-native-community/cli'))),
   };
   fs.writeFileSync(path.join(consumer, 'package.json'), JSON.stringify(packageJson, null, 2));
-  if (fixture) {
-    const podfilePath = path.join(consumer, 'ios/Podfile');
-    fs.writeFileSync(podfilePath, "ENV['RCT_NEW_ARCH_ENABLED'] = '1'\n$RNFirebaseAsStaticFramework = true\n" + fs.readFileSync(podfilePath, 'utf8').replace("  config = use_native_modules!", "  config = use_native_modules!\n  pod 'GoogleUtilities', :modular_headers => true"));
-  }
   run('npm', ['install', '--no-audit', '--no-fund'], consumer);
 }
 const installed = path.join(consumer, 'node_modules/@pushplatform/react-native');
@@ -108,13 +102,7 @@ assert(lock.PODS.some(pod => pod === `${native.pod} (${native.version})`), 'Lock
 assert(!lock['EXTERNAL SOURCES']?.[native.pod], 'Native dependency must resolve publicly, not through a local or private override');
 assert(Object.entries(lock['SPEC REPOS']).some(([repo, pods]) => (repo === 'trunk' || repo === 'https://cdn.cocoapods.org/') && pods.includes(native.pod)), 'Native dependency is absent from public trunk');
 assert(fs.existsSync(path.join(ios, 'Pods', native.pod, 'Sources/PushPlatformSDK/Core/DeviceMetadata.swift')), 'New native source was not downloaded');
-if (fixture) {
-  for (const [name, expected] of Object.entries(fixture.dependencies))
-    assert.equal(JSON.parse(fs.readFileSync(path.join(consumer, 'node_modules', name, 'package.json'))).version, expected, `Unexpected fixture version for ${name}`);
-  for (const name of ['RNFBApp', 'RNFBMessaging', 'VisionCamera', 'NitroModules'])
-    assert(lock.PODS.some(pod => (typeof pod === 'string' ? pod : Object.keys(pod)[0]).startsWith(`${name} (`)), `Missing real fixture pod ${name}`);
-}
-console.log(`Bare RN autolinking passed: PushPlatform ${sourcePackage.version} → public ${native.pod} ${native.version}; linkage=${linkage}; fixture=${fixtureName || 'baseline'}.`);
+console.log(`Bare RN autolinking passed: PushPlatform ${sourcePackage.version} → public ${native.pod} ${native.version}; linkage=${linkage}.`);
 if (args.includes('--build')) {
   run('xcodebuild', ['-workspace', 'PushPlatformTestApp.xcworkspace', '-scheme', 'PushPlatformTestApp', '-configuration', 'Debug', '-sdk', 'iphonesimulator', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', path.join(consumer, 'DerivedData'), '-jobs', '2', 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, podEnv);
 }

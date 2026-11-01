@@ -2,6 +2,7 @@
 
 - `initialize` takes an application id or `{applicationId, url, environment}`. No API key and no `apiBaseURL`.
 - Depends on PushPlatformSDK 1.2.0.
+- iOS autolinking is checked on the repository test app and its current React Native, including a static-framework build. It is not pinned to another application's Firebase, Vision Camera or Nitro versions.
 
 # 1.2.0
 
