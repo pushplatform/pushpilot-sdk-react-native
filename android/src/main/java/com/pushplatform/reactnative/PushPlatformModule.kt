@@ -17,14 +17,12 @@ import com.pushplatform.sdk.NotificationDisplay
 import com.pushplatform.sdk.notifications.ParsedNotification
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
 
 class PushPlatformModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext), PushPlatformDelegate, LifecycleEventListener {
 
     private val pushPlatform = PushPlatform.getInstance()
     private val pendingDisplays = ConcurrentHashMap<String, NotificationDisplay>()
-    private val displayLatches = ConcurrentHashMap<String, CountDownLatch>()
     @Volatile private var willDisplayObserved = false
     private var permissionPromise: Promise? = null
     private val permissionRequestCode = 1001
@@ -96,10 +94,16 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
             } else null
             val url = if (config.hasKey("url") && !config.isNull("url")) config.getString("url") else null
             val debugMode = if (config.hasKey("debugMode")) config.getBoolean("debugMode") else false
+            val foregroundBannerFallback = if (config.hasKey("foregroundBannerFallback") && !config.isNull("foregroundBannerFallback")) {
+                config.getDouble("foregroundBannerFallback")
+            } else 0.0
+            if (!foregroundBannerFallback.isFinite() || foregroundBannerFallback < 0) {
+                return promise.reject("INVALID_CONFIG", "foregroundBannerFallback must be a non-negative number of seconds")
+            }
 
             pushPlatform.initialize(
                 reactApplicationContext,
-                PushPlatform.InitializeOptions(applicationId, url, environment, debugMode),
+                PushPlatform.InitializeOptions(applicationId, url, environment, debugMode, foregroundBannerFallback),
                 completion = { result ->
                     result.fold(
                         onSuccess = { installationId ->
@@ -215,7 +219,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     fun completeNotificationDisplay(displayId: String, prevented: Boolean) {
         val event = pendingDisplays.remove(displayId) ?: return
         if (prevented) event.preventDefault()
-        displayLatches.remove(displayId)?.countDown()
+        event.finish()
     }
 
     private fun errorCode(error: SdkError): String {
@@ -279,19 +283,13 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     override fun notificationWillDisplay(event: NotificationDisplay) {
         if (!willDisplayObserved) return
         val displayId = UUID.randomUUID().toString()
-        val latch = CountDownLatch(1)
         pendingDisplays[displayId] = event
-        displayLatches[displayId] = latch
+        event.deferDecision()
         val body = Arguments.createMap().apply {
             putString("id", displayId)
             putMap("notification", serializeNotification(event.notification))
         }
         sendEvent("onNotificationWillDisplay", body)
-        try {
-            latch.await()
-        } catch (_: InterruptedException) {
-            Thread.currentThread().interrupt()
-        }
     }
 
     override fun didOpenNotification(notification: ParsedNotification) {

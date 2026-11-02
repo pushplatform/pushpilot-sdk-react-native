@@ -15,6 +15,7 @@ export interface NativePushPlatformBridge {
     apiKey?: string;
     environment?: string;
     debugMode?: boolean;
+    foregroundBannerFallback?: number;
   }): Promise<void>;
 
   /**

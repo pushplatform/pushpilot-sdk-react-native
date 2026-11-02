@@ -7,7 +7,7 @@ PushPilot подключает push-уведомления к приложени
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native@1.3.2
+npm install @pushplatform/react-native@1.3.3
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
@@ -133,9 +133,9 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
 
-### Текущая поставка · 1.3.2
+### Текущая поставка · 1.3.3
 
-`initialize` принимает application id или `{applicationId, url, environment}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.2`. iOS autolinking берёт опубликованный `PushPlatformSDK` 1.2.4. В tarball также лежит копия этих же native-артефактов для Expo.
+`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.3`. iOS autolinking берёт опубликованный `PushPlatformSDK` 1.2.5. В tarball также лежит копия этих же native-артефактов для Expo.
 
 ### Unified applications · 1.1.0
 

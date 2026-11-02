@@ -42,6 +42,25 @@ describe('PushPlatform Core API', () => {
       expect(mockNativeModule.initialize).toHaveBeenCalledTimes(1);
     });
 
+    test('passes foregroundBannerFallback only from the options object', async () => {
+      mockNativeModule.initialize.mockResolvedValue(undefined);
+      await PushPlatform.initialize('11111111-1111-1111-1111-111111111111');
+      expect(mockNativeModule.initialize).toHaveBeenCalledWith({
+        applicationId: '11111111-1111-1111-1111-111111111111',
+        debugMode: false,
+      });
+      (PushPlatform as any).initialized = false;
+      await PushPlatform.initialize({
+        applicationId: '11111111-1111-1111-1111-111111111111',
+        foregroundBannerFallback: 10,
+      });
+      expect(mockNativeModule.initialize).toHaveBeenLastCalledWith({
+        applicationId: '11111111-1111-1111-1111-111111111111',
+        debugMode: false,
+        foregroundBannerFallback: 10,
+      });
+    });
+
     test('accepts an application id string', async () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);
       await PushPlatform.initialize('11111111-1111-1111-1111-111111111111');

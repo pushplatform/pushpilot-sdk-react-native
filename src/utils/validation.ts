@@ -43,6 +43,16 @@ export function validateConfig(config: PushPlatformConfig): void {
     );
   }
 
+  if (config.foregroundBannerFallback != null) {
+    const seconds = config.foregroundBannerFallback;
+    if (typeof seconds !== 'number' || !Number.isFinite(seconds) || seconds < 0) {
+      throw new SDKError(
+        ErrorCode.INVALID_CONFIG,
+        'foregroundBannerFallback must be a non-negative number of seconds'
+      );
+    }
+  }
+
   // Validate debugMode
   if (config.debugMode !== undefined && typeof config.debugMode !== 'boolean') {
     throw new SDKError(
