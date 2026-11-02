@@ -5,7 +5,7 @@ import PushPlatform from '@pushplatform/react-native';
 const config = {
   apiKey: process.env.EXPO_PUBLIC_PUSHPILOT_API_KEY || 'pk_replace_with_client_key',
   applicationId: process.env.EXPO_PUBLIC_PUSHPILOT_APPLICATION_ID || '00000000-0000-4000-8000-000000000000',
-  apiBaseURL: process.env.EXPO_PUBLIC_PUSHPILOT_API_URL || 'https://api.example.invalid',
+  url: process.env.EXPO_PUBLIC_PUSHPILOT_API_URL || 'https://api.example.invalid',
   environment: 'development' as const,
   debugMode: __DEV__,
 };

@@ -1,12 +1,18 @@
+# 1.3.2 — 2026-11-02
+
+- Адрес только `url`. Старое имя адреса удалено из моста, контрактных тестов и примеров.
+- Показ ждёт обработчик без восьмисекундного таймера.
+- Зависит от `PushPlatformSDK` 1.2.4 и `sdk-android` 1.2.2.
+
 # 1.3.1 — 2026-11-02
 
 - `onNotificationWillDisplay` с `preventDefault()` до возврата обработчика. `getDeviceToken()` возвращает последний токен. Успешный `onRegistrationUpdated` содержит `token`.
-- Адрес только `url`. `apiKey` не отправляется. `apiBaseURL` без `url` — ошибка.
+- Адрес только `url`. `apiKey` не отправляется.
 - Зависит от `PushPlatformSDK` 1.2.2 и `sdk-android` 1.2.1.
 
 # 1.3.0 — 2026-11-01
 
-- `initialize` takes an application id or `{applicationId, url, environment}`. No API key and no `apiBaseURL`.
+- `initialize` takes an application id or `{applicationId, url, environment}`. No API key is sent.
 - Depends on PushPlatformSDK 1.2.0.
 - iOS autolinking is checked on the repository test app and its current React Native, including a static-framework build. It is not pinned to another application's Firebase, Vision Camera or Nitro versions.
 

@@ -51,7 +51,7 @@ function App(): React.JSX.Element {
         await PushPlatform.initialize({
           apiKey: 'test-api-key-cold-launch',
           applicationId: '00000000-0000-4000-8000-000000000000',
-          apiBaseURL: 'https://api.test.pushplatform.example',
+          url: 'https://api.test.pushplatform.example',
           environment: 'production',
           debugMode: true,
         });

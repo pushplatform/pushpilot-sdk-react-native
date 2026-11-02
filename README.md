@@ -7,7 +7,7 @@ PushPilot подключает push-уведомления к приложени
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native@1.3.1
+npm install @pushplatform/react-native@1.3.2
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
@@ -91,7 +91,7 @@ export function requestPushPermission() {
 }
 ```
 
-`url` — адрес API PushPilot. `applicationId` — UUID приложения. `apiKey` не отправляется, `apiBaseURL` без `url` — ошибка конфигурации. Приватные APNs/FCM/VAPID credentials остаются на сервере.
+`url` — адрес API PushPilot. `applicationId` — UUID приложения. `apiKey` не отправляется. Приватные APNs/FCM/VAPID credentials остаются на сервере.
 
 `getInstallationId()` возвращает ID установки. `getDeviceToken()` возвращает последний APNs или FCM токен. При успешной регистрации `onRegistrationUpdated` содержит `token`. `onNotificationReceived` — доставка, `onNotificationOpened` — клик, `onNotificationWillDisplay` — показ в foreground. `preventDefault()` до возврата обработчика скрывает баннер, звук и бейдж. Удаляйте listeners, когда они больше не нужны.
 
@@ -133,9 +133,9 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
 
-### Текущая поставка · 1.3.0
+### Текущая поставка · 1.3.2
 
-`initialize` принимает application id или `{applicationId, url, environment}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.1`. iOS autolinking берёт опубликованный `PushPlatformSDK` 1.2.2. В tarball также лежит копия этих же native-артефактов для Expo.
+`initialize` принимает application id или `{applicationId, url, environment}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.2`. iOS autolinking берёт опубликованный `PushPlatformSDK` 1.2.4. В tarball также лежит копия этих же native-артефактов для Expo.
 
 ### Unified applications · 1.1.0
 

@@ -31,15 +31,15 @@ final class PushPlatformBridgeInitTests: XCTestCase {
     func testConfigureThenGetInstallationIDReturnsUUID() {
         // Arrange
         let sdk = PushPlatform.shared
-        let testAPIKey = "test-api-key"
+        let testApplicationId = "11111111-1111-1111-1111-111111111111"
         let testBaseURL = "https://api.test.example"
         let testEnvironment = Environment.development
         let testDebugMode = true
 
         // Act: Configure SDK
         sdk.configure(
-            apiKey: testAPIKey,
-            apiBaseURL: testBaseURL,
+            applicationId: testApplicationId,
+            url: testBaseURL,
             environment: testEnvironment,
             debugMode: testDebugMode
         )
@@ -67,8 +67,8 @@ final class PushPlatformBridgeInitTests: XCTestCase {
         // Arrange
         let sdk = PushPlatform.shared
         sdk.configure(
-            apiKey: "test",
-            apiBaseURL: "https://test",
+            applicationId: "11111111-1111-1111-1111-111111111111",
+            url: "https://test",
             environment: .development,
             debugMode: false
         )

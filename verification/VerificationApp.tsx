@@ -52,7 +52,8 @@ function VerificationApp(): React.JSX.Element {
       try {
         await PushPlatform.initialize({
           apiKey: 'test-api-key-verification',
-          apiBaseURL: 'https://api.test.pushplatform.example',
+          applicationId: '00000000-0000-4000-8000-000000000000',
+          url: 'https://api.test.pushplatform.example',
           environment: 'development',
           debugMode: true,
         });

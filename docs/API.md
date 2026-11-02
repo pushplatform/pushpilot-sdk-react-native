@@ -48,9 +48,8 @@ static initialize(config: PushPlatformConfig): Promise<void>
 
 ```typescript
 await PushPlatform.initialize({
-  apiKey: 'YOUR_API_KEY',
   applicationId: '00000000-0000-4000-8000-000000000000',
-  apiBaseURL: 'https://api.your-domain.example',
+  url: 'https://api.your-domain.example',
 
   debugMode: false,
 });
@@ -220,9 +219,8 @@ SDK initialization configuration.
 
 ```typescript
 interface PushPlatformConfig {
-  apiKey: string;
-  applicationId?: string;
-  apiBaseURL: string;
+  applicationId: string;
+  url?: string;
   environment?: 'development' | 'production';
   debugMode?: boolean;
 }
@@ -230,11 +228,10 @@ interface PushPlatformConfig {
 
 **Fields:**
 
-- `apiKey` — API key from Push Platform dashboard (required)
-- `applicationId` — Application UUID used to register the installation. Required by the native iOS and Android SDKs for server registration.
-- `apiBaseURL` — Base URL of the PushPlatform API (required)
-- `environment` — Optional legacy APNs transport override; omit for build-entitlement detection
-- `debugMode` — Enable verbose logging (optional, default: `false`)
+- `applicationId` — UUID приложения. Обязателен.
+- `url` — адрес API. Если поле опущено, запросы идут на `https://api.pushpilot.ru`.
+- `environment` — `development` или `production`.
+- `debugMode` — подробные логи, по умолчанию `false`.
 
 ---
 
