@@ -1,3 +1,11 @@
+# 1.3.4 — 2026-11-02
+
+- Необязательный `notificationId` у уведомления в `onNotificationOpened` и `onNotificationWillDisplay`. Поле `notification_id` в `data` не попадает.
+- Открытие уведомления нативный SDK отправляет сам через `PUT /notifications/{id}`, включая холодный старт.
+- Android: клик, уже переданный нативным SDK, не приходит в `onNotificationOpened` второй раз.
+- Экспорты пакета не изменились.
+- Зависит от `PushPlatformSDK` 1.2.6 и `sdk-android` 1.2.4.
+
 # 1.3.3 — 2026-11-02
 
 - `foregroundBannerFallback` в объекте `initialize` задаёт секунды запасного системного баннера. Строка application id его не передаёт.
