@@ -1,3 +1,16 @@
+# 1.3.0 — 2026-11-01
+
+- `initialize` takes an application id or `{applicationId, url, environment}`. No API key and no `apiBaseURL`.
+- Depends on PushPlatformSDK 1.2.0.
+- iOS autolinking is checked on the repository test app and its current React Native, including a static-framework build. It is not pinned to another application's Firebase, Vision Camera or Nitro versions.
+
+# 1.2.0
+
+- Preserve the 1.0.3 installation contract: normal RN autolinking and a transitive CocoaPods dependency. No XCFramework, node_modules patch or additional native Podfile entry.
+- Retain native Android/iOS 1.1.0 and the unified application key, automatic APNs transport, device metadata and initial FCM registration behavior.
+- Align release source tags and remove global Ruby constant pollution from repeated podspec evaluation.
+- Validate the actual packed archive on RN 0.83.1 with Firebase 24.1.1, VisionCamera 5.0.11 and Nitro 0.35.10; include static-framework installation/build and upgrade/reinstall paths before publication.
+
 # 1.1.0 — 2026-11-01
 
 - Unified application ID and permanent shared application key for SDK and server; no project/environment setup step.

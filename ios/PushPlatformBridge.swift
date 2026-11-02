@@ -44,34 +44,23 @@ class PushPlatformBridge: RCTEventEmitter {
     func initialize(_ config: NSDictionary, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         NSLog("[PushPlatformBridge] initialize() called from JavaScript")
         DispatchQueue.main.async {
-            guard let apiKey = config["apiKey"] as? String else {
-                NSLog("[PushPlatformBridge] Missing required config fields")
-                reject("INVALID_CONFIG", "Missing required configuration fields", nil)
-                return
-            }
-
-            let environmentString = config["environment"] as? String
-            guard let environment = environmentString == nil ? Environment.automatic : self.parseEnvironment(environmentString!) else {
-                NSLog("[PushPlatformBridge] Invalid environment")
-                reject("INVALID_ENVIRONMENT", "Invalid environment value", nil)
-                return
-            }
-
-            let debugMode = config["debugMode"] as? Bool ?? false
-            let apiBaseURL = config["apiBaseURL"] as? String ?? "https://api.pushplatform.example"
-
-            guard let applicationIDString = config["applicationId"] as? String,
-                  let applicationID = UUID(uuidString: applicationIDString) else {
+            guard let applicationIDString = config["applicationId"] as? String else {
                 reject("INVALID_CONFIG", "applicationId must be an application UUID", nil)
                 return
             }
-            PushPlatform.shared.configure(
-                apiKey: apiKey,
-                apiBaseURL: apiBaseURL,
-                environment: environment,
-                debugMode: debugMode,
-                applicationID: applicationID
-            ) { result in
+            var options = PushPlatform.InitializeOptions(
+                applicationId: applicationIDString,
+                url: (config["url"] as? String) ?? (config["apiBaseURL"] as? String),
+                debugMode: config["debugMode"] as? Bool ?? false
+            )
+            if let environmentString = config["environment"] as? String {
+                guard let environment = self.parseEnvironment(environmentString) else {
+                    reject("INVALID_ENVIRONMENT", "Invalid environment value", nil)
+                    return
+                }
+                options.environment = environment
+            }
+            PushPlatform.shared.initialize(options) { result in
                 switch result {
                 case .success(let installationID):
                     NSLog("[PushPlatformBridge] Initialize succeeded, installationId=%@", installationID.uuidString)

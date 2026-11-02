@@ -25,6 +25,7 @@ describe('Security Boundaries', () => {
     test('should never receive raw APNs token in registration update', async () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -56,6 +57,7 @@ describe('Security Boundaries', () => {
     test('should never receive raw FCM token in registration update', async () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -87,6 +89,7 @@ describe('Security Boundaries', () => {
 
       const config = {
         apiKey: 'client-api-key-devices-write-scope',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.pushplatform.example',
         environment: 'production' as const,
       };
@@ -96,8 +99,8 @@ describe('Security Boundaries', () => {
       // Verify that native module receives config, but we don't expose server keys
       expect(mockNativeModule.initialize).toHaveBeenCalledWith(
         expect.objectContaining({
-          apiKey: expect.any(String),
-          apiBaseURL: expect.any(String),
+          applicationId: expect.any(String),
+          url: expect.any(String),
         })
       );
 
@@ -113,11 +116,11 @@ describe('Security Boundaries', () => {
       // API key should be non-empty string
       await expect(
         PushPlatform.initialize({
-          apiKey: '',
+          applicationId: '',
           apiBaseURL: 'https://api.test.pushplatform.example',
           environment: 'development',
         })
-      ).rejects.toThrow('apiKey is required');
+      ).rejects.toThrow('applicationId is required');
     });
 
     test('should not log sensitive data in debug mode', async () => {
@@ -126,6 +129,7 @@ describe('Security Boundaries', () => {
       (PushPlatform as any).instance = null;
       await PushPlatform.initialize({
         apiKey: 'sensitive-api-key-123',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
         debugMode: true,
@@ -145,6 +149,7 @@ describe('Security Boundaries', () => {
     test('should not expose raw notification data outside event handlers', async () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -161,6 +166,7 @@ describe('Security Boundaries', () => {
     test('should not persist user data across logout', async () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -203,6 +209,7 @@ describe('Security Boundaries', () => {
       try {
         await PushPlatform.initialize({
           apiKey: 'secret-key',
+          applicationId: '11111111-1111-1111-1111-111111111111',
           apiBaseURL: 'https://api.pushplatform.example',
           environment: 'production',
         });
@@ -218,6 +225,7 @@ describe('Security Boundaries', () => {
     test('should sanitize userId for SQL injection attempts', async () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -233,6 +241,7 @@ describe('Security Boundaries', () => {
     test('should sanitize notification data keys', async () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
@@ -268,6 +277,7 @@ describe('Security Boundaries', () => {
     test('should only call native module for SDK operations', async () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
+        applicationId: '11111111-1111-1111-1111-111111111111',
         apiBaseURL: 'https://api.test.pushplatform.example',
         environment: 'development',
       });

@@ -31,5 +31,13 @@ target 'PushPlatformTestApp' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+    # fmt enables consteval on current Apple clang, and that clang rejects the calls.
+    # C++17 disables the consteval path. This is the test app, not an app-specific pod.
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'fmt'
+      target.build_configurations.each do |config|
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+      end
+    end
   end
 end

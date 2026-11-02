@@ -78,29 +78,21 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     @ReactMethod
     fun initialize(config: ReadableMap, promise: Promise) {
         try {
-            val apiKey = config.getString("apiKey")
-                ?: return promise.reject("INVALID_CONFIG", "Missing apiKey")
-
-            val environmentString = config.getString("environment")
-                ?: "production"
-
-            val environment = when (environmentString.lowercase()) {
-                "development" -> Environment.DEVELOPMENT
-                "production" -> Environment.PRODUCTION
-                else -> return promise.reject("INVALID_ENVIRONMENT", "Invalid environment value")
-            }
-
-            val debugMode = config.getBoolean("debugMode")
             val applicationId = config.getString("applicationId")
-            val apiBaseURL = config.getString("apiBaseURL")
+                ?: return promise.reject("INVALID_CONFIG", "applicationId is required")
+            val environment = if (config.hasKey("environment") && !config.isNull("environment")) {
+                when (config.getString("environment")?.lowercase()) {
+                    "development" -> Environment.DEVELOPMENT
+                    "production" -> Environment.PRODUCTION
+                    else -> return promise.reject("INVALID_ENVIRONMENT", "Invalid environment value")
+                }
+            } else null
+            val url = if (config.hasKey("url") && !config.isNull("url")) config.getString("url") else config.getString("apiBaseURL")
+            val debugMode = if (config.hasKey("debugMode")) config.getBoolean("debugMode") else false
 
-            pushPlatform.configure(
-                context = reactApplicationContext,
-                apiKey = apiKey,
-                environment = environment,
-                debugMode = debugMode,
-                apiBaseUrl = apiBaseURL,
-                applicationId = applicationId,
+            pushPlatform.initialize(
+                reactApplicationContext,
+                PushPlatform.InitializeOptions(applicationId, url, environment, debugMode),
                 completion = { result ->
                     result.fold(
                         onSuccess = { installationId ->

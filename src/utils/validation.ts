@@ -18,27 +18,16 @@ export function validateConfig(config: PushPlatformConfig): void {
     );
   }
 
-  // Validate apiKey
-  if (!config.apiKey) {
-    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiKey is required');
-  }
-  if (typeof config.apiKey !== 'string') {
-    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiKey must be a string');
-  }
-  if (config.apiKey.trim() === '') {
-    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiKey cannot be empty');
+  if (!config.applicationId || typeof config.applicationId !== 'string') {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'applicationId is required');
   }
 
-  // Validate apiBaseURL
-  if (!config.apiBaseURL) {
-    throw new SDKError(ErrorCode.INVALID_CONFIG, 'apiBaseURL is required');
-  }
-  validateURL(config.apiBaseURL);
+  const baseURL = config.url || config.apiBaseURL;
+  if (baseURL) validateURL(baseURL);
 
-  // Validate HTTPS in production
-  const environment = config.environment || 'production';
-  const localDebug = config.debugMode === true && ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'].includes(new URL(config.apiBaseURL).hostname);
-  if (environment === 'production' && !config.apiBaseURL.startsWith('https://') && !localDebug) {
+  const environment = config.environment || (baseURL ? 'development' : 'production');
+  const localDebug = !!baseURL && config.debugMode === true && ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'].includes(new URL(baseURL).hostname);
+  if (environment === 'production' && baseURL && !baseURL.startsWith('https://') && !localDebug) {
     throw new SDKError(
       ErrorCode.INVALID_CONFIG,
       'apiBaseURL must use HTTPS in production'

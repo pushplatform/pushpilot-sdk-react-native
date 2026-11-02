@@ -6,14 +6,15 @@
 export interface NativePushPlatformBridge {
   /**
    * Initialize the PushPlatform SDK
-   * @param config Configuration object containing apiKey, environment, and debugMode
+   * @param config Application id, and optional server address, environment, and debug flag
    * @returns Promise that resolves when initialization completes
    */
   initialize(config: {
-    apiKey: string;
-    applicationId?: string;
+    applicationId: string;
+    url?: string;
     apiBaseURL?: string;
-    environment: string;
+    apiKey?: string;
+    environment?: string;
     debugMode?: boolean;
   }): Promise<void>;
 
