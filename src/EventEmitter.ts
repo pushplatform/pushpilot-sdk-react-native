@@ -6,7 +6,8 @@
 
 import type { EmitterSubscription } from 'react-native';
 import { NativeEvents } from './NativeModule';
-import type { NotificationContext, RegistrationUpdate, Subscription } from './types';
+import type { NotificationContext, NotificationWillDisplayEvent, PushNotification, RegistrationUpdate, Subscription } from './types';
+import { NativeModule } from './NativeModule';
 
 /**
  * Event names
@@ -15,7 +16,37 @@ export const EventNames = {
   REGISTRATION_UPDATED: 'onRegistrationUpdated',
   NOTIFICATION_RECEIVED: 'onNotificationReceived',
   NOTIFICATION_OPENED: 'onNotificationOpened',
+  NOTIFICATION_WILL_DISPLAY: 'onNotificationWillDisplay',
 } as const;
+
+const willDisplayListeners = new Set<(event: NotificationWillDisplayEvent) => void>();
+let willDisplayBridge: { remove(): void } | null = null;
+
+export function deliverWillDisplay(
+  listeners: Iterable<(event: NotificationWillDisplayEvent) => void>,
+  notification: PushNotification,
+): boolean {
+  let prevented = false;
+  let settled = false;
+  const event: NotificationWillDisplayEvent = {
+    notification,
+    preventDefault() {
+      if (!settled) prevented = true;
+    },
+  };
+  for (const listener of listeners) listener(event);
+  settled = true;
+  return prevented;
+}
+
+function ensureWillDisplayBridge(): void {
+  if (willDisplayBridge) return;
+  willDisplayBridge = NativeEvents.addListener(EventNames.NOTIFICATION_WILL_DISPLAY, (payload) => {
+    const value = (payload && typeof payload === 'object' ? payload : {}) as { id?: string; notification?: PushNotification };
+    const prevented = deliverWillDisplay(willDisplayListeners, value.notification || { id: '', data: {} });
+    if (value.id) NativeModule.completeNotificationDisplay(value.id, prevented);
+  });
+}
 
 /**
  * Event emitter wrapper with type-safe listeners
@@ -77,7 +108,25 @@ export class EventEmitter {
   /**
    * Remove all listeners
    */
+  static onNotificationWillDisplay(
+    callback: (event: NotificationWillDisplayEvent) => void,
+  ): Subscription {
+    ensureWillDisplayBridge();
+    willDisplayListeners.add(callback);
+    NativeModule.setNotificationWillDisplayObserved(true);
+    return {
+      remove: () => {
+        willDisplayListeners.delete(callback);
+        if (willDisplayListeners.size === 0) NativeModule.setNotificationWillDisplayObserved(false);
+      },
+    };
+  }
+
   static removeAllListeners(): void {
+    willDisplayListeners.clear();
+    NativeModule.setNotificationWillDisplayObserved(false);
+    willDisplayBridge?.remove();
+    willDisplayBridge = null;
     NativeEvents.removeAllListeners(EventNames.REGISTRATION_UPDATED);
     NativeEvents.removeAllListeners(EventNames.NOTIFICATION_RECEIVED);
     NativeEvents.removeAllListeners(EventNames.NOTIFICATION_OPENED);

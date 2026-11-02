@@ -23,7 +23,7 @@ describe('Event Emitter and Notifications', () => {
     await PushPlatform.initialize({
       apiKey: 'test-api-key',
       applicationId: '11111111-1111-1111-1111-111111111111',
-      apiBaseURL: 'https://api.test.pushplatform.example',
+      url: 'https://api.test.pushplatform.example',
       environment: 'development',
     });
   });

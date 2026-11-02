@@ -1,15 +1,15 @@
 {
   "android": {
     "repository": "pushplatform/pushpilot-sdk-android",
-    "commit": "46c76cffaa3e6f6af0f3ef93189cfa85b95d06fb",
+    "commit": "f902f36649152872b77e601273d6f0018a89eee0",
     "group": "com.pushplatform",
     "artifact": "sdk-android",
-    "version": "1.2.0"
+    "version": "1.2.1"
   },
   "ios": {
     "repository": "pushplatform/pushpilot-sdk-ios",
-    "commit": "c7f497f52d75c8dd9deb437e4c7c9d2b0c54d758",
+    "commit": "251527b0a9fb0f895b8e96fcb6868890ee7275d6",
     "pod": "PushPlatformSDK",
-    "version": "1.2.0"
+    "version": "1.2.2"
   }
 }

@@ -13,6 +13,7 @@ import type {
   PermissionStatus,
   Subscription,
   NotificationContext,
+  NotificationWillDisplayEvent,
   RegistrationUpdate,
   JSONObject,
 } from './types';
@@ -71,11 +72,10 @@ export class PushPlatform {
 
     try {
       // Normalize config with defaults
-      const explicitURL = config.url || config.apiBaseURL;
       const normalizedConfig = {
         applicationId: config.applicationId,
-        ...(explicitURL ? { url: explicitURL } : {}),
-        ...(config.environment ? { environment: config.environment } : explicitURL ? { environment: 'development' as const } : {}),
+        ...(config.url ? { url: config.url } : {}),
+        ...(config.environment ? { environment: config.environment } : config.url ? { environment: 'development' as const } : {}),
         debugMode: config.debugMode ?? false,
       };
 
@@ -380,6 +380,19 @@ export class PushPlatform {
    * }, []);
    * ```
    */
+  static onNotificationWillDisplay(
+    callback: (event: NotificationWillDisplayEvent) => void,
+  ): Subscription {
+    PushPlatform.ensureInitialized();
+    return EventEmitter.onNotificationWillDisplay(callback);
+  }
+
+  static async getDeviceToken(): Promise<string | null> {
+    PushPlatform.ensureInitialized();
+    const token = await NativeModule.getDeviceToken();
+    return token ?? null;
+  }
+
   static removeAllListeners(): void {
     Logger.debug('Removing all event listeners');
     EventEmitter.removeAllListeners();

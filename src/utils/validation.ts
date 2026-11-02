@@ -22,7 +22,10 @@ export function validateConfig(config: PushPlatformConfig): void {
     throw new SDKError(ErrorCode.INVALID_CONFIG, 'applicationId is required');
   }
 
-  const baseURL = config.url || config.apiBaseURL;
+  if (config.apiBaseURL && !config.url) {
+    throw new SDKError(ErrorCode.INVALID_CONFIG, 'url is required');
+  }
+  const baseURL = config.url;
   if (baseURL) validateURL(baseURL);
 
   const environment = config.environment || (baseURL ? 'development' : 'production');
@@ -30,7 +33,7 @@ export function validateConfig(config: PushPlatformConfig): void {
   if (environment === 'production' && baseURL && !baseURL.startsWith('https://') && !localDebug) {
     throw new SDKError(
       ErrorCode.INVALID_CONFIG,
-      'apiBaseURL must use HTTPS in production'
+      'url must use HTTPS in production'
     );
   }
 

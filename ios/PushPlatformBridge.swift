@@ -8,6 +8,8 @@ import UserNotifications
 class PushPlatformBridge: RCTEventEmitter {
 
     private var hasListeners = false
+    private var willDisplayObserved = false
+    private var pendingDisplays: [String: NotificationDisplayEvent] = [:]
 
     // MARK: - Initialization
 
@@ -26,7 +28,8 @@ class PushPlatformBridge: RCTEventEmitter {
         return [
             "onRegistrationUpdated",
             "onNotificationReceived",
-            "onNotificationOpened"
+            "onNotificationOpened",
+            "onNotificationWillDisplay"
         ]
     }
 
@@ -48,9 +51,13 @@ class PushPlatformBridge: RCTEventEmitter {
                 reject("INVALID_CONFIG", "applicationId must be an application UUID", nil)
                 return
             }
+            if config["apiBaseURL"] != nil && config["url"] == nil {
+                reject("INVALID_CONFIG", "url is required", nil)
+                return
+            }
             var options = PushPlatform.InitializeOptions(
                 applicationId: applicationIDString,
-                url: (config["url"] as? String) ?? (config["apiBaseURL"] as? String),
+                url: config["url"] as? String,
                 debugMode: config["debugMode"] as? Bool ?? false
             )
             if let environmentString = config["environment"] as? String {
@@ -76,7 +83,7 @@ class PushPlatformBridge: RCTEventEmitter {
     func login(_ userId: String, userData: NSDictionary?, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
         NSLog("[PushPlatformBridge] login() called with userId=%@", userId)
         DispatchQueue.main.async {
-            PushPlatform.shared.login(userID: userId) { result in
+            PushPlatform.shared.login(userID: userId, metadata: userData as? [String: Any]) { result in
                 switch result {
                 case .success:
                     NSLog("[PushPlatformBridge] Login succeeded")
@@ -153,6 +160,25 @@ class PushPlatformBridge: RCTEventEmitter {
             }
             resolve(status)
         }
+    }
+
+    @objc
+    func setNotificationWillDisplayObserved(_ observed: Bool) {
+        willDisplayObserved = observed
+    }
+
+    @objc
+    func completeNotificationDisplay(_ displayId: String, prevented: Bool) {
+        guard let event = pendingDisplays.removeValue(forKey: displayId) else { return }
+        if prevented {
+            event.preventDefault()
+        }
+        event.finish()
+    }
+
+    @objc(getDeviceToken:rejecter:)
+    func getDeviceToken(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+        resolve(PushPlatform.shared.getDeviceToken())
     }
 
     // MARK: - Helpers
@@ -239,6 +265,34 @@ extension PushPlatformBridge: PushPlatformDelegate {
         }
     }
 
+    func notificationWillDisplay(_ event: NotificationDisplayEvent) {
+        guard willDisplayObserved else { return }
+        let displayId = UUID().uuidString
+        pendingDisplays[displayId] = event
+        event.deferDecision()
+        guard hasListeners else {
+            event.finish()
+            return
+        }
+        sendEvent(withName: "onNotificationWillDisplay", body: [
+            "id": displayId,
+            "notification": serializeNotification(event.notification)
+        ])
+    }
+
+    func didUpdateDeviceToken(_ token: String) {
+        guard hasListeners else { return }
+        var body: [String: Any] = [
+            "success": true,
+            "type": "apns",
+            "token": token
+        ]
+        if let installationId = PushPlatform.shared.getInstallationID() {
+            body["installationId"] = installationId.uuidString
+        }
+        sendEvent(withName: "onRegistrationUpdated", body: body)
+    }
+
     func didReceiveNotification(_ notification: ParsedNotification, context: NotificationContext) {
         if hasListeners {
             sendEvent(withName: "onNotificationReceived", body: [
@@ -280,10 +334,17 @@ extension PushPlatformBridge: PushPlatformDelegate {
 
     func didUpdateAPNsToken() {
         if hasListeners {
-            sendEvent(withName: "onRegistrationUpdated", body: [
+            var body: [String: Any] = [
                 "success": true,
                 "type": "apns"
-            ])
+            ]
+            if let token = PushPlatform.shared.getDeviceToken() {
+                body["token"] = token
+            }
+            if let installationId = PushPlatform.shared.getInstallationID() {
+                body["installationId"] = installationId.uuidString
+            }
+            sendEvent(withName: "onRegistrationUpdated", body: body)
         }
     }
 
