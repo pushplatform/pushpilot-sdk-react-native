@@ -44,10 +44,14 @@ export interface PushPlatformConfig {
    */
   environment?: 'development' | 'production';
 
-  /**
-   * Enable debug logging (optional, default: false)
-   */
+  /** Enable debug logging (optional, default: false) */
   debugMode?: boolean;
+
+  /**
+   * Seconds before a deferred foreground banner is shown.
+   * Zero, null, or omission waits for the handler. A positive number shows the system banner if finish() does not run in time.
+   */
+  foregroundBannerFallback?: number | null;
 }
 
 /**

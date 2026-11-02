@@ -77,6 +77,9 @@ export class PushPlatform {
         ...(config.url ? { url: config.url } : {}),
         ...(config.environment ? { environment: config.environment } : config.url ? { environment: 'development' as const } : {}),
         debugMode: config.debugMode ?? false,
+        ...(typeof config.foregroundBannerFallback === 'number'
+          ? { foregroundBannerFallback: config.foregroundBannerFallback }
+          : {}),
       };
 
       // Delegate to native SDK

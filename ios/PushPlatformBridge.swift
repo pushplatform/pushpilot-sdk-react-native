@@ -56,6 +56,14 @@ class PushPlatformBridge: RCTEventEmitter {
                 url: config["url"] as? String,
                 debugMode: config["debugMode"] as? Bool ?? false
             )
+            if let fallback = config["foregroundBannerFallback"] as? NSNumber {
+                let seconds = fallback.doubleValue
+                guard seconds.isFinite, seconds >= 0 else {
+                    reject("INVALID_CONFIG", "foregroundBannerFallback must be a non-negative number of seconds", nil)
+                    return
+                }
+                options.foregroundBannerFallback = seconds
+            }
             if let environmentString = config["environment"] as? String {
                 guard let environment = self.parseEnvironment(environmentString) else {
                     reject("INVALID_ENVIRONMENT", "Invalid environment value", nil)
