@@ -1,9 +1,9 @@
 # Dependencies between repositories
 
-`pushpilot-sdk-react-native` exposes the TypeScript API and bridges to the two standalone native SDKs:
+`@pushplatform/react-native` 1.3.0 exposes the TypeScript API and bridges to the published native SDKs pinned in `release/native-lock.json`:
 
-- iOS: `pushpilot-sdk-ios`, pinned in `release/native-lock.json`; its Pod and Swift sources are bundled in the prepared npm tarball under `native/ios`.
-- Android: `pushpilot-sdk-android`, pinned in the same lock; its AAR and Maven metadata are bundled under `native/android/maven`, resolving `com.pushplatform:sdk-android:1.0.0` without Maven Local.
-- Both native SDKs call `pushpilot-server` for installation, token, and user registration using `apiKey`, `applicationId`, and `apiBaseURL`.
+- iOS: `PushPlatformSDK` 1.2.0, commit `c7f497f`. Autolinking depends on the public CocoaPods pod. The Expo plugin also ships those sources under `native/ios`.
+- Android: `com.pushplatform:sdk-android:1.2.0`, commit `46c76cf`. The AAR and Maven metadata are shipped under `native/android/maven`. Maven Local is not required.
+- Both native SDKs call `pushpilot-server` for installation, token, and user registration with an application id. A secret key is not required. With no URL the server is https://api.pushpilot.ru.
 
-Private repository access is required only for release preparation. See [installation](docs/INSTALLATION.md) and [release preparation](docs/RELEASING.md). npm publication is pending.
+Private repository access is required only while preparing a release tarball. Installation from npm does not need it. See [installation](docs/INSTALLATION.md).

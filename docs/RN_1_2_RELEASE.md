@@ -1,24 +1,17 @@
-# RN 1.2.0 source release
+# React Native 1.3.0
 
-Requested contract: retain the installation scheme of 1.0.3 and the current SDK code. Normal npm installation and React Native autolinking resolve PushPlatformSDK through public CocoaPods. No XCFramework, runtime rollback, patch-package, node_modules edit, custom Podfile native SDK entry, HTTP protocol override or source-repository fallback is introduced.
+`@pushplatform/react-native` 1.3.0 is the release that installs with an application id and native SDK 1.2.0.
 
-The wrapper version is 1.2.0. Native Android/iOS remain 1.1.0, pinned to the same source commits and checked payload hashes as the unified application release. Unified application keys, optional legacy environment, automatic APNs transport, FCM startup registration and device metadata are retained. Published 1.1.0 is immutable; the new version is a normal source release.
-
-The original omission of native CocoaPods 1.1.0 and the subsequent CDN propagation problem were separate from the later HTTP/2 download error. At this investigation, old and new public podspecs both returned HTTP 200 over HTTP/2, and the actual CocoaPods resolver returned native 1.1.0. A successful request at one moment is not proof that a CDN transport failure cannot recur. This release does not claim to change third-party CDN transport.
-
-Source corrections: the wrapper podspec references the real vVERSION source tag and no longer defines a global Ruby constant when CocoaPods evaluates it repeatedly. The public native dependency and all new SDK runtime code remain unchanged.
+- `initialize` takes an application id string or `{ applicationId, url, environment }`. It does not send a secret key or `apiBaseURL`.
+- Android dependency: `com.pushplatform:sdk-android:1.2.0` (commit `46c76cf`), bundled in the npm tarball.
+- iOS autolinking dependency: public CocoaPods `PushPlatformSDK` 1.2.0 (tag `v1.2.0`, commit `c7f497f`). The same sources are bundled for the Expo plugin.
+- Version 1.2.0 of this package was not published to npm. The npm `latest` tag stayed on 1.1.0 until 1.3.0.
+- Installation checks use the repository test app and its current React Native. They are not pinned to another application's Firebase, Vision Camera or Nitro versions.
 
 ## Acceptance
 
-- [x] Compare 1.0.3/1.1.0/current installation contracts and native pins.
-- [x] Build/package the candidate; native checksums, sources and package entries verified.
-- [ ] Current repository test app in an independent temporary copy. No second application's lockfile, Firebase flag, Vision Camera or Nitro pin.
-- [ ] Normal pod install and native build in that copy, without a native SDK override.
-- [ ] Upgrade and reinstall on that same current app, then native build.
-- [ ] Static-framework profile installation and native build.
-- [ ] CI on the final source and exact release archive.
-- [ ] Publication and anonymous public archive verification; no new source changes hidden after candidate acceptance.
-
-CI installs and builds the current test app with default and static linkage. The release workflow requires that same app to pass before its publish job can run. Public source metadata alone does not constitute installation/build acceptance.
-
-No real push, app launch against a production account, changes to the original TOP files, database changes, or owner-console changes are part of this release.
+- [x] Native lock matches published Android 1.2.0 and iOS 1.2.0.
+- [x] Package Android dependency is `com.pushplatform:sdk-android:1.2.0`.
+- [x] CocoaPods index lists `PushPlatformSDK` 1.2.0.
+- [x] GitHub Actions built the repository test app with default and static linkage.
+- [ ] npm `latest` for `@pushplatform/react-native` is 1.3.0 after publication.
