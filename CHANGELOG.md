@@ -6,10 +6,11 @@
 
 # 1.2.0
 
+This version was not published to npm. `latest` stayed on 1.1.0.
+
 - Preserve the 1.0.3 installation contract: normal RN autolinking and a transitive CocoaPods dependency. No XCFramework, node_modules patch or additional native Podfile entry.
-- Retain native Android/iOS 1.1.0 and the unified application key, automatic APNs transport, device metadata and initial FCM registration behavior.
 - Align release source tags and remove global Ruby constant pollution from repeated podspec evaluation.
-- Validate the actual packed archive on RN 0.83.1 with Firebase 24.1.1, VisionCamera 5.0.11 and Nitro 0.35.10; include static-framework installation/build and upgrade/reinstall paths before publication.
+- A check that pinned React Native 0.83 with Firebase, Vision Camera and Nitro is not the installation contract.
 
 # 1.1.0 — 2026-11-01
 

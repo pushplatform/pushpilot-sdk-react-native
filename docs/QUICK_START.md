@@ -1,21 +1,19 @@
 # Quick Start
 
-Install the public [@pushplatform/react-native 1.0.0 release](https://www.npmjs.com/package/@pushplatform/react-native/v/1.0.0) in your application:
+Install `@pushplatform/react-native` 1.3.0:
 
 ```sh
-npm install @pushplatform/react-native@1.0.0
+npm install @pushplatform/react-native@1.3.0
 ```
 
-The `next` tag currently points to `1.0.0`; use `npm install @pushplatform/react-native@next` to follow that tag. See the [release record](NPM_RELEASE.md) for verification and limitations. The old tarball in the SDK repository root does not contain the bundled native payload.
-
-The package includes both native SDKs: the Android Maven repository is in `native/android/maven`, and the iOS Pod sources are in `native/ios`. Application developers do not need private Git access or a manual Maven Local publication. Public React Native, AndroidX and Firebase dependencies still require their usual registry access.
+The package bridges to native SDK 1.2.0. Android resolves `com.pushplatform:sdk-android:1.2.0` from `native/android/maven` inside the npm package. iOS autolinking resolves published `PushPlatformSDK` 1.2.0 from CocoaPods; the same sources are also in `native/ios` for the Expo plugin. Application developers do not need private Git access or Maven Local.
 
 Complete the platform setup in [INSTALLATION.md](INSTALLATION.md):
 
-- **Expo SDK 54:** install `expo-dev-client`, add `@pushplatform/react-native` to the Expo plugins with your application UUID, APNs environment and Firebase config, then run `npx expo prebuild` and `npx expo run:android` / `npx expo run:ios`. The plugin configures the bundled native dependencies and iOS callbacks. Use a development build; Expo Go does not include this native bridge. EAS installs the published npm dependency normally.
-- **Bare React Native:** autolinking connects the RN bridge; add the bundled Maven repository to the Android repositories and the local `PushPlatformSDK` Pod to the iOS application target, then run `pod install`. Configure Firebase and iOS capabilities/callbacks using the installation guide.
+- **Expo:** install `expo-dev-client`, add `@pushplatform/react-native` to the Expo plugins with the PushPilot application UUID, APNs environment and Firebase config, then run `npx expo prebuild` and `npx expo run:android` / `npx expo run:ios`. Use a development build. Expo Go does not include this native bridge.
+- **Bare React Native:** autolinking connects the bridge and the public `PushPlatformSDK` 1.2.0 pod. Add the bundled Maven repository to the Android repositories, then run `pod install`.
 
-Initialize the SDK once during app startup:
+Initialize once during app startup:
 
 ```tsx
 import PushPlatform from '@pushplatform/react-native';
@@ -25,13 +23,7 @@ export async function startPushPlatform() {
     console.info('APNs/FCM token registration updated');
   });
 
-  await PushPlatform.initialize({
-    apiKey: 'YOUR_API_KEY',
-    applicationId: '00000000-0000-4000-8000-000000000000',
-    apiBaseURL: 'https://api.your-domain.example',
-
-    debugMode: __DEV__,
-  });
+  await PushPlatform.initialize('00000000-0000-4000-8000-000000000000');
 
   const installationId = await PushPlatform.getInstallationId();
   const permissionGranted = await PushPlatform.requestPermissions();
@@ -40,8 +32,8 @@ export async function startPushPlatform() {
 }
 ```
 
-`applicationId` is the application UUID from PushPlatform, not the iOS bundle identifier or Android application ID. `initialize()` registers the installation with `pushpilot-server`. The native SDK registers APNs/FCM tokens when the operating system provides them; token values stay native and are not exposed to JavaScript.
+`applicationId` is the PushPilot application UUID, not the iOS bundle identifier or Android application id. No secret key is sent. With no URL the SDK uses https://api.pushpilot.ru. Pass `{ applicationId, url }` to use another server. The native SDK registers APNs/FCM tokens when the operating system provides them; token values stay native and are not exposed to JavaScript.
 
-Use the API key and application UUID from PushPlatform. On Android, use your application's real `google-services.json`; on iOS, use the appropriate APNs environment and signing profile for the build.
+On Android, use the application's real `google-services.json`. On iOS, use the APNs environment and signing profile for the build.
 
 See the [API reference](API.md) and [troubleshooting guide](TROUBLESHOOTING.md) for details.

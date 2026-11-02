@@ -1,10 +1,6 @@
 # Expo support state
 
-Дата состояния: 2026-10-12. PR #1 из `feat/expo-support` и исправления release
-workflow из PR #2 / #3 смерджены в `main`. Подготовка release candidate на GitHub
-подтверждена владельцем: **prepare PASS**, **publish Skipped**. Первый публичный
-npm-релиз `@pushplatform/react-native@1.0.0` опубликован отдельно владельцем;
-установка из публичного registry подтверждена. [Запись выпуска](NPM_RELEASE.md).
+Текущий пакет — `@pushplatform/react-native` 1.3.0. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.0.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -20,7 +16,7 @@ npm-релиз `@pushplatform/react-native@1.0.0` опубликован отд�
 `app.plugin.js` экспортирует `withPushPlatform` через стандартную точку входа пакета. Во время prebuild он:
 
 - добавляет `POST_NOTIFICATIONS` и PushPilot application metadata в Android Manifest;
-- добавляет Maven repository из установленного npm пакета (`native/android/maven`) для `com.pushplatform:sdk-android:1.0.0`; Maven Local пользователю не нужен;
+- добавляет Maven repository из установленного npm пакета (`native/android/maven`) для `com.pushplatform:sdk-android:1.2.0`; Maven Local пользователю не нужен;
 - при `android.googleServicesFile` добавляет Google Services Gradle plugin и оставляет путь к конфигу в Expo config;
 - добавляет `aps-environment`, `remote-notification`, application UUID и Pod `PushPlatformSDK` из `native/ios` установленного npm пакета; приватный Git пользователю не нужен;
 - прокидывает APNs token, foreground notification и notification response через стандартный Swift AppDelegate;
@@ -28,7 +24,7 @@ npm-релиз `@pushplatform/react-native@1.0.0` опубликован отд�
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
-Native SDK coordinates: iOS — `PushPlatformSDK` 1.0.0; Android — `com.pushplatform:sdk-android:1.0.0`. Release payload собирается из pinned native commits в `release/native-lock.json`. AAR, Maven metadata, Swift sources и лицензии входят в tarball. Удалённые Maven/CocoaPods releases не требуются. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
+Native SDK в 1.3.0: iOS — опубликованный `PushPlatformSDK` 1.2.0, Android — `com.pushplatform:sdk-android:1.2.0`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
 
 ## Проверки native интеграции — история 2026-10-04
 
