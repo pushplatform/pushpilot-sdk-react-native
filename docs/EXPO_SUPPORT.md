@@ -1,6 +1,6 @@
 # Expo support state
 
-Текущий пакет — `@pushplatform/react-native` 1.3.1. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.1.
+Текущий пакет — `@pushplatform/react-native` 1.3.2. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.2.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -16,7 +16,7 @@
 `app.plugin.js` экспортирует `withPushPlatform` через стандартную точку входа пакета. Во время prebuild он:
 
 - добавляет `POST_NOTIFICATIONS` и PushPilot application metadata в Android Manifest;
-- добавляет Maven repository из установленного npm пакета (`native/android/maven`) для `com.pushplatform:sdk-android:1.2.1`; Maven Local пользователю не нужен;
+- добавляет Maven repository из установленного npm пакета (`native/android/maven`) для `com.pushplatform:sdk-android:1.2.2`; Maven Local пользователю не нужен;
 - при `android.googleServicesFile` добавляет Google Services Gradle plugin и оставляет путь к конфигу в Expo config;
 - добавляет `aps-environment`, `remote-notification`, application UUID и Pod `PushPlatformSDK` из `native/ios` установленного npm пакета; приватный Git пользователю не нужен;
 - прокидывает APNs token, foreground notification и notification response через стандартный Swift AppDelegate;
@@ -24,7 +24,7 @@
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
-Native SDK в 1.3.1: iOS — опубликованный `PushPlatformSDK` 1.2.2, Android — `com.pushplatform:sdk-android:1.2.1`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
+Native SDK в 1.3.2: iOS — опубликованный `PushPlatformSDK` 1.2.4, Android — `com.pushplatform:sdk-android:1.2.2`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
 
 ## Проверки native интеграции — история 2026-10-04
 

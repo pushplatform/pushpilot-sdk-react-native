@@ -36,9 +36,6 @@ export interface PushPlatformConfig {
   /** Server address. Omitted requests use https://api.pushpilot.ru. */
   url?: string;
 
-  /** Rejected. Pass url. A value here without url is a configuration error. */
-  apiBaseURL?: string;
-
   /** Ignored. The public SDK does not send an API key. */
   apiKey?: string;
 

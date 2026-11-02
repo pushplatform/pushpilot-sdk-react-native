@@ -25,66 +25,53 @@ class PushPlatformBridgeContractTest {
 
     @Test
     fun testValidateConfigWithAllRequiredFields() {
-        // Given
         val config = mapOf(
-            "apiKey" to "test-api-key",
-            "apiBaseURL" to "https://api.test.pushplatform.example",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "https://api.test.pushplatform.example",
             "environment" to "development"
         )
 
-        // When
         val result = bridge.validateConfig(config)
 
-        // Then
         assertTrue(result.isValid)
         assertNull(result.error)
     }
 
     @Test
-    fun testValidateConfigMissingApiKey() {
-        // Given
+    fun testValidateConfigDoesNotRequireApiKey() {
         val config = mapOf(
-            "apiBaseURL" to "https://api.test.example",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "https://api.test.example",
             "environment" to "development"
         )
 
-        // When
         val result = bridge.validateConfig(config)
 
-        // Then
-        assertFalse(result.isValid)
-        assertEquals("INVALID_CONFIG", result.errorCode)
-        assertNotNull(result.error)
+        assertTrue(result.isValid)
     }
 
     @Test
-    fun testValidateConfigMissingApiBaseURL() {
-        // Given
+    fun testValidateConfigMissingUrl() {
         val config = mapOf(
-            "apiKey" to "test-key",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
             "environment" to "development"
         )
 
-        // When
         val result = bridge.validateConfig(config)
 
-        // Then
         assertFalse(result.isValid)
         assertEquals("INVALID_CONFIG", result.errorCode)
     }
 
     @Test
     fun testValidateConfigDefaultsEnvironmentToProduction() {
-        // Given
         val config = mapOf(
-            "apiKey" to "test-key",
-            "apiBaseURL" to "https://api.example"
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "https://api.example"
         )
 
-        // When
         val result = bridge.validateConfig(config)
 
-        // Then
         assertTrue(result.isValid)
         assertEquals("production", bridge.getEnvironment(config))
     }
@@ -95,8 +82,8 @@ class PushPlatformBridgeContractTest {
     fun testInitializeWithValidConfig() {
         // Given
         val config = mapOf(
-            "apiKey" to "test-key",
-            "apiBaseURL" to "https://api.test.example",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "https://api.test.example",
             "environment" to "development"
         )
 
@@ -106,8 +93,7 @@ class PushPlatformBridgeContractTest {
         // Then
         assertTrue(result.success)
         assertTrue(mockSDK.initializeCalled)
-        assertEquals("test-key", mockSDK.initializeApiKey)
-        assertEquals("https://api.test.example", mockSDK.initializeApiBaseURL)
+        assertEquals("https://api.test.example", mockSDK.initializeUrl)
         assertEquals("development", mockSDK.initializeEnvironment)
     }
 
@@ -115,8 +101,8 @@ class PushPlatformBridgeContractTest {
     fun testInitializeWithProductionEnvironment() {
         // Given
         val config = mapOf(
-            "apiKey" to "prod-key",
-            "apiBaseURL" to "https://api.pushplatform.example",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "https://api.pushplatform.example",
             "environment" to "production"
         )
 
@@ -133,8 +119,8 @@ class PushPlatformBridgeContractTest {
         // Given
         mockSDK.shouldFailInitialize = true
         val config = mapOf(
-            "apiKey" to "test-key",
-            "apiBaseURL" to "https://api.test.example",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "https://api.test.example",
             "environment" to "development"
         )
 
@@ -432,8 +418,8 @@ class PushPlatformBridgeContractTest {
     fun testMultipleInitializeCalls() {
         // Given
         val config = mapOf(
-            "apiKey" to "key1",
-            "apiBaseURL" to "https://api1.example",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "https://api1.example",
             "environment" to "development"
         )
 
@@ -463,35 +449,30 @@ class PushPlatformBridgeContractTest {
 
     @Test
     fun testConfigValidationRejectsInvalidURL() {
-        // Given
         val config = mapOf(
-            "apiKey" to "test-key",
-            "apiBaseURL" to "not-a-valid-url",
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
+            "url" to "not-a-valid-url",
             "environment" to "development"
         )
 
-        // When
         val result = bridge.validateConfig(config)
 
-        // Then
         assertFalse(result.isValid)
         assertEquals("INVALID_CONFIG", result.errorCode)
     }
 
     @Test
-    fun testConfigValidationRejectsEmptyApiKey() {
-        // Given
+    fun testConfigValidationAllowsEmptyApiKey() {
         val config = mapOf(
+            "applicationId" to "11111111-1111-1111-1111-111111111111",
             "apiKey" to "",
-            "apiBaseURL" to "https://api.example",
+            "url" to "https://api.example",
             "environment" to "development"
         )
 
-        // When
         val result = bridge.validateConfig(config)
 
-        // Then
-        assertFalse(result.isValid)
+        assertTrue(result.isValid)
     }
 }
 
@@ -518,18 +499,18 @@ data class BridgeError(
 class BridgeLogic(private val sdk: MockPushPlatformSDK) {
 
     fun validateConfig(config: Map<String, Any?>): ValidationResult {
-        val apiKey = config["apiKey"] as? String
-        if (apiKey.isNullOrBlank()) {
-            return ValidationResult(false, "apiKey is required", "INVALID_CONFIG")
+        val applicationId = config["applicationId"] as? String
+        if (applicationId.isNullOrBlank()) {
+            return ValidationResult(false, "applicationId is required", "INVALID_CONFIG")
         }
 
-        val apiBaseURL = config["apiBaseURL"] as? String
-        if (apiBaseURL.isNullOrBlank()) {
-            return ValidationResult(false, "apiBaseURL is required", "INVALID_CONFIG")
+        val url = config["url"] as? String
+        if (url.isNullOrBlank()) {
+            return ValidationResult(false, "url is required", "INVALID_CONFIG")
         }
 
-        if (!apiBaseURL.startsWith("http://") && !apiBaseURL.startsWith("https://")) {
-            return ValidationResult(false, "apiBaseURL must be a valid URL", "INVALID_CONFIG")
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            return ValidationResult(false, "url must be a valid URL", "INVALID_CONFIG")
         }
 
         return ValidationResult(true)
@@ -547,8 +528,8 @@ class BridgeLogic(private val sdk: MockPushPlatformSDK) {
 
         return try {
             sdk.initialize(
-                apiKey = config["apiKey"] as String,
-                apiBaseURL = config["apiBaseURL"] as String,
+                applicationId = config["applicationId"] as String,
+                url = config["url"] as String,
                 environment = getEnvironment(config)
             )
             BridgeResult(true)
@@ -616,8 +597,8 @@ class BridgeLogic(private val sdk: MockPushPlatformSDK) {
 
 class MockPushPlatformSDK {
     var initializeCalled = false
-    var initializeApiKey: String? = null
-    var initializeApiBaseURL: String? = null
+    var initializeApplicationId: String? = null
+    var initializeUrl: String? = null
     var initializeEnvironment: String? = null
 
     var loginCalled = false
@@ -637,10 +618,10 @@ class MockPushPlatformSDK {
     var shouldFailLogout = false
     var shouldFailPermissions = false
 
-    fun initialize(apiKey: String, apiBaseURL: String, environment: String) {
+    fun initialize(applicationId: String, url: String, environment: String) {
         initializeCalled = true
-        initializeApiKey = apiKey
-        initializeApiBaseURL = apiBaseURL
+        initializeApplicationId = applicationId
+        initializeUrl = url
         initializeEnvironment = environment
 
         if (shouldFailInitialize) {
@@ -683,8 +664,8 @@ class MockPushPlatformSDK {
 
     fun reset() {
         initializeCalled = false
-        initializeApiKey = null
-        initializeApiBaseURL = null
+        initializeApplicationId = null
+        initializeUrl = null
         initializeEnvironment = null
         loginCalled = false
         loginUserId = null

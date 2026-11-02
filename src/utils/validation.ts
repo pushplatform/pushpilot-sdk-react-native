@@ -22,9 +22,6 @@ export function validateConfig(config: PushPlatformConfig): void {
     throw new SDKError(ErrorCode.INVALID_CONFIG, 'applicationId is required');
   }
 
-  if (config.apiBaseURL && !config.url) {
-    throw new SDKError(ErrorCode.INVALID_CONFIG, 'url is required');
-  }
   const baseURL = config.url;
   if (baseURL) validateURL(baseURL);
 

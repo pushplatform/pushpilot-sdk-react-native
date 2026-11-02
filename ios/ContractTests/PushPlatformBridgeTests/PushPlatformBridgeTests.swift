@@ -39,11 +39,11 @@ import Foundation
         mockPermissionGranted = true
     }
 
-    @objc func initialize(apiKey: String, apiBaseURL: String, environment: String) throws {
+    @objc func initialize(applicationId: String, url: String, environment: String) throws {
         initializeCalled = true
         initializeConfig = [
-            "apiKey": apiKey,
-            "apiBaseURL": apiBaseURL,
+            "applicationId": applicationId,
+            "url": url,
             "environment": environment
         ]
 
@@ -151,37 +151,37 @@ class PushPlatformBridgeTests: XCTestCase {
     func testInitializeWithValidConfig() {
         // Given
         let config: [String: Any] = [
-            "apiKey": "test-api-key",
-            "apiBaseURL": "https://api.test.pushplatform.example",
+            "applicationId": "11111111-1111-1111-1111-111111111111",
+            "url": "https://api.test.pushplatform.example",
             "environment": "development"
         ]
 
         // When
         XCTAssertNoThrow(try mockSDK.initialize(
-            apiKey: config["apiKey"] as! String,
-            apiBaseURL: config["apiBaseURL"] as! String,
+            applicationId: config["applicationId"] as! String,
+            url: config["url"] as! String,
             environment: config["environment"] as! String
         ))
 
         // Then
         XCTAssertTrue(mockSDK.initializeCalled)
-        XCTAssertEqual(mockSDK.initializeConfig?["apiKey"] as? String, "test-api-key")
-        XCTAssertEqual(mockSDK.initializeConfig?["apiBaseURL"] as? String, "https://api.test.pushplatform.example")
+        XCTAssertEqual(mockSDK.initializeConfig?["applicationId"] as? String, "11111111-1111-1111-1111-111111111111")
+        XCTAssertEqual(mockSDK.initializeConfig?["url"] as? String, "https://api.test.pushplatform.example")
         XCTAssertEqual(mockSDK.initializeConfig?["environment"] as? String, "development")
     }
 
     func testInitializeWithProductionEnvironment() {
         // Given
         let config: [String: Any] = [
-            "apiKey": "prod-api-key",
-            "apiBaseURL": "https://api.pushplatform.example",
+            "applicationId": "11111111-1111-1111-1111-111111111111",
+            "url": "https://api.pushplatform.example",
             "environment": "production"
         ]
 
         // When
         XCTAssertNoThrow(try mockSDK.initialize(
-            apiKey: config["apiKey"] as! String,
-            apiBaseURL: config["apiBaseURL"] as! String,
+            applicationId: config["applicationId"] as! String,
+            url: config["url"] as! String,
             environment: config["environment"] as! String
         ))
 
@@ -196,8 +196,8 @@ class PushPlatformBridgeTests: XCTestCase {
 
         // When/Then
         XCTAssertThrowsError(try mockSDK.initialize(
-            apiKey: "test-key",
-            apiBaseURL: "https://api.test.example",
+            applicationId: "11111111-1111-1111-1111-111111111111",
+            url: "https://api.test.example",
             environment: "development"
         )) { error in
             let nsError = error as NSError
@@ -478,7 +478,7 @@ class PushPlatformBridgeTests: XCTestCase {
         let errorUserInfo: [String: Any] = [
             NSLocalizedDescriptionKey: "Detailed error",
             "errorCode": "INVALID_CONFIG",
-            "details": ["field": "apiKey"]
+            "details": ["field": "url"]
         ]
         let error = NSError(domain: "PushPlatform", code: 1001, userInfo: errorUserInfo)
 
@@ -492,22 +492,22 @@ class PushPlatformBridgeTests: XCTestCase {
     func testMultipleInitializeCalls() {
         // Given
         let config1: [String: Any] = [
-            "apiKey": "key1",
-            "apiBaseURL": "https://api1.example",
+            "applicationId": "11111111-1111-1111-1111-111111111111",
+            "url": "https://api1.example",
             "environment": "development"
         ]
 
         // When - first initialization
         XCTAssertNoThrow(try mockSDK.initialize(
-            apiKey: config1["apiKey"] as! String,
-            apiBaseURL: config1["apiBaseURL"] as! String,
+            applicationId: config1["applicationId"] as! String,
+            url: config1["url"] as! String,
             environment: config1["environment"] as! String
         ))
 
         // Subsequent initialization should be no-op or succeed
         XCTAssertNoThrow(try mockSDK.initialize(
-            apiKey: config1["apiKey"] as! String,
-            apiBaseURL: config1["apiBaseURL"] as! String,
+            applicationId: config1["applicationId"] as! String,
+            url: config1["url"] as! String,
             environment: config1["environment"] as! String
         ))
 

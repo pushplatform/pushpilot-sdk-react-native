@@ -49,13 +49,6 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig(config)).toThrow('must be a valid URL');
     });
 
-    test('rejects apiBaseURL when url is absent', () => {
-      expect(() => validateConfig({
-        applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.pushplatform.example',
-      })).toThrow('url is required');
-    });
-
     test('should throw on non-HTTPS url in production', () => {
       const config: PushPlatformConfig = {
         applicationId: '11111111-1111-1111-1111-111111111111',

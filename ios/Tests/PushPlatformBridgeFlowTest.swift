@@ -30,10 +30,9 @@ final class PushPlatformBridgeFlowTest: XCTestCase {
     func testInitializeThenGetInstallationIdReturnsUUID() {
         // Arrange: configuration matching TestApp
         let config: NSDictionary = [
-            "apiKey": "test-api-key",
+            "applicationId": "11111111-1111-1111-1111-111111111111",
             "environment": "development",
             "debugMode": true,
-            // Note: apiBaseURL omitted (uses bridge default)
         ]
 
         var initializeResult: [String: Any]?

@@ -18,7 +18,6 @@ import com.pushplatform.sdk.notifications.ParsedNotification
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 
 class PushPlatformModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext), PushPlatformDelegate, LifecycleEventListener {
@@ -95,9 +94,6 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
                     else -> return promise.reject("INVALID_ENVIRONMENT", "Invalid environment value")
                 }
             } else null
-            if (config.hasKey("apiBaseURL") && !config.isNull("apiBaseURL") && (!config.hasKey("url") || config.isNull("url"))) {
-                return promise.reject("INVALID_CONFIG", "url is required")
-            }
             val url = if (config.hasKey("url") && !config.isNull("url")) config.getString("url") else null
             val debugMode = if (config.hasKey("debugMode")) config.getBoolean("debugMode") else false
 
@@ -292,7 +288,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
         }
         sendEvent("onNotificationWillDisplay", body)
         try {
-            latch.await(8, TimeUnit.SECONDS)
+            latch.await()
         } catch (_: InterruptedException) {
             Thread.currentThread().interrupt()
         }

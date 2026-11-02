@@ -51,10 +51,6 @@ class PushPlatformBridge: RCTEventEmitter {
                 reject("INVALID_CONFIG", "applicationId must be an application UUID", nil)
                 return
             }
-            if config["apiBaseURL"] != nil && config["url"] == nil {
-                reject("INVALID_CONFIG", "url is required", nil)
-                return
-            }
             var options = PushPlatform.InitializeOptions(
                 applicationId: applicationIDString,
                 url: config["url"] as? String,

@@ -60,7 +60,7 @@ typeof PushPlatform.initialize === 'function'
 // 2. Initialize
 await PushPlatform.initialize({
   apiKey: 'test-api-key',
-  apiBaseURL: 'https://api.test.pushplatform.example',
+  url: 'https://api.test.pushplatform.example',
   environment: 'production',
   debugMode: true,
 });

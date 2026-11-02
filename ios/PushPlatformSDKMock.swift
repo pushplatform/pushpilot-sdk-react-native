@@ -84,7 +84,7 @@ public class PushPlatform {
         NSLog("[PushPlatformSDKMock] Singleton initialized with UUID: %@", installationID?.uuidString ?? "nil")
     }
 
-    public func configure(apiKey: String, apiBaseURL: String, environment: Environment, debugMode: Bool) {
+    public func configure(applicationId: String, url: String, environment: Environment, debugMode: Bool) {
         PushPlatform.configureCallCount += 1
         NSLog("[PushPlatformSDKMock] configure() call #%d. Before: configured=%@",
               PushPlatform.configureCallCount,
