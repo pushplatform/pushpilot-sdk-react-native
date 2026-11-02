@@ -51,13 +51,13 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     override fun onHostResume() {
         val activity = reactApplicationContext.currentActivity ?: return
         val intent = activity.intent ?: return
-        if (intent.getBooleanExtra("com.pushplatform.opened_emitted", false)) return
-        if (!intent.hasExtra("event_id") && !intent.hasExtra("call_id")) return
+        if (intent.getBooleanExtra(OPENED_EMITTED, false)) return
+        if (!intent.hasExtra("event_id") && !intent.hasExtra("call_id") && !intent.hasExtra(NOTIFICATION_ID)) return
 
         val extras: Bundle? = intent.extras
         val data = Arguments.createMap()
         extras?.keySet()?.forEach { key ->
-            if (key != "event_id" && key != "call_id") {
+            if (key != "event_id" && key != "call_id" && key != NOTIFICATION_ID) {
                 val value = extras.get(key)
                 if (value is String) data.putString(key, value)
             }
@@ -65,6 +65,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
         val notification = Arguments.createMap().apply {
             putString("id", extras?.getString("event_id") ?: extras?.getString("call_id") ?: "android-notification")
             extras?.getString("call_id")?.let { putString("callId", it) }
+            extras?.getString(NOTIFICATION_ID)?.let { putString("notificationId", it) }
             putMap("data", data)
         }
         val event = Arguments.createMap().apply {
@@ -73,7 +74,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
             putBoolean("userInteraction", true)
         }
         sendEvent("onNotificationOpened", event)
-        intent.putExtra("com.pushplatform.opened_emitted", true)
+        intent.putExtra(OPENED_EMITTED, true)
     }
 
     override fun onHostPause() = Unit
@@ -239,6 +240,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
             notification.body?.let { putString("body", it) }
             notification.eventId?.let { putString("id", it) }
             notification.callId?.let { putString("callId", it) }
+            notification.notificationId?.let { putString("notificationId", it) }
 
             val dataMap = Arguments.createMap()
             notification.customData.forEach { (key, value) ->
@@ -299,6 +301,8 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
             putBoolean("userInteraction", true)
         }
         sendEvent("onNotificationOpened", body)
+        // The tap intent is still the activity's; onHostResume must not emit it again.
+        reactApplicationContext.currentActivity?.intent?.putExtra(OPENED_EMITTED, true)
     }
 
     override fun didFailToRegisterFcmToken(error: SdkError) {
@@ -323,5 +327,10 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
 
     override fun onNotificationPermissionResult(granted: Boolean) {
         // Not exposed to JS per ADR-0014 - permission checks handled by native SDK
+    }
+
+    private companion object {
+        const val OPENED_EMITTED = "com.pushplatform.opened_emitted"
+        const val NOTIFICATION_ID = "notification_id"
     }
 }

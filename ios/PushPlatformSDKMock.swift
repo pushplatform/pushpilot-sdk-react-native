@@ -38,8 +38,9 @@ public struct ParsedNotification {
     public var eventID: String?
     public var callID: String?
     public var customData: [String: Any]
+    public var notificationID: String?
 
-    public init(title: String? = nil, body: String? = nil, badge: Int? = nil, sound: String? = nil, eventID: String? = nil, callID: String? = nil, customData: [String: Any] = [:]) {
+    public init(title: String? = nil, body: String? = nil, badge: Int? = nil, sound: String? = nil, eventID: String? = nil, callID: String? = nil, customData: [String: Any] = [:], notificationID: String? = nil) {
         self.title = title
         self.body = body
         self.badge = badge
@@ -47,6 +48,7 @@ public struct ParsedNotification {
         self.eventID = eventID
         self.callID = callID
         self.customData = customData
+        self.notificationID = notificationID
     }
 }
 

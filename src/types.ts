@@ -124,6 +124,12 @@ export interface PushNotification {
   callId?: string;
 
   /**
+   * Server notification id (the `id` from `POST /notifications`).
+   * The native SDK reports the open with it automatically.
+   */
+  notificationId?: string;
+
+  /**
    * VoIP push marker (iOS only, optional)
    */
   isVoIP?: boolean;

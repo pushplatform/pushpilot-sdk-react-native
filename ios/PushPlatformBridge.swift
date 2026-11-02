@@ -238,6 +238,9 @@ class PushPlatformBridge: RCTEventEmitter {
         if let callID = notification.callID {
             result["callId"] = callID
         }
+        if let notificationID = notification.notificationID {
+            result["notificationId"] = notificationID
+        }
 
         result["data"] = notification.customData
 
