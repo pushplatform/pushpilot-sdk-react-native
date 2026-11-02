@@ -13,12 +13,20 @@ import com.pushplatform.sdk.PushPlatform
 import com.pushplatform.sdk.PushPlatformDelegate
 import com.pushplatform.sdk.core.UserManager
 import com.pushplatform.sdk.models.SdkError
+import com.pushplatform.sdk.NotificationDisplay
 import com.pushplatform.sdk.notifications.ParsedNotification
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class PushPlatformModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext), PushPlatformDelegate, LifecycleEventListener {
 
     private val pushPlatform = PushPlatform.getInstance()
+    private val pendingDisplays = ConcurrentHashMap<String, NotificationDisplay>()
+    private val displayLatches = ConcurrentHashMap<String, CountDownLatch>()
+    @Volatile private var willDisplayObserved = false
     private var permissionPromise: Promise? = null
     private val permissionRequestCode = 1001
     private val permissionListener = PermissionListener { requestCode, _, grantResults ->
@@ -87,7 +95,10 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
                     else -> return promise.reject("INVALID_ENVIRONMENT", "Invalid environment value")
                 }
             } else null
-            val url = if (config.hasKey("url") && !config.isNull("url")) config.getString("url") else config.getString("apiBaseURL")
+            if (config.hasKey("apiBaseURL") && !config.isNull("apiBaseURL") && (!config.hasKey("url") || config.isNull("url"))) {
+                return promise.reject("INVALID_CONFIG", "url is required")
+            }
+            val url = if (config.hasKey("url") && !config.isNull("url")) config.getString("url") else null
             val debugMode = if (config.hasKey("debugMode")) config.getBoolean("debugMode") else false
 
             pushPlatform.initialize(
@@ -116,7 +127,8 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun login(userId: String, userData: ReadableMap?, promise: Promise) {
-        pushPlatform.login(userId) { result ->
+        val metadata = userData?.toHashMap()
+        pushPlatform.login(userId, metadata) { result ->
             when (result) {
                 is UserManager.Result.Success -> promise.resolve(null)
                 is UserManager.Result.Failure -> {
@@ -183,8 +195,31 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun getPermissionStatus(promise: Promise) {
-        val status = if (pushPlatform.hasNotificationPermission()) "granted" else "denied"
+        val status = when {
+            pushPlatform.hasNotificationPermission() -> "granted"
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                reactApplicationContext.currentActivity?.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS) == true -> "denied"
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> "not-determined"
+            else -> "denied"
+        }
         promise.resolve(status)
+    }
+
+    @ReactMethod
+    fun getDeviceToken(promise: Promise) {
+        promise.resolve(pushPlatform.getDeviceToken())
+    }
+
+    @ReactMethod
+    fun setNotificationWillDisplayObserved(observed: Boolean) {
+        willDisplayObserved = observed
+    }
+
+    @ReactMethod
+    fun completeNotificationDisplay(displayId: String, prevented: Boolean) {
+        val event = pendingDisplays.remove(displayId) ?: return
+        if (prevented) event.preventDefault()
+        displayLatches.remove(displayId)?.countDown()
     }
 
     private fun errorCode(error: SdkError): String {
@@ -229,8 +264,47 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
         val body = Arguments.createMap().apply {
             putBoolean("success", true)
             putString("type", "fcm")
+            pushPlatform.getInstallationId()?.let { putString("installationId", it) }
+            pushPlatform.getDeviceToken()?.let { putString("token", it) }
         }
         sendEvent("onRegistrationUpdated", body)
+    }
+
+    override fun didUpdateDeviceToken(token: String) {
+        val body = Arguments.createMap().apply {
+            putBoolean("success", true)
+            putString("type", "fcm")
+            putString("token", token)
+            pushPlatform.getInstallationId()?.let { putString("installationId", it) }
+        }
+        sendEvent("onRegistrationUpdated", body)
+    }
+
+    override fun notificationWillDisplay(event: NotificationDisplay) {
+        if (!willDisplayObserved) return
+        val displayId = UUID.randomUUID().toString()
+        val latch = CountDownLatch(1)
+        pendingDisplays[displayId] = event
+        displayLatches[displayId] = latch
+        val body = Arguments.createMap().apply {
+            putString("id", displayId)
+            putMap("notification", serializeNotification(event.notification))
+        }
+        sendEvent("onNotificationWillDisplay", body)
+        try {
+            latch.await(8, TimeUnit.SECONDS)
+        } catch (_: InterruptedException) {
+            Thread.currentThread().interrupt()
+        }
+    }
+
+    override fun didOpenNotification(notification: ParsedNotification) {
+        val body = Arguments.createMap().apply {
+            putMap("notification", serializeNotification(notification))
+            putBoolean("foreground", false)
+            putBoolean("userInteraction", true)
+        }
+        sendEvent("onNotificationOpened", body)
     }
 
     override fun didFailToRegisterFcmToken(error: SdkError) {

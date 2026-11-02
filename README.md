@@ -7,7 +7,7 @@ PushPilot подключает push-уведомления к приложени
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native@1.3.0
+npm install @pushplatform/react-native@1.3.1
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
@@ -59,8 +59,8 @@ credentials. [Установка Expo и bare React Native](https://github.com/p
 import PushPilot from '@pushplatform/react-native';
 
 export async function initializePushPilot() {
-  const registration = PushPilot.onRegistrationUpdated(() => {
-    console.info('Регистрация push-токена обновлена');
+  const registration = PushPilot.onRegistrationUpdated((update) => {
+    console.info('Регистрация push-токена обновлена', update.token);
   });
   const opened = PushPilot.onNotificationOpened(notification => {
     // Откройте нужный экран через навигацию вашего приложения.
@@ -69,10 +69,8 @@ export async function initializePushPilot() {
 
   try {
     await PushPilot.initialize({
-      apiBaseURL: 'https://api.example.com',
-      apiKey: 'APPLICATION_KEY',
+      url: 'https://api.example.com',
       applicationId: 'YOUR_APPLICATION_UUID',
-
       debugMode: __DEV__,
     });
   } catch (error) {
@@ -93,12 +91,9 @@ export function requestPushPermission() {
 }
 ```
 
-`apiBaseURL` — адрес API PushPilot. `applicationId` и `APPLICATION_KEY` скопируйте из одного приложения в консоли. iOS, Android, Web и сервер используют один ключ. Ключ извлекаем из приложения и даёт право отправки только в этом приложении; владельца и платёжные настройки он не администрирует. Приватные APNs/FCM/VAPID credentials остаются на сервере. Отдельный клиентский шлюз не нужен.
+`url` — адрес API PushPilot. `applicationId` — UUID приложения. `apiKey` не отправляется, `apiBaseURL` без `url` — ошибка конфигурации. Приватные APNs/FCM/VAPID credentials остаются на сервере.
 
-`getInstallationId()` возвращает ID установки. Native SDK регистрирует полученный
-от APNs или FCM токен в API; `onRegistrationUpdated` сообщает об обновлении.
-`onNotificationReceived` передаёт событие получения, а `onNotificationOpened` —
-открытия уведомления. Удаляйте listeners, когда они больше не нужны.
+`getInstallationId()` возвращает ID установки. `getDeviceToken()` возвращает последний APNs или FCM токен. При успешной регистрации `onRegistrationUpdated` содержит `token`. `onNotificationReceived` — доставка, `onNotificationOpened` — клик, `onNotificationWillDisplay` — показ в foreground. `preventDefault()` до возврата обработчика скрывает баннер, звук и бейдж. Удаляйте listeners, когда они больше не нужны.
 
 ## Поддержка и ограничения
 
@@ -140,7 +135,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 ### Текущая поставка · 1.3.0
 
-`initialize` принимает application id или `{applicationId, url, environment}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.0`. iOS autolinking берёт опубликованный `PushPlatformSDK` 1.2.0. В tarball также лежит копия этих же native-артефактов для Expo.
+`initialize` принимает application id или `{applicationId, url, environment}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.1`. iOS autolinking берёт опубликованный `PushPlatformSDK` 1.2.2. В tarball также лежит копия этих же native-артефактов для Expo.
 
 ### Unified applications · 1.1.0
 

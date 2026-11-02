@@ -26,7 +26,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
 
@@ -58,7 +58,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
 
@@ -90,7 +90,7 @@ describe('Security Boundaries', () => {
       const config = {
         apiKey: 'client-api-key-devices-write-scope',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.pushplatform.example',
+        url: 'https://api.pushplatform.example',
         environment: 'production' as const,
       };
 
@@ -117,7 +117,7 @@ describe('Security Boundaries', () => {
       await expect(
         PushPlatform.initialize({
           applicationId: '',
-          apiBaseURL: 'https://api.test.pushplatform.example',
+          url: 'https://api.test.pushplatform.example',
           environment: 'development',
         })
       ).rejects.toThrow('applicationId is required');
@@ -130,7 +130,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'sensitive-api-key-123',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
         debugMode: true,
       });
@@ -150,7 +150,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
 
@@ -167,7 +167,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
 
@@ -210,7 +210,7 @@ describe('Security Boundaries', () => {
         await PushPlatform.initialize({
           apiKey: 'secret-key',
           applicationId: '11111111-1111-1111-1111-111111111111',
-          apiBaseURL: 'https://api.pushplatform.example',
+          url: 'https://api.pushplatform.example',
           environment: 'production',
         });
         fail('Should have thrown error');
@@ -226,7 +226,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
 
@@ -242,7 +242,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
       const callback = jest.fn();
@@ -278,7 +278,7 @@ describe('Security Boundaries', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
 

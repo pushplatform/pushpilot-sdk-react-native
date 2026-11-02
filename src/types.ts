@@ -30,21 +30,17 @@ export interface JSONArray extends Array<JSONValue> {}
  * Push Platform configuration
  */
 export interface PushPlatformConfig {
-  /**
-   * API key for backend authentication (handled by native SDK, never exposed to JS)
-   */
-  apiKey?: string;
-
   /** Backend application UUID. */
   applicationId: string;
 
   /** Server address. Omitted requests use https://api.pushpilot.ru. */
   url?: string;
 
-  /**
-   * @deprecated Use url.
-   */
+  /** Rejected. Pass url. A value here without url is a configuration error. */
   apiBaseURL?: string;
+
+  /** Ignored. The public SDK does not send an API key. */
+  apiKey?: string;
 
   /**
    * Environment: development or production (optional, defaults to production)
@@ -213,10 +209,18 @@ export interface RegistrationUpdate {
    */
   success: boolean;
 
+  /** Device token when registration succeeded. */
+  token?: string;
+
   /**
    * Error message if registration failed
    */
   error?: string;
+}
+
+export interface NotificationWillDisplayEvent {
+  notification: PushNotification;
+  preventDefault(): void;
 }
 
 /**

@@ -13,7 +13,7 @@ describe('Validation Utilities', () => {
     test('should validate correct configuration', () => {
       const config: PushPlatformConfig = {
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
         debugMode: true,
       };
@@ -24,7 +24,7 @@ describe('Validation Utilities', () => {
     test('does not require an API key', () => {
       const config: PushPlatformConfig = {
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       };
       expect(() => validateConfig(config)).not.toThrow();
@@ -32,47 +32,54 @@ describe('Validation Utilities', () => {
 
     test('should throw on missing applicationId', () => {
       const config = {
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       } as PushPlatformConfig;
 
       expect(() => validateConfig(config)).toThrow('applicationId is required');
     });
 
-    test('should throw on invalid apiBaseURL', () => {
+    test('should throw on invalid url', () => {
       const config: PushPlatformConfig = {
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'not-a-url',
+        url: 'not-a-url',
         environment: 'development',
       };
 
       expect(() => validateConfig(config)).toThrow('must be a valid URL');
     });
 
-    test('should throw on non-HTTPS apiBaseURL in production', () => {
+    test('rejects apiBaseURL when url is absent', () => {
+      expect(() => validateConfig({
+        applicationId: '11111111-1111-1111-1111-111111111111',
+        apiBaseURL: 'https://api.pushplatform.example',
+      })).toThrow('url is required');
+    });
+
+    test('should throw on non-HTTPS url in production', () => {
       const config: PushPlatformConfig = {
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'http://api.pushplatform.example',
+        url: 'http://api.pushplatform.example',
         environment: 'production',
       };
 
       expect(() => validateConfig(config)).toThrow(
-        'apiBaseURL must use HTTPS in production'
+        'url must use HTTPS in production'
       );
     });
 
     test('allows the Android emulator host bridge only in explicit debug mode', () => {
-      const config: PushPlatformConfig = { apiKey: 'app-key', applicationId: '11111111-1111-1111-1111-111111111111', apiBaseURL: 'http://10.0.2.2:18086', debugMode: true };
+      const config: PushPlatformConfig = { apiKey: 'app-key', applicationId: '11111111-1111-1111-1111-111111111111', url: 'http://10.0.2.2:18086', debugMode: true };
       expect(() => validateConfig(config)).not.toThrow();
       expect(() => validateConfig({ ...config, debugMode: false, environment: 'production' })).toThrow('HTTPS');
-      expect(() => validateConfig({ ...config, apiBaseURL: 'http://remote.example', environment: 'production' })).toThrow('HTTPS');
+      expect(() => validateConfig({ ...config, url: 'http://remote.example', environment: 'production' })).toThrow('HTTPS');
     });
 
     test('should allow HTTP in development', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'http://localhost:8080',
+        url: 'http://localhost:8080',
         environment: 'development',
       };
 
@@ -83,7 +90,7 @@ describe('Validation Utilities', () => {
       const config = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.pushplatform.example',
+        url: 'https://api.pushplatform.example',
       } as PushPlatformConfig;
 
       expect(() => validateConfig(config)).not.toThrow();
@@ -93,7 +100,7 @@ describe('Validation Utilities', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.dev.pushplatform.example',
+        url: 'https://api.dev.pushplatform.example',
         environment: 'development',
       };
 
@@ -104,7 +111,7 @@ describe('Validation Utilities', () => {
       const config = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.pushplatform.example',
+        url: 'https://api.pushplatform.example',
         environment: 'invalid',
       } as any;
 
@@ -115,7 +122,7 @@ describe('Validation Utilities', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.pushplatform.example',
+        url: 'https://api.pushplatform.example',
         environment: 'development',
         debugMode: true,
       };
@@ -127,7 +134,7 @@ describe('Validation Utilities', () => {
       const config = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.pushplatform.example',
+        url: 'https://api.pushplatform.example',
         environment: 'production',
       } as PushPlatformConfig;
 
@@ -274,7 +281,7 @@ describe('Validation Utilities', () => {
       const config: PushPlatformConfig = {
         apiKey: '  test-api-key  ',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: '  https://api.pushplatform.example  ',
+        url: '  https://api.pushplatform.example  ',
         environment: 'development',
       };
 

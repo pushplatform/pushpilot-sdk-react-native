@@ -26,7 +26,7 @@ describe('PushPlatform Core API', () => {
 
       const config: PushPlatformConfig = {
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
         debugMode: true,
       };
@@ -35,7 +35,7 @@ describe('PushPlatform Core API', () => {
 
       expect(mockNativeModule.initialize).toHaveBeenCalledWith({
         applicationId: config.applicationId,
-        url: config.apiBaseURL,
+        url: config.url,
         environment: 'development',
         debugMode: true,
       });
@@ -53,7 +53,7 @@ describe('PushPlatform Core API', () => {
 
     test('should reject initialization with missing applicationId', async () => {
       const config = {
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       } as PushPlatformConfig;
 
@@ -64,11 +64,11 @@ describe('PushPlatform Core API', () => {
       expect(mockNativeModule.initialize).not.toHaveBeenCalled();
     });
 
-    test('should reject initialization with invalid apiBaseURL', async () => {
+    test('should reject initialization with invalid url', async () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'not-a-url',
+        url: 'not-a-url',
         environment: 'development',
       };
 
@@ -85,14 +85,14 @@ describe('PushPlatform Core API', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.pushplatform.example',
+        url: 'https://api.pushplatform.example',
       };
 
       await PushPlatform.initialize(config);
 
       expect(mockNativeModule.initialize).toHaveBeenCalledWith({
         applicationId: config.applicationId,
-        url: config.apiBaseURL,
+        url: config.url,
         environment: 'development',
         debugMode: false,
       });
@@ -106,7 +106,7 @@ describe('PushPlatform Core API', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       };
 
@@ -125,7 +125,7 @@ describe('PushPlatform Core API', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       };
 
@@ -144,7 +144,7 @@ describe('PushPlatform Core API', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
     });
@@ -202,7 +202,7 @@ describe('PushPlatform Core API', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
     });
@@ -242,7 +242,7 @@ describe('PushPlatform Core API', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
     });
@@ -285,7 +285,7 @@ describe('PushPlatform Core API', () => {
       await PushPlatform.initialize({
         apiKey: 'test-api-key',
         applicationId: '11111111-1111-1111-1111-111111111111',
-        apiBaseURL: 'https://api.test.pushplatform.example',
+        url: 'https://api.test.pushplatform.example',
         environment: 'development',
       });
     });

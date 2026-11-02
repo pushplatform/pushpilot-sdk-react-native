@@ -1,3 +1,9 @@
+# 1.3.1 — 2026-11-02
+
+- `onNotificationWillDisplay` с `preventDefault()` до возврата обработчика. `getDeviceToken()` возвращает последний токен. Успешный `onRegistrationUpdated` содержит `token`.
+- Адрес только `url`. `apiKey` не отправляется. `apiBaseURL` без `url` — ошибка.
+- Зависит от `PushPlatformSDK` 1.2.2 и `sdk-android` 1.2.1.
+
 # 1.3.0 — 2026-11-01
 
 - `initialize` takes an application id or `{applicationId, url, environment}`. No API key and no `apiBaseURL`.

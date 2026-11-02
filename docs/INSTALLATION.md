@@ -3,14 +3,14 @@
 Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.3.0
+npm install @pushplatform/react-native@1.3.1
 ```
 
 Для фиксации версии укажите её вместо `next` в команде установки.
 Схема установки такая же, как в 1.0.3: RN autolinking подключает bridge,
-CocoaPods разрешает `PushPlatformSDK` 1.2.0 как обычную публичную зависимость.
-Android-зависимость — `com.pushplatform:sdk-android:1.2.0`.
-Для Expo в npm также сохранены исходники iOS и Maven-артефакты Android той же версии 1.2.0.
+CocoaPods разрешает `PushPlatformSDK` 1.2.2 как обычную публичную зависимость.
+Android-зависимость — `com.pushplatform:sdk-android:1.2.1`.
+Для Expo в npm также сохранены исходники iOS и Maven-артефакты Android той же версии.
 Дополнительная строка Podfile, XCFramework и исправления node_modules не требуются.
 Для обычных публичных зависимостей CocoaPods, React Native, AndroidX и Firebase нужна сеть.
 
@@ -59,10 +59,10 @@ callbacks из AppDelegate в `PushPlatform.shared`, как в API native SDK.
 
 ### Обновление с RN SDK 1.0.x
 
-В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.0 зависит от `PushPlatformSDK` 1.2.0 и `sdk-android` 1.2.0, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
+В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.1 зависит от `PushPlatformSDK` 1.2.2 и `sdk-android` 1.2.1, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
 
 ```sh
-npm install @pushplatform/react-native@1.3.0
+npm install @pushplatform/react-native@1.3.1
 cd ios
 bundle exec pod update PushPlatform PushPlatformSDK --repo-update
 ```

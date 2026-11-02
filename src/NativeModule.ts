@@ -47,6 +47,12 @@ export interface PushPlatformNativeModule {
    * Get current permission status
    */
   getPermissionStatus(): Promise<string>;
+
+  getDeviceToken(): Promise<string | null>;
+
+  setNotificationWillDisplayObserved(observed: boolean): void;
+
+  completeNotificationDisplay(displayId: string, prevented: boolean): void;
 }
 
 /**
@@ -66,6 +72,9 @@ const unavailableNativeModule: PushPlatformNativeModule = {
   logout: () => Promise.reject(unavailableError),
   requestPermissions: () => Promise.reject(unavailableError),
   getPermissionStatus: () => Promise.reject(unavailableError),
+  getDeviceToken: () => Promise.reject(unavailableError),
+  setNotificationWillDisplayObserved: () => undefined,
+  completeNotificationDisplay: () => undefined,
 };
 
 /**
