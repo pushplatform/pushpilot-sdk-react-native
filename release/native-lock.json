@@ -8,7 +8,7 @@
   },
   "ios": {
     "repository": "pushplatform/pushpilot-sdk-ios",
-    "commit": "80767c0f588a8e94f7429ae79d77920e490c21e0",
+    "commit": "251527b0a9fb0f895b8e96fcb6868890ee7275d6",
     "pod": "PushPlatformSDK",
     "version": "1.2.2"
   }
