@@ -1,6 +1,6 @@
 # Dependencies between repositories
 
-`@pushplatform/react-native` 1.3.5 exposes the TypeScript API and bridges to the published native SDKs pinned in `release/native-lock.json`:
+`@pushplatform/react-native` 1.3.6 exposes the TypeScript API and bridges to the published native SDKs pinned in `release/native-lock.json`:
 
 - iOS: `PushPlatformSDK` 1.2.6. Autolinking depends on the public CocoaPods pod. The Expo plugin also ships those sources under `native/ios`.
 - Android: `com.pushplatform:sdk-android:1.2.5`. The AAR and Maven metadata are shipped under `native/android/maven`. Maven Local is not required.

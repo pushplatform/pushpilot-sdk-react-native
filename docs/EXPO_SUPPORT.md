@@ -1,6 +1,6 @@
 # Expo support state
 
-Текущий пакет — `@pushplatform/react-native` 1.3.5. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.5.
+Текущий пакет — `@pushplatform/react-native` 1.3.6. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.6.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -27,7 +27,7 @@ Plugin не создаёт Notification Service Extension. Для `received` п�
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
-Native SDK в 1.3.5: iOS — опубликованный `PushPlatformSDK` 1.2.6, Android — `com.pushplatform:sdk-android:1.2.5`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
+Native SDK в 1.3.6: iOS — опубликованный `PushPlatformSDK` 1.2.6, Android — `com.pushplatform:sdk-android:1.2.5`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
 
 ## Проверки native интеграции — история 2026-10-04
 
