@@ -20,7 +20,10 @@
 - при `android.googleServicesFile` добавляет Google Services Gradle plugin и оставляет путь к конфигу в Expo config;
 - добавляет `aps-environment`, `remote-notification`, application UUID и Pod `PushPlatformSDK` из `native/ios` установленного npm пакета; приватный Git пользователю не нужен;
 - прокидывает APNs token, foreground notification и notification response через стандартный Swift AppDelegate;
+- записывает App Group `group.<bundle id>.pushplatform` в entitlement основного приложения;
 - проверяет параметры и использует маркеры/проверки для идемпотентного повторного prebuild.
+
+Plugin не создаёт Notification Service Extension. Для `received` при закрытом приложении target добавляет владелец приложения: [установка в README](../README.md#ios-подтверждение-доставки-при-закрытом-приложении). Код для вставки — [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.7/Sources/PushPlatformNotificationService/NotificationService.swift). Тот же App Group нужно включить и на target extension. Bundle ID extension — bundle ID приложения плюс `.PushPlatformNotificationService`.
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
