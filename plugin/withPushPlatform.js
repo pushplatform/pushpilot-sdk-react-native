@@ -76,6 +76,13 @@ function withPushPlatform(config, options = {}) {
 
   config = withEntitlementsPlist(config, (mod) => {
     ensureApsEntitlement(mod.modResults, iosOptions.apsEnvironment);
+    const bundle = config.ios && config.ios.bundleIdentifier;
+    if (bundle) {
+      const group = `group.${bundle}.pushplatform`;
+      const groups = mod.modResults['com.apple.security.application-groups'] || [];
+      if (!groups.includes(group)) groups.push(group);
+      mod.modResults['com.apple.security.application-groups'] = groups;
+    }
     return mod;
   });
 

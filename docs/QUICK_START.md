@@ -1,12 +1,12 @@
 # Quick Start
 
-Install `@pushplatform/react-native` 1.3.4:
+Install `@pushplatform/react-native` 1.3.5:
 
 ```sh
-npm install @pushplatform/react-native@1.3.4
+npm install @pushplatform/react-native@1.3.5
 ```
 
-The package bridges to Android `sdk-android` 1.2.4 and iOS `PushPlatformSDK` 1.2.6. Android resolves the AAR from `native/android/maven` inside the npm package. iOS autolinking resolves the published pod; the same sources are also in `native/ios` for the Expo plugin. Application developers do not need private Git access or Maven Local.
+The package bridges to Android `sdk-android` 1.2.5 and iOS `PushPlatformSDK` 1.2.6. Android resolves the AAR from `native/android/maven` inside the npm package. iOS autolinking resolves the published pod; the same sources are also in `native/ios` for the Expo plugin. Application developers do not need private Git access or Maven Local.
 
 Complete the platform setup in [INSTALLATION.md](INSTALLATION.md):
 
