@@ -1,3 +1,9 @@
+# 1.3.5 — 2026-11-03
+
+- Нативные SDK сбрасывают бейдж при входе, подтверждают получение и отправляют сессию. Новых вызовов из JavaScript нет. Экспорты пакета не изменились.
+- Expo plugin записывает App Group `group.<bundle id>.pushplatform`. Target Notification Service Extension и тот же App Group на extension добавляет владелец приложения из `Sources/PushPlatformNotificationService/NotificationService.swift`. Без target баннер есть, а `received` при закрытом приложении нет.
+- Зависит от `PushPlatformSDK` 1.2.7 и `sdk-android` 1.2.5.
+
 # 1.3.4 — 2026-11-02
 
 - Необязательный `notificationId` у уведомления в `onNotificationOpened` и `onNotificationWillDisplay`. Поле `notification_id` в `data` не попадает.
