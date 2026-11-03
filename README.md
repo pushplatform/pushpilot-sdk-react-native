@@ -50,6 +50,58 @@ Plugin подключает native SDK из установленного npm-п�
 и callbacks стандартного Swift AppDelegate. Для EAS настройте профиль build и app
 credentials. [Установка Expo и bare React Native](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/docs/INSTALLATION.md).
 
+## iOS: подтверждение доставки при закрытом приложении
+
+Баннер iOS показывается без запуска приложения. Счётчик `received` в этом случае отправляет Notification Service Extension. Без target баннер и нажатие остаются, подтверждение при закрытом приложении не уходит. Нового вызова из JavaScript нет.
+
+Plugin пишет App Group `group.<bundle id>.pushplatform` только основному приложению и target extension не создаёт. Владелец приложения добавляет его в Xcode и для bare React Native, и для Expo.
+
+1. **File → New → Target → Notification Service Extension**. На вопрос Activate scheme нажмите **Don't Activate**. Deployment Target как у приложения, не ниже iOS 13.
+2. Bundle ID extension — bundle ID приложения плюс `.PushPlatformNotificationService`. Для `com.example.app` это `com.example.app.PushPlatformNotificationService`.
+3. Capability **App Groups** на обоих target: `group.com.example.app.pushplatform`. В имени группы нет суффикса extension.
+4. Замените `NotificationService.swift`, который создал Xcode, кодом ниже. Тот же файл в git iOS SDK: [Sources/PushPlatformNotificationService/NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.7/Sources/PushPlatformNotificationService/NotificationService.swift). В pod `PushPlatformSDK` 1.2.6 этого файла нет.
+
+```swift
+import UserNotifications
+
+class NotificationService: UNNotificationServiceExtension {
+    override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
+        guard let content = request.content.mutableCopy() as? UNMutableNotificationContent else {
+            contentHandler(request.content)
+            return
+        }
+        let userInfo = request.content.userInfo
+        let notificationID = userInfo["notification_id"] as? String
+        let bundleID = (Bundle.main.bundleIdentifier ?? "").replacingOccurrences(of: ".PushPlatformNotificationService", with: "")
+        let defaults = UserDefaults(suiteName: "group.\(bundleID).pushplatform")
+        let serverURL = defaults?.string(forKey: "server_url")
+        let applicationID = defaults?.string(forKey: "application_id")
+        let subscriptionID = defaults?.string(forKey: "subscription_id")
+        guard let notificationID, !notificationID.isEmpty,
+              let serverURL, let applicationID, let subscriptionID, !subscriptionID.isEmpty,
+              let encoded = notificationID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+              let url = URL(string: "\(serverURL)/notifications/\(encoded)") else {
+            contentHandler(content)
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try? JSONSerialization.data(withJSONObject: [
+            "app_id": applicationID,
+            "subscription_id": subscriptionID,
+            "received": true,
+        ])
+        let task = URLSession.shared.dataTask(with: request) { _, _, _ in
+            contentHandler(content)
+        }
+        task.resume()
+    }
+}
+```
+
+Extension не меняет заголовок, текст и картинку. Основное приложение при `initialize` само записывает в App Group адрес сервера, application id и subscription id.
+
 ## Минимальный пример
 
 Вызывайте `initializePushPilot()` один раз при запуске приложения. Запрос
