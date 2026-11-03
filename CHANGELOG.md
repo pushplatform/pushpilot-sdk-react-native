@@ -2,7 +2,7 @@
 
 - Нативные SDK сбрасывают бейдж при входе, подтверждают получение и отправляют сессию. Новых вызовов из JavaScript нет. Экспорты пакета не изменились.
 - Expo plugin записывает App Group `group.<bundle id>.pushplatform`. Target Notification Service Extension и тот же App Group на extension добавляет владелец приложения из `Sources/PushPlatformNotificationService/NotificationService.swift`. Без target баннер есть, а `received` при закрытом приложении нет.
-- Зависит от `PushPlatformSDK` 1.2.7 и `sdk-android` 1.2.5.
+- Зависит от опубликованного `PushPlatformSDK` 1.2.6 и `sdk-android` 1.2.5. CocoaPods trunk до 6 ноября не принимает `PushPlatformSDK` 1.2.7, поэтому iOS-мост остаётся на поде, который уже есть в CDN.
 
 # 1.3.4 — 2026-11-02
 
