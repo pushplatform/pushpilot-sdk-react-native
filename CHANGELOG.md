@@ -1,3 +1,7 @@
+# 1.3.6 — 2026-11-03
+
+- В README и INSTALLATION добавлены шаги Notification Service Extension для iOS и код `NotificationService.swift` для копирования. Новых вызовов из JavaScript нет. Зависимости те же: `PushPlatformSDK` 1.2.6 и `sdk-android` 1.2.5.
+
 # 1.3.5 — 2026-11-03
 
 - Нативные SDK сбрасывают бейдж при входе, подтверждают получение и отправляют сессию. Новых вызовов из JavaScript нет. Экспорты пакета не изменились.
