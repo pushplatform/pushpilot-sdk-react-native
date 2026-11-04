@@ -1,6 +1,6 @@
 # Expo support state
 
-Текущий пакет — `@pushplatform/react-native` 1.3.8. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.8.
+Текущий пакет — `@pushplatform/react-native` 1.3.10. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.10.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
