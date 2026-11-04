@@ -155,6 +155,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org
       - name: Require a version tag
         run: |
           test "$GITHUB_REF" = "refs/tags/v$(node -p "require('./package.json').version")"
@@ -173,7 +174,8 @@ jobs:
         env:
           RELEASE_DIST_TAG: ${{ inputs.dist_tag }}
         # Use an empty working directory: do not execute source package lifecycle scripts.
+        # setup-node registry-url enables npm OIDC trusted publishing.
         run: |
           archive="$GITHUB_WORKSPACE/$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
           cd "$RUNNER_TEMP"
-          npm publish "$archive" --access public --tag "$RELEASE_DIST_TAG" --ignore-scripts
+          npm publish "$archive" --access public --tag "$RELEASE_DIST_TAG" --ignore-scripts --provenance
