@@ -45,8 +45,14 @@ for (const variant of module.variants) {
 const podspec = fs.readFileSync(path.join(ios, 'PushPlatformSDK.podspec'), 'utf8');
 if (podspec.match(/s\.version\s*=\s*['"]([^'"]+)['"]/)?.[1] !== lock.ios.version) throw new Error('iOS Pod version differs from native-lock.json');
 // Copy tracked source files only, so credentials, examples and build products never enter npm.
-const sources = git(ios, 'ls-files', 'Sources/PushPlatformSDK').split('\n').filter(Boolean);
+const sources = [
+  ...git(ios, 'ls-files', 'Sources/PushPlatformSDK').split('\n').filter(Boolean),
+  ...git(ios, 'ls-files', 'Sources/PushPlatformExtension').split('\n').filter(Boolean),
+];
 if (!sources.length) throw new Error('iOS sources are missing');
+if (!sources.some((name) => name.startsWith('Sources/PushPlatformExtension/'))) {
+  throw new Error('iOS Extension sources are missing');
+}
 const licenses = {};
 for (const [platform, repo] of [['android', android], ['ios', ios]]) {
   const approved = path.join(root, 'release/licenses', `${platform}.LICENSE`);
