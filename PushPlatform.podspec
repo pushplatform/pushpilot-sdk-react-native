@@ -22,9 +22,10 @@ Pod::Spec.new do |s|
 
   s.dependency "React-Core"
 
-  # Standard transitive CocoaPods dependency, as in RN 1.0.3.
-  # Its public spec must be validated before the RN package is released.
-  s.dependency "PushPlatformSDK", "1.2.6"
+  # Exact native version. CocoaPods Trunk may not list new specs (read-only trial /
+  # permanent freeze): the app Podfile must pin the same version from git or from
+  # native/ios inside this package (Expo plugin does the path form automatically).
+  s.dependency "PushPlatformSDK", "1.2.8"
 
   s.swift_version = "5.9"
 
