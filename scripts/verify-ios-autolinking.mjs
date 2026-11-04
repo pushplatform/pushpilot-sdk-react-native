@@ -54,17 +54,7 @@ const installed = path.join(consumer, 'node_modules/@pushplatform/react-native')
 const ios = path.join(consumer, 'ios');
 let podfile = fs.readFileSync(path.join(ios, 'Podfile'), 'utf8');
 assert(podfile.includes('use_native_modules!'), 'Probe must use actual RN autolinking');
-// Trunk may not list the locked native version. The app Podfile must pin the same
-// tag from the public GitHub repo (Expo uses :path => native/ios instead).
-if (!podfile.includes(nativeGitPod)) {
-  assert(!/pod\s+['"]PushPlatformSDK['"]/.test(podfile), 'Podfile has a PushPlatformSDK pin that is not the locked public git tag');
-  podfile = podfile.replace(
-    /(platform :ios,[^\n]*\n)/,
-    `$1\n# PushPlatform native iOS SDK (git — CocoaPods Trunk may omit this version)\n${nativeGitPod}\n`,
-  );
-  fs.writeFileSync(path.join(ios, 'Podfile'), podfile);
-}
-assert(podfile.includes(nativeGitPod), 'Probe must pin the locked native SDK from the public git tag');
+assert(!/pod\s+['"]PushPlatformSDK['"]/.test(podfile), 'Explicit native SDK dependency would hide the bare autolinking defect');
 if (!resumeAfterBaseline) assert(!fs.existsSync(path.join(ios, 'Podfile.lock')), 'Probe must start without an existing lockfile');
 else {
   const baseline = fs.readFileSync(path.join(consumer, 'baseline-Podfile.lock'), 'utf8');
@@ -78,6 +68,18 @@ const podEnv = { ...process.env,
 if (linkage === 'static') podEnv.USE_FRAMEWORKS = 'static';
 else delete podEnv.USE_FRAMEWORKS;
 const installPods = (updating = false) => run('pod', updating ? ['update', 'PushPlatform', 'PushPlatformSDK', '--repo-update'] : ['install', '--repo-update'], ios, podEnv);
+const pinLockedNativeFromGit = () => {
+  // Trunk may omit the locked version. Pin after any baseline install so upgrades
+  // from an older published package still resolve against historical trunk pods.
+  podfile = fs.readFileSync(path.join(ios, 'Podfile'), 'utf8');
+  if (podfile.includes(nativeGitPod)) return;
+  assert(!/pod\s+['"]PushPlatformSDK['"]/.test(podfile), 'Podfile has a PushPlatformSDK pin that is not the locked public git tag');
+  podfile = podfile.replace(
+    /(platform :ios,[^\n]*\n)/,
+    `$1\n# PushPlatform native iOS SDK (git — CocoaPods Trunk may omit this version)\n${nativeGitPod}\n`,
+  );
+  fs.writeFileSync(path.join(ios, 'Podfile'), podfile);
+};
 if (upgradeFrom && !resumeAfterBaseline) {
   installPods();
   const baseline = fs.readFileSync(path.join(ios, 'Podfile.lock'), 'utf8');
@@ -95,10 +97,13 @@ const nativeRequirement = evaluatedSpec.dependencies[lockedIos.pod];
 assert.equal(nativeRequirement?.length, 1, 'Expected a single exact native requirement');
 assert.equal(nativeRequirement[0].replace(/^=\s*/, ''), lockedIos.version, 'Evaluated native dependency differs from the source lock');
 
+pinLockedNativeFromGit();
+assert(fs.readFileSync(path.join(ios, 'Podfile'), 'utf8').includes(nativeGitPod), 'Probe must pin the locked native SDK from the public git tag');
 installPods(Boolean(upgradeFrom));
 if (args.includes('--reinstall')) {
   run('npm', ['uninstall', '--no-audit', '--no-fund', '@pushplatform/react-native'], consumer);
   run('npm', ['install', '--no-audit', '--no-fund', candidateArchive], consumer);
+  pinLockedNativeFromGit();
   installPods();
 }
 const lock = JSON.parse(execFileSync('ruby', ['-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.load_file(ARGV[0]))', path.join(ios, 'Podfile.lock')], { encoding: 'utf8' }));
