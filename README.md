@@ -185,7 +185,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
 
-### Текущая поставка · 1.3.8
+### Текущая поставка · 1.3.10
 
 `initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.5`. iOS autolinking требует `PushPlatformSDK` 1.2.8; пока Trunk read-only — pin в Podfile с git-тега `v1.2.8` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
 
