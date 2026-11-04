@@ -8,7 +8,7 @@ npm install @pushplatform/react-native@1.3.7
 
 Для фиксации версии укажите её вместо `next` в команде установки.
 Схема установки такая же, как в 1.0.3: RN autolinking подключает bridge,
-CocoaPods разрешает `PushPlatformSDK` 1.2.6 как обычную публичную зависимость.
+Нужен `PushPlatformSDK` 1.2.8. Пока CocoaPods Trunk read-only — в Podfile pin с git-тега (ниже). Expo plugin подставляет `:path => native/ios`.
 Android-зависимость — `com.pushplatform:sdk-android:1.2.5`.
 Для Expo в npm также сохранены исходники iOS и Maven-артефакты Android той же версии.
 Дополнительная строка Podfile, XCFramework и исправления node_modules не требуются.
@@ -46,7 +46,13 @@ APNs entitlement/signing profile. В `initialize()` передайте applicati
 
 ## Bare React Native
 
-Autolinking подключает RN bridge и его зависимость `PushPlatformSDK` из публичного CocoaPods. Дополнительная строка `pod 'PushPlatformSDK'` и локальные пути в Podfile не требуются.
+Autolinking подключает RN bridge. Пока Trunk не отдаёт 1.2.8, добавьте в `ios/Podfile` (сразу после `platform :ios`) pin с публичного git-тега:
+
+```ruby
+pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.8'
+```
+
+Expo plugin вместо этого пишет `:path => native/ios` из npm-пакета.
 
 ```sh
 cd ios
@@ -59,7 +65,7 @@ callbacks из AppDelegate в `PushPlatform.shared`, как в API native SDK.
 
 ### Обновление с RN SDK 1.0.x
 
-В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.7 зависит от `PushPlatformSDK` 1.2.6 и `sdk-android` 1.2.5, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
+В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.7 зависит от `PushPlatformSDK` 1.2.8 и `sdk-android` 1.2.5, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
 
 ```sh
 npm install @pushplatform/react-native@1.3.7
@@ -116,43 +122,39 @@ maven {
 1. **File → New → Target → Notification Service Extension**. **Don't Activate**. Deployment Target как у приложения, не ниже iOS 13.
 2. Bundle ID: `<bundle id приложения>.PushPlatformNotificationService`.
 3. **App Groups** на приложении и на extension: `group.<bundle id приложения>.pushplatform`.
-4. Замените `NotificationService.swift` кодом ниже. Образец в git: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.7/Sources/PushPlatformNotificationService/NotificationService.swift). В поде `1.2.6` этого файла нет; короткий NSE через `PushPlatformExtension` — после CDN `1.2.8`.
+4. В Podfile уже должен быть git-pin `v1.2.8` (см. выше). Добавьте target extension и замените `NotificationService.swift` кодом ниже. Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.8/Sources/PushPlatformNotificationService/NotificationService.swift).
+
+```ruby
+target 'PushPlatformNotificationServiceExtension' do
+  pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.8'
+end
+```
 
 ```swift
 import UserNotifications
+import PushPlatformSDK
 
 class NotificationService: UNNotificationServiceExtension {
+    var contentHandler: ((UNNotificationContent) -> Void)?
+    var receivedRequest: UNNotificationRequest!
+    var bestAttemptContent: UNMutableNotificationContent?
+
     override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
-        guard let content = request.content.mutableCopy() as? UNMutableNotificationContent else {
+        self.receivedRequest = request
+        self.contentHandler = contentHandler
+        bestAttemptContent = request.content.mutableCopy() as? UNMutableNotificationContent
+        if let bestAttemptContent {
+            PushPlatformExtension.didReceive(receivedRequest, with: bestAttemptContent, withContentHandler: contentHandler)
+        } else {
             contentHandler(request.content)
-            return
         }
-        let userInfo = request.content.userInfo
-        let notificationID = userInfo["notification_id"] as? String
-        let bundleID = (Bundle.main.bundleIdentifier ?? "").replacingOccurrences(of: ".PushPlatformNotificationService", with: "")
-        let defaults = UserDefaults(suiteName: "group.\(bundleID).pushplatform")
-        let serverURL = defaults?.string(forKey: "server_url")
-        let applicationID = defaults?.string(forKey: "application_id")
-        let subscriptionID = defaults?.string(forKey: "subscription_id")
-        guard let notificationID, !notificationID.isEmpty,
-              let serverURL, let applicationID, let subscriptionID, !subscriptionID.isEmpty,
-              let encoded = notificationID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "\(serverURL)/notifications/\(encoded)") else {
-            contentHandler(content)
-            return
+    }
+
+    override func serviceExtensionTimeWillExpire() {
+        if let contentHandler, let bestAttemptContent,
+           PushPlatformExtension.serviceExtensionTimeWillExpireRequest(receivedRequest, with: bestAttemptContent) {
+            contentHandler(bestAttemptContent)
         }
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: [
-            "app_id": applicationID,
-            "subscription_id": subscriptionID,
-            "received": true,
-        ])
-        let task = URLSession.shared.dataTask(with: request) { _, _, _ in
-            contentHandler(content)
-        }
-        task.resume()
     }
 }
 ```

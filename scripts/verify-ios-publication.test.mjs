@@ -1,21 +1,79 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { verifyIosPublication } from './verify-ios-publication.mjs';
-const ios = { pod: 'PushPlatformSDK', version: '1.1.0', repository: 'pushplatform/pushpilot-sdk-ios' };
-const spec = { name: ios.pod, version: ios.version, source: { git: `https://github.com/${ios.repository}.git`, tag: 'v1.1.0' } };
-const fixture = (index, value = spec) => async url => url.endsWith('.txt') ? new Response(index) : new Response(JSON.stringify(value));
+import { iosGitPodLine, verifyIosPublication } from './verify-ios-publication.mjs';
 
-test('rejects an unindexed native version even when its podspec already exists', async () => {
-  await assert.rejects(verifyIosPublication(ios, fixture('PushPlatformSDK/1.0.0\n')), /absent from the public CocoaPods index/);
+const ios = {
+  pod: 'PushPlatformSDK',
+  version: '1.2.8',
+  repository: 'pushplatform/pushpilot-sdk-ios',
+  commit: '5186f677f2b96347d49d2c46095c95845df6fb29',
+};
+
+function githubFixture({ commit = ios.commit, annotated = false } = {}) {
+  return async url => {
+    if (url.includes('/git/ref/tags/')) {
+      if (annotated) {
+        return new Response(JSON.stringify({ object: { sha: 'tagobjectsha', type: 'tag' } }));
+      }
+      return new Response(JSON.stringify({ object: { sha: commit, type: 'commit' } }));
+    }
+    if (url.includes('/git/tags/')) {
+      return new Response(JSON.stringify({ object: { sha: commit, type: 'commit' } }));
+    }
+    if (url.endsWith('.txt')) {
+      return new Response('PushPlatformSDK/1.0.0\n');
+    }
+    return new Response('', { status: 404 });
+  };
+}
+
+test('accepts a GitHub tag that matches the locked commit when CDN has no version', async () => {
+  const result = await verifyIosPublication(ios, githubFixture());
+  assert.equal(result.version, '1.2.8');
+  assert.equal(result.commit, ios.commit);
+  assert.equal(result.cocoapods, null);
 });
-test('rejects unavailable registries instead of claiming local payload makes installation ready', async () => {
-  await assert.rejects(verifyIosPublication(ios, async () => new Response('', { status: 503 })), /index HTTP 503/);
+
+test('dereferences an annotated GitHub tag to the locked commit', async () => {
+  const result = await verifyIosPublication(ios, githubFixture({ annotated: true }));
+  assert.equal(result.commit, ios.commit);
 });
-test('rejects a mismatched native source tag', async () => {
-  await assert.rejects(verifyIosPublication(ios, fixture('PushPlatformSDK/1.0.0/1.1.0\n', { ...spec, source: { ...spec.source, tag: 'v1.0.0' } })), /source tag/);
+
+test('rejects a GitHub tag that points at the wrong commit', async () => {
+  await assert.rejects(
+    verifyIosPublication(ios, githubFixture({ commit: '0'.repeat(40) })),
+    /points at/,
+  );
 });
-test('requires the locked pod version in both public index and spec', async () => {
-  const result = await verifyIosPublication(ios, fixture('OtherPod/1.1.0\nPushPlatformSDK/1.0.0/1.1.0\n'));
-  assert.equal(result.version, '1.1.0');
-  assert.match(result.specURL, /Specs\/a\/4\/5\/PushPlatformSDK\/1.1.0/);
+
+test('rejects a missing GitHub tag', async () => {
+  await assert.rejects(
+    verifyIosPublication(ios, async () => new Response('', { status: 404 })),
+    /GitHub tag v1\.2\.8 HTTP 404/,
+  );
+});
+
+test('still accepts CDN metadata when the index already has the version', async () => {
+  const spec = {
+    name: ios.pod,
+    version: ios.version,
+    source: { git: `https://github.com/${ios.repository}.git`, tag: 'v1.2.8' },
+  };
+  const fetcher = async url => {
+    if (url.includes('/git/ref/tags/')) {
+      return new Response(JSON.stringify({ object: { sha: ios.commit, type: 'commit' } }));
+    }
+    if (url.endsWith('.txt')) return new Response('PushPlatformSDK/1.2.6/1.2.8\n');
+    if (url.includes('.podspec.json')) return new Response(JSON.stringify(spec));
+    return new Response('', { status: 404 });
+  };
+  const result = await verifyIosPublication(ios, fetcher);
+  assert.match(result.cocoapods.specURL, /PushPlatformSDK\/1\.2\.8/);
+});
+
+test('formats the Podfile git override for the locked native SDK', () => {
+  assert.equal(
+    iosGitPodLine(ios),
+    "pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.8'",
+  );
 });

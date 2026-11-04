@@ -52,50 +52,50 @@ credentials. [Установка Expo и bare React Native](https://github.com/p
 
 ## iOS: подтверждение доставки при закрытом приложении
 
-Баннер iOS показывается без запуска приложения. Счётчик `received` при закрытом приложении отправляет Notification Service Extension. Без target баннер и нажатие остаются. Нового вызова из JavaScript нет. Plugin пишет App Group только основному приложению и target не создаёт.
-
-Пока CocoaPods CDN отдаёт только `PushPlatformSDK` 1.2.6, extension не зависит от пода: копируйте Swift ниже. Короткий NSE через `PushPlatformExtension` — после публикации `1.2.8` на Trunk.
+Баннер iOS показывается без запуска приложения. Счётчик `received` отправляет `PushPlatformExtension` из `PushPlatformSDK` 1.2.8 (git-тег; Trunk сейчас не принимает новые specs). Без target баннер и нажатие остаются. Нового вызова из JavaScript нет. Plugin пишет App Group только основному приложению и target не создаёт.
 
 1. **File → New → Target → Notification Service Extension**. **Don't Activate**. Deployment Target как у приложения, не ниже iOS 13.
 2. Bundle ID extension — bundle ID приложения плюс `.PushPlatformNotificationService`. Для `com.example.app` это `com.example.app.PushPlatformNotificationService`.
 3. **App Groups** на обоих target: `group.com.example.app.pushplatform`.
-4. Замените `NotificationService.swift` кодом ниже. Образец в git: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.7/Sources/PushPlatformNotificationService/NotificationService.swift) (в поде `1.2.6` этого файла нет).
+4. В `ios/Podfile` сразу после `platform :ios` добавьте pin native SDK (пока нет на Trunk/CDN):
+
+```ruby
+pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.8'
+```
+
+5. Добавьте target extension и замените `NotificationService.swift` кодом ниже. Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.8/Sources/PushPlatformNotificationService/NotificationService.swift).
+
+```ruby
+target 'PushPlatformNotificationServiceExtension' do
+  pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.8'
+end
+```
 
 ```swift
 import UserNotifications
+import PushPlatformSDK
 
 class NotificationService: UNNotificationServiceExtension {
+    var contentHandler: ((UNNotificationContent) -> Void)?
+    var receivedRequest: UNNotificationRequest!
+    var bestAttemptContent: UNMutableNotificationContent?
+
     override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
-        guard let content = request.content.mutableCopy() as? UNMutableNotificationContent else {
+        self.receivedRequest = request
+        self.contentHandler = contentHandler
+        bestAttemptContent = request.content.mutableCopy() as? UNMutableNotificationContent
+        if let bestAttemptContent {
+            PushPlatformExtension.didReceive(receivedRequest, with: bestAttemptContent, withContentHandler: contentHandler)
+        } else {
             contentHandler(request.content)
-            return
         }
-        let userInfo = request.content.userInfo
-        let notificationID = userInfo["notification_id"] as? String
-        let bundleID = (Bundle.main.bundleIdentifier ?? "").replacingOccurrences(of: ".PushPlatformNotificationService", with: "")
-        let defaults = UserDefaults(suiteName: "group.\(bundleID).pushplatform")
-        let serverURL = defaults?.string(forKey: "server_url")
-        let applicationID = defaults?.string(forKey: "application_id")
-        let subscriptionID = defaults?.string(forKey: "subscription_id")
-        guard let notificationID, !notificationID.isEmpty,
-              let serverURL, let applicationID, let subscriptionID, !subscriptionID.isEmpty,
-              let encoded = notificationID.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-              let url = URL(string: "\(serverURL)/notifications/\(encoded)") else {
-            contentHandler(content)
-            return
+    }
+
+    override func serviceExtensionTimeWillExpire() {
+        if let contentHandler, let bestAttemptContent,
+           PushPlatformExtension.serviceExtensionTimeWillExpireRequest(receivedRequest, with: bestAttemptContent) {
+            contentHandler(bestAttemptContent)
         }
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try? JSONSerialization.data(withJSONObject: [
-            "app_id": applicationID,
-            "subscription_id": subscriptionID,
-            "received": true,
-        ])
-        let task = URLSession.shared.dataTask(with: request) { _, _, _ in
-            contentHandler(content)
-        }
-        task.resume()
     }
 }
 ```
@@ -187,7 +187,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 ### Текущая поставка · 1.3.7
 
-`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.5`. iOS autolinking берёт опубликованный `PushPlatformSDK` 1.2.6. В tarball также лежит копия этих же native-артефактов для Expo.
+`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.5`. iOS autolinking требует `PushPlatformSDK` 1.2.8; пока Trunk read-only — pin в Podfile с git-тега `v1.2.8` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
 
 Открытие уведомления нативный SDK сообщает сам: при клике, в том числе при холодном старте, он отправляет `PUT /notifications/{id}`; до `initialize` открытие ждёт в очереди. В `onNotificationOpened` и `onNotificationWillDisplay` у уведомления есть необязательный `notificationId` — id из ответа `POST /notifications`. Экспорты пакета не изменились: только `PushPlatform`, `SDKError`, `ErrorCode` и типы.
 
