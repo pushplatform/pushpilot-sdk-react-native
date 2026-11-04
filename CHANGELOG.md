@@ -1,3 +1,8 @@
+# 1.3.9 — 2026-11-04
+
+- Корректный npm-релиз моста на `PushPlatformSDK` 1.2.8 / `sdk-android` 1.2.5 (GHA prepare+verify, затем CLI publish verified tarball).
+- **`1.3.8` на npm был ошибочный hand-publish** (не GHA-candidate). Не использовать; ставить `@1.3.9` / `latest`. `1.3.8` будет помечен `npm deprecate`.
+
 # 1.3.8 — 2026-11-04
 
 - Публикация моста на `PushPlatformSDK` 1.2.8 с резолвом через публичный git-тег `v1.2.8` (CocoaPods Trunk read-only; git tag — source of truth). Expo по-прежнему `:path => native/ios`. Android — `sdk-android` 1.2.5.
