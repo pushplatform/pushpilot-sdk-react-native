@@ -1,6 +1,6 @@
 # Expo support state
 
-Текущий пакет — `@pushplatform/react-native` 1.3.10. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.10.
+Текущий пакет — `@pushplatform/react-native` 1.3.11. Записи ниже про 1.0.0 описывают первый npm-релиз и не являются контрактом 1.3.11.
 
 Поддерживаемая связка для примера: Expo SDK 54.0.0, React Native 0.81.4, React 19.1.0, development build через `expo-dev-client`. Общий RN SDK поддерживает React Native 0.77+ и New Architecture; Expo Go не поддерживается, потому что PushPilot содержит native bridge и native APNs/FCM SDK.
 
@@ -23,11 +23,11 @@
 - записывает App Group `group.<bundle id>.pushplatform` в entitlement основного приложения;
 - проверяет параметры и использует маркеры/проверки для идемпотентного повторного prebuild.
 
-Plugin не создаёт Notification Service Extension. Для `received` при закрытом приложении владелец добавляет target и в Podfile пишет `pod 'PushPlatformSDK/Extension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.9'`. Короткий `NotificationService.swift` вызывает `PushPlatformExtension`: [установка в README](../README.md#ios-подтверждение-доставки-при-закрытом-приложении). Тот же App Group нужен и на extension. Bundle ID extension — bundle ID приложения плюс `.PushPlatformNotificationService`.
+Plugin не создаёт Notification Service Extension. Для `received` при закрытом приложении владелец добавляет target и в Podfile пишет `pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'`. Короткий `NotificationService.swift` вызывает `PushPlatformExtension`: [установка в README](../README.md#ios-подтверждение-доставки-при-закрытом-приложении). Тот же App Group нужен и на extension. Bundle ID extension — bundle ID приложения плюс `.PushPlatformNotificationService`.
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
-Native SDK в 1.3.10: iOS — опубликованный `PushPlatformSDK` 1.2.9, Android — `com.pushplatform:sdk-android:1.2.5`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
+Native SDK в 1.3.11: iOS — опубликованный `PushPlatformSDK` 1.2.10, Android — `com.pushplatform:sdk-android:1.2.5`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
 
 ## Проверки native интеграции — история 2026-10-04
 

@@ -44,6 +44,10 @@ for (const variant of module.variants) {
 }
 const podspec = fs.readFileSync(path.join(ios, 'PushPlatformSDK.podspec'), 'utf8');
 if (podspec.match(/s\.version\s*=\s*['"]([^'"]+)['"]/)?.[1] !== lock.ios.version) throw new Error('iOS Pod version differs from native-lock.json');
+const extensionPodspec = fs.readFileSync(path.join(ios, 'PushPlatformExtension.podspec'), 'utf8');
+if (extensionPodspec.match(/s\.version\s*=\s*['"]([^'"]+)['"]/)?.[1] !== lock.ios.version) {
+  throw new Error('PushPlatformExtension pod version differs from native-lock.json');
+}
 // Copy tracked source files only, so credentials, examples and build products never enter npm.
 const sources = [
   ...git(ios, 'ls-files', 'Sources/PushPlatformSDK').split('\n').filter(Boolean),
@@ -62,7 +66,7 @@ for (const [platform, repo] of [['android', android], ['ios', ios]]) {
 }
 fs.mkdirSync(path.join(destination, 'android/maven', coordinate), { recursive: true });
 for (const file of files) fs.copyFileSync(path.join(androidSource, file), path.join(destination, 'android/maven', coordinate, file));
-for (const file of [...sources, 'PushPlatformSDK.podspec']) {
+for (const file of [...sources, 'PushPlatformSDK.podspec', 'PushPlatformExtension.podspec']) {
   const target = path.join(destination, 'ios', file);
   fs.mkdirSync(path.dirname(target), { recursive: true });
   fs.copyFileSync(path.join(ios, file), target);

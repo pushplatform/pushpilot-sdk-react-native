@@ -36,6 +36,8 @@ test('migrates previous generated private Git and Maven Local entries', () => {
   const updatedPod = addIosPodDependency(oldPod);
   assert.doesNotMatch(updatedPod, /:git|:branch/);
   assert.match(updatedPod, /require.resolve/);
+  assert.match(updatedPod, /pod 'PushPlatformExtension'/);
+  assert.match(updatedPod, /pod 'PushPlatformSDK'/);
   assert.equal(addIosPodDependency(updatedPod), updatedPod);
   assert.throws(() => validateOptions({ ios: { sdkGitBranch: 'main' } }), /no longer used/);
 });
@@ -65,6 +67,7 @@ test('native config mutations are idempotent and preserve existing values', () =
   const once = addIosPodDependency(podfile);
   const twice = addIosPodDependency(once);
   assert.equal(twice, once);
-  assert.equal((twice.match(/PushPlatformSDK/g) || []).length, 1);
+  assert.equal((twice.match(/pod 'PushPlatformSDK'/g) || []).length, 1);
+  assert.equal((twice.match(/pod 'PushPlatformExtension'/g) || []).length, 1);
   assert.match(twice, /:path/);
 });

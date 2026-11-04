@@ -42,7 +42,7 @@ try {
   }
   const prefix = `native/android/maven/${lock.android.group.replaceAll('.', '/')}/${lock.android.artifact}/${lock.android.version}/${lock.android.artifact}-${lock.android.version}`;
   for (const extension of ['aar', 'pom', 'module']) assert(manifest.sha256[`${prefix.slice(7)}.${extension}`], `Missing Android ${extension}`);
-  for (const file of ['native/android/LICENSE', 'native/ios/LICENSE', 'native/THIRD_PARTY_NOTICES.md', 'native/licenses/Apache-2.0.txt', 'native/ios/PushPlatformSDK.podspec', 'lib/index.js', 'lib/index.d.ts', 'app.plugin.js', 'react-native.config.js', 'ios/PushPlatformBridge.swift', 'android/src/main/AndroidManifest.xml']) {
+  for (const file of ['native/android/LICENSE', 'native/ios/LICENSE', 'native/THIRD_PARTY_NOTICES.md', 'native/licenses/Apache-2.0.txt', 'native/ios/PushPlatformSDK.podspec', 'native/ios/PushPlatformExtension.podspec', 'lib/index.js', 'lib/index.d.ts', 'app.plugin.js', 'react-native.config.js', 'ios/PushPlatformBridge.swift', 'android/src/main/AndroidManifest.xml']) {
     assert(fs.statSync(path.join(root, file)).size > 0, `Missing ${file}`);
   }
   assert(read('android/build.gradle').includes(`com.pushplatform:sdk-android:${lock.android.version}`));
