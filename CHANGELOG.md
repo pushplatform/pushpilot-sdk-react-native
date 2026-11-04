@@ -1,7 +1,7 @@
 # 1.3.10 — 2026-11-04
 
 - Current **latest** npm-релиз (GHA-verified tarball). После publish `1.3.9` registry сначала держал версию в невидимом stage (E409 / empty `npm stage list`); `1.3.9` затем вышел и тоже GHA-ok — предпочтителен **`@1.3.10`**.
-- Native: `PushPlatformSDK` 1.2.8 / `sdk-android` 1.2.5. `1.3.8` помечен `npm deprecate` (битый hand-publish).
+- Native pin: `PushPlatformSDK` **1.2.9** / `sdk-android` 1.2.5. NSE: `pod 'PushPlatformSDK/Extension'` + `import PushPlatformExtension` (не полный App SDK). `1.3.8` помечен `npm deprecate` (битый hand-publish).
 
 # 1.3.9 — 2026-11-04
 
