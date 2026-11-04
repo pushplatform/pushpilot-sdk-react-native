@@ -7,7 +7,7 @@ PushPilot подключает push-уведомления к приложени
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native@1.3.8
+npm install @pushplatform/react-native@1.3.9
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
