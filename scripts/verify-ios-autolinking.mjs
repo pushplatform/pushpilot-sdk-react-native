@@ -115,7 +115,15 @@ if (upgradeFrom) {
   assert.deepEqual(unrelated(lock.PODS), unrelated(baseline.PODS), 'Targeted SDK upgrade changed unrelated native versions');
 }
 
-assert(lock.PODS.some(pod => pod === `${native.pod} (${native.version})`), 'Locked native pod version differs from the release');
+const podNames = lock.PODS.map(pod => (typeof pod === 'string' ? pod : Object.keys(pod)[0]));
+assert(
+  podNames.some(name => name === `${native.pod} (${native.version})` || name === `${native.pod}/App (${native.version})`),
+  'Locked native pod version differs from the release',
+);
+assert(
+  podNames.some(name => name === `${native.pod}/Extension (${native.version})`),
+  'Locked Extension subspec is missing from Podfile.lock',
+);
 const external = lock['EXTERNAL SOURCES']?.[native.pod];
 assert(external, 'Native dependency must resolve through the public git pin while Trunk omits new specs');
 const git = external[':git'] || external.git;
@@ -124,7 +132,10 @@ assert.equal(git, `https://github.com/${native.repository}.git`, 'Native git rem
 assert.equal(tag, `v${native.version}`, 'Native git tag differs from the lock');
 assert(!Object.entries(lock['SPEC REPOS'] || {}).some(([, pods]) => pods.includes(native.pod)), 'Native dependency unexpectedly came from CocoaPods trunk/CDN');
 assert(fs.existsSync(path.join(ios, 'Pods', native.pod, 'Sources/PushPlatformSDK/Core/DeviceMetadata.swift')), 'New native source was not downloaded');
-assert(fs.existsSync(path.join(ios, 'Pods', native.pod, 'Sources/PushPlatformSDK/Notifications/PushPlatformExtension.swift')), 'PushPlatformExtension is missing from the locked native SDK');
+assert(
+  fs.existsSync(path.join(ios, 'Pods', native.pod, 'Sources/PushPlatformExtension/PushPlatformExtension.swift')),
+  'PushPlatformExtension is missing from the locked native SDK',
+);
 console.log(`Bare RN autolinking passed: PushPlatform ${sourcePackage.version} → git ${native.pod} ${native.version}; linkage=${linkage}.`);
 if (args.includes('--build')) {
   run('xcodebuild', ['-workspace', 'PushPlatformTestApp.xcworkspace', '-scheme', 'PushPlatformTestApp', '-configuration', 'Debug', '-sdk', 'iphonesimulator', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', path.join(consumer, 'DerivedData'), '-jobs', '2', 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, podEnv);
