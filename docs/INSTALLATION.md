@@ -3,7 +3,7 @@
 Установите пакет из npm:
 
 ```sh
-npm install @pushplatform/react-native@1.3.9
+npm install @pushplatform/react-native@1.3.10
 ```
 
 Для фиксации версии укажите её вместо `next` в команде установки.
@@ -65,10 +65,10 @@ callbacks из AppDelegate в `PushPlatform.shared`, как в API native SDK.
 
 ### Обновление с RN SDK 1.0.x
 
-В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.9 зависит от `PushPlatformSDK` 1.2.8 и `sdk-android` 1.2.5, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
+В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.10 зависит от `PushPlatformSDK` 1.2.8 и `sdk-android` 1.2.5, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
 
 ```sh
-npm install @pushplatform/react-native@1.3.9
+npm install @pushplatform/react-native@1.3.10
 cd ios
 bundle exec pod update PushPlatform PushPlatformSDK --repo-update
 ```
