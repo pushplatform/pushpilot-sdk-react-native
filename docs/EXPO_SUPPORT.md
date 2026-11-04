@@ -27,7 +27,7 @@ Plugin не создаёт Notification Service Extension. Для `received` п�
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
-Native SDK в 1.3.8: iOS — опубликованный `PushPlatformSDK` 1.2.8, Android — `com.pushplatform:sdk-android:1.2.5`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
+Native SDK в 1.3.9: iOS — опубликованный `PushPlatformSDK` 1.2.8, Android — `com.pushplatform:sdk-android:1.2.5`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
 
 ## Проверки native интеграции — история 2026-10-04
 
