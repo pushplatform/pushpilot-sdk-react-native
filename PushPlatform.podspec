@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
 
   # Standard transitive CocoaPods dependency, as in RN 1.0.3.
   # Its public spec must be validated before the RN package is released.
-  s.dependency "PushPlatformSDK", "1.2.6"
+  s.dependency "PushPlatformSDK", "1.2.8"
 
   s.swift_version = "5.9"
 
