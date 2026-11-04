@@ -1,7 +1,7 @@
 # 1.3.10 — 2026-11-04
 
-- Повторный корректный npm-релиз (GHA-verified tarball). **`1.3.9` застрял в невидимом npm stage** (E409 / empty `npm stage list`) — не использовать; ставить `@1.3.10`.
-- Native: `PushPlatformSDK` 1.2.8 / `sdk-android` 1.2.5. `1.3.8` остаётся битым hand-publish.
+- Current **latest** npm-релиз (GHA-verified tarball). После publish `1.3.9` registry сначала держал версию в невидимом stage (E409 / empty `npm stage list`); `1.3.9` затем вышел и тоже GHA-ok — предпочтителен **`@1.3.10`**.
+- Native: `PushPlatformSDK` 1.2.8 / `sdk-android` 1.2.5. `1.3.8` помечен `npm deprecate` (битый hand-publish).
 
 # 1.3.9 — 2026-11-04
 
