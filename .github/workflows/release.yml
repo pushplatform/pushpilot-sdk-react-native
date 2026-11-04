@@ -155,7 +155,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
       - name: Require a version tag
         run: |
           test "$GITHUB_REF" = "refs/tags/v$(node -p "require('./package.json').version")"
@@ -170,17 +169,12 @@ jobs:
           node scripts/check-package.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
       - name: Install OIDC-capable npm CLI
         run: npm install --global npm@11.15.0
-      - name: Publish the verified archive to npm
+      - name: Publish the verified archive through npm trusted publishing
         env:
           RELEASE_DIST_TAG: ${{ inputs.dist_tag }}
-          # Classic automation token on the npm-release environment (OIDC alone returned 404 for this scope).
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         # Use an empty working directory: do not execute source package lifecycle scripts.
+        # No NODE_AUTH_TOKEN / NPM_TOKEN — publish via npm OIDC trusted publishing only.
         run: |
           archive="$GITHUB_WORKSPACE/$(node -p "'dist/' + require('./dist/pack.json')[0].filename")"
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            echo "NPM_TOKEN secret is missing on the npm-release environment" >&2
-            exit 1
-          fi
           cd "$RUNNER_TEMP"
           npm publish "$archive" --access public --tag "$RELEASE_DIST_TAG" --ignore-scripts
