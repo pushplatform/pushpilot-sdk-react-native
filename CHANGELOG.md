@@ -1,3 +1,7 @@
+# 1.3.8 — 2026-11-04
+
+- Публикация моста на `PushPlatformSDK` 1.2.8 с резолвом через публичный git-тег `v1.2.8` (CocoaPods Trunk read-only; git tag — source of truth). Expo по-прежнему `:path => native/ios`. Android — `sdk-android` 1.2.5.
+
 # 1.3.7 — 2026-11-04
 
 - iOS-мост зависит от `PushPlatformSDK` 1.2.8 (`PushPlatformExtension` для NSE). CocoaPods Trunk сейчас не принимает новые specs — CI и bare Podfile резолвят native SDK с публичного git-тега `v1.2.8` (Expo — `:path => native/ios`). Android остаётся `sdk-android` 1.2.5.
