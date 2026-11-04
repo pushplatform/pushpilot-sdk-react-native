@@ -1,17 +1,17 @@
 # Quick Start
 
-Install `@pushplatform/react-native` 1.3.6:
+Install `@pushplatform/react-native` 1.3.7:
 
 ```sh
-npm install @pushplatform/react-native@1.3.6
+npm install @pushplatform/react-native@1.3.7
 ```
 
-The package bridges to Android `sdk-android` 1.2.5 and iOS `PushPlatformSDK` 1.2.6. Android resolves the AAR from `native/android/maven` inside the npm package. iOS autolinking resolves the published pod; the same sources are also in `native/ios` for the Expo plugin. Application developers do not need private Git access or Maven Local.
+The package bridges to Android `sdk-android` 1.2.5 and iOS `PushPlatformSDK` 1.2.8. Android resolves the AAR from `native/android/maven` inside the npm package. iOS autolinking resolves the published pod; the same sources are also in `native/ios` for the Expo plugin. Application developers do not need private Git access or Maven Local.
 
 Complete the platform setup in [INSTALLATION.md](INSTALLATION.md):
 
 - **Expo:** install `expo-dev-client`, add `@pushplatform/react-native` to the Expo plugins with the PushPilot application UUID, APNs environment and Firebase config, then run `npx expo prebuild` and `npx expo run:android` / `npx expo run:ios`. Use a development build. Expo Go does not include this native bridge.
-- **Bare React Native:** autolinking connects the bridge and the public `PushPlatformSDK` 1.2.6 pod. Add the bundled Maven repository to the Android repositories, then run `pod install`.
+- **Bare React Native:** autolinking connects the bridge and the public `PushPlatformSDK` 1.2.8 pod. Add the bundled Maven repository to the Android repositories, then run `pod install`.
 
 Initialize once during app startup:
 
