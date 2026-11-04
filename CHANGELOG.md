@@ -1,6 +1,6 @@
 # 1.3.7 — 2026-11-04
 
-- iOS-мост зависит от `PushPlatformSDK` 1.2.8. Подтверждение при закрытом приложении вызывает `PushPlatformExtension` из пода. В Podfile нужен target extension с тем же подом. Новых вызовов из JavaScript нет. Android остаётся `sdk-android` 1.2.5.
+- iOS-мост остаётся на опубликованном `PushPlatformSDK` 1.2.6: CocoaPods Trunk до 6 ноября не принимает `1.2.8`, из‑за этого CI `release:verify-ios` краснел. NSE — копипаст `NotificationService.swift` без `PushPlatformExtension` из пода (как в 1.3.6). Android — `sdk-android` 1.2.5. После появления `1.2.8` на CDN можно снова перейти на короткий NSE через под.
 
 # 1.3.6 — 2026-11-03
 
