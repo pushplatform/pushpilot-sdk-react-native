@@ -112,7 +112,6 @@ describe('PushPlatform Core API', () => {
       expect(mockNativeModule.initialize).toHaveBeenCalledWith({
         applicationId: config.applicationId,
         url: config.url,
-        environment: 'development',
         debugMode: false,
       });
     });

@@ -1,3 +1,7 @@
+# 1.3.12 — 2026-11-05
+
+- Один режим storage: custom `url` больше не ставит `environment: development` (default production). Native pin остаётся `PushPlatformSDK` **1.2.10** до тега `v1.2.11`; серверный coerce + этот JS-fix уже чинят badge Increase с локальным url.
+
 # 1.3.11 — 2026-11-04
 
 - Native pin: `PushPlatformSDK` **1.2.10** + отдельный pod `PushPlatformExtension` / `sdk-android` 1.2.5. NSE: `pod 'PushPlatformExtension'` (не subspec). Bare Podfile и Expo plugin pin'ят оба pod с одного git-тега / `native/ios` path (Trunk read-only).

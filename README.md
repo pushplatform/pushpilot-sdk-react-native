@@ -6,22 +6,22 @@ PushPilot подключает push-уведомления к приложени
 
 ## Установка
 
-```sh
-npm install @pushplatform/react-native@1.3.11
-```
+``sh
+npm install /react-native.3.12
+``
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
 необходимые native модули.
 
-```sh
+``sh
 npx expo install expo-dev-client
-```
+``
 
 ## Настройка Expo
 
 В `app.json` укажите UUID приложения PushPilot и Firebase config:
 
-```json
+``json
 {
   "expo": {
     "ios": { "bundleIdentifier": "com.example.app" },
@@ -33,18 +33,18 @@ npx expo install expo-dev-client
     }]]
   }
 }
-```
+``
 
 `applicationId` — UUID приложения PushPilot, а не bundle ID или Android package
 name. `google-services.json` должен соответствовать вашему Android-приложению.
 Для iOS настройте Push Notifications capability и provisioning с соответствующим
 APNs environment; для production используйте `apsEnvironment: "production"`.
 
-```sh
+``sh
 npx expo prebuild
 npx expo run:android
 npx expo run:ios
-```
+``
 
 Plugin подключает native SDK из установленного npm-пакета, разрешения уведомлений
 и callbacks стандартного Swift AppDelegate. Для EAS настройте профиль build и app
@@ -59,20 +59,20 @@ credentials. [Установка Expo и bare React Native](https://github.com/p
 3. **App Groups** на обоих target: `group.com.example.app.pushplatform`.
 4. В `ios/Podfile` сразу после `platform :ios` добавьте pin native SDK (пока нет на Trunk/CDN):
 
-```ruby
+``ruby
 pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
 pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
-```
+``
 
 5. Добавьте target extension и замените `NotificationService.swift` кодом ниже. В extension — `import PushPlatformExtension`, не `import PushPlatformSDK` (иначе `No such module 'PushPlatformSDK'`). Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.10/Sources/PushPlatformNotificationService/NotificationService.swift).
 
-```ruby
+``ruby
 target 'PushPlatformNotificationServiceExtension' do
   pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
 end
-```
+``
 
-```swift
+``swift
 import UserNotifications
 import PushPlatformExtension
 
@@ -99,7 +99,7 @@ class NotificationService: UNNotificationServiceExtension {
         }
     }
 }
-```
+``
 
 Extension не меняет баннер. Приложение при `initialize` само пишет в App Group адрес сервера, application id и subscription id.
 
@@ -108,7 +108,7 @@ Extension не меняет баннер. Приложение при `initializ
 Вызывайте `initializePushPilot()` один раз при запуске приложения. Запрос
 разрешения привяжите к кнопке интерфейса:
 
-```tsx
+``tsx
 import PushPilot from '@pushplatform/react-native';
 
 export async function initializePushPilot() {
@@ -144,7 +144,7 @@ export async function initializePushPilot() {
 export function requestPushPermission() {
   return PushPilot.requestPermissions();
 }
-```
+``
 
 `url` — адрес API PushPilot. `applicationId` — UUID приложения. `apiKey` не отправляется. Приватные APNs/FCM/VAPID credentials остаются на сервере.
 
@@ -188,7 +188,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
 
-### Текущая поставка · 1.3.11
+### Текущая поставка · 1.3.12
 
 `initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.5`. iOS autolinking требует `PushPlatformSDK` 1.2.10; пока Trunk read-only — pin в Podfile с git-тега `v1.2.10` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
 

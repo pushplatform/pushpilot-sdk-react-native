@@ -25,7 +25,9 @@ export function validateConfig(config: PushPlatformConfig): void {
   const baseURL = config.url;
   if (baseURL) validateURL(baseURL);
 
-  const environment = config.environment || (baseURL ? 'development' : 'production');
+  // Storage is always production unless the app explicitly sets environment (legacy).
+  // Custom url must not imply development — that broke universal badge Increase.
+  const environment = config.environment || 'production';
   const localDebug = !!baseURL && config.debugMode === true && ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'].includes(new URL(baseURL).hostname);
   if (environment === 'production' && baseURL && !baseURL.startsWith('https://') && !localDebug) {
     throw new SDKError(

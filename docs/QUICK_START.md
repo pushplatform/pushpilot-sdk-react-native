@@ -1,10 +1,10 @@
 # Quick Start
 
-Install `@pushplatform/react-native` 1.3.11:
+Install `@pushplatform/react-native` 1.3.12:
 
-```sh
-npm install @pushplatform/react-native@1.3.11
-```
+``sh
+npm install /react-native.3.12
+``
 
 The package bridges to Android `sdk-android` 1.2.5 and iOS `PushPlatformSDK` 1.2.10. Android resolves the AAR from `native/android/maven` inside the npm package. iOS autolinking resolves the published pod; the same sources are also in `native/ios` for the Expo plugin. Application developers do not need private Git access or Maven Local.
 
@@ -15,7 +15,7 @@ Complete the platform setup in [INSTALLATION.md](INSTALLATION.md):
 
 Initialize once during app startup. Always `await initialize` before `onNotificationOpened` / `onNotificationReceived` / `onNotificationWillDisplay` (those throw `SDK not initialized` otherwise). `onRegistrationUpdated` may be registered earlier:
 
-```tsx
+``tsx
 import PushPlatform from '@pushplatform/react-native';
 
 export async function startPushPlatform() {
@@ -34,7 +34,7 @@ export async function startPushPlatform() {
 
   return { installationId, permissionGranted, registration, opened };
 }
-```
+``
 
 `applicationId` is the PushPilot application UUID, not the iOS bundle identifier or Android application id. No secret key is sent. With no URL the SDK uses https://api.pushpilot.ru. Pass `{ applicationId, url }` to use another server. The native SDK registers APNs/FCM tokens when the operating system provides them; token values stay native and are not exposed to JavaScript.
 

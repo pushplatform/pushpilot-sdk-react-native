@@ -2,9 +2,9 @@
 
 Установите пакет из npm:
 
-```sh
-npm install @pushplatform/react-native@1.3.11
-```
+``sh
+npm install /react-native.3.12
+``
 
 Для фиксации версии укажите её вместо `next` в команде установки.
 Схема установки такая же, как в 1.0.3: RN autolinking подключает bridge,
@@ -16,13 +16,13 @@ Android-зависимость — `com.pushplatform:sdk-android:1.2.5`.
 
 ## Expo SDK 54
 
-```sh
+``sh
 npx expo install expo-dev-client
-```
+``
 
 В `app.json`:
 
-```json
+``json
 {
   "expo": {
     "ios": { "bundleIdentifier": "com.example.app" },
@@ -34,7 +34,7 @@ npx expo install expo-dev-client
     }]]
   }
 }
-```
+``
 
 Замените UUID на приложение PushPilot и укажите настоящий Firebase config.
 Затем `npx expo prebuild`, `npx expo run:android` / `npx expo run:ios`.
@@ -46,19 +46,19 @@ APNs entitlement/signing profile. В `initialize()` передайте applicati
 
 ## Bare React Native
 
-Autolinking подключает RN bridge. Пока Trunk не отдаёт 1.2.10, добавьте в `ios/Podfile` (сразу после `platform :ios`) pin с публичного git-тега:
+Autolinking подключает RN bridge. Пока Trunk не отдаёт 1.2.11, добавьте в `ios/Podfile` (сразу после `platform :ios`) pin с публичного git-тега:
 
-```ruby
+``ruby
 pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
 pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
-```
+``
 
 Expo plugin вместо этого пишет `:path => native/ios` из npm-пакета.
 
-```sh
+``sh
 cd ios
 bundle exec pod install --repo-update
-```
+``
 
 Если проект не использует Bundler, выполните `pod install --repo-update`. Включите Push Notifications, `aps-environment`
 и background mode `remote-notification`; передавайте APNs token и notification
@@ -66,19 +66,19 @@ callbacks из AppDelegate в `PushPlatform.shared`, как в API native SDK.
 
 ### Обновление с RN SDK 1.0.x
 
-В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.11 зависит от `PushPlatformSDK` 1.2.10 и `sdk-android` 1.2.5, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
+В 1.0.x использовался native iOS SDK 1.0.0, в 1.1.0 — native 1.1.0. Версия 1.3.12 зависит от `PushPlatformSDK` 1.2.10 и `sdk-android` 1.2.5, поэтому существующий Podfile.lock нужно обновить штатной командой CocoaPods для этих двух зависимостей:
 
-```sh
-npm install @pushplatform/react-native@1.3.11
+``sh
+npm install /react-native.3.12
 cd ios
 bundle exec pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update
-```
+``
 
 Другие версии Pods сохраняются. После этого повторные установки используют обычный `pod install`. Удаление npm-пакета не удаляет зафиксированные версии CocoaPods. Для нового проекта без старого lockfile достаточно команды `pod install` из предыдущего раздела.
 
 Минимальное forwarding APNs token в Swift AppDelegate:
 
-```swift
+``swift
 import PushPlatformSDK
 
 func application(_ application: UIApplication,
@@ -90,7 +90,7 @@ func application(_ application: UIApplication,
                  didFailToRegisterForRemoteNotificationsWithError error: Error) {
     PushPlatform.shared.didFailToRegisterAPNs(error)
 }
-```
+``
 
 Также назначьте `UNUserNotificationCenter.current().delegate` и передавайте
 `willPresent` в `handleForegroundNotification`, а `didReceive` — в
@@ -100,13 +100,13 @@ func application(_ application: UIApplication,
 
 В Android `build.gradle`, внутри `allprojects.repositories`, добавьте:
 
-```groovy
+``groovy
 maven {
     def sdkPackage = new File(["node", "--print", "require.resolve('@pushplatform/react-native/package.json')"].execute(null, rootDir).text.trim()).parentFile
     url = uri(new File(sdkPackage, "native/android/maven"))
     content { includeModule("com.pushplatform", "sdk-android") }
 }
-```
+``
 
 Если проект централизует repositories через `dependencyResolutionManagement`
 в `settings.gradle`, поместите тот же блок в его `repositories`, сохранив
@@ -125,13 +125,13 @@ maven {
 3. **App Groups** на приложении и на extension: `group.<bundle id приложения>.pushplatform`.
 4. В Podfile уже должен быть git-pin `v1.2.10` (см. выше). Добавьте target extension и замените `NotificationService.swift` кодом ниже. В extension — `import PushPlatformExtension`, не `import PushPlatformSDK` (иначе `No such module 'PushPlatformSDK'`). Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.10/Sources/PushPlatformNotificationService/NotificationService.swift).
 
-```ruby
+``ruby
 target 'PushPlatformNotificationServiceExtension' do
   pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
 end
-```
+``
 
-```swift
+``swift
 import UserNotifications
 import PushPlatformExtension
 
@@ -158,7 +158,7 @@ class NotificationService: UNNotificationServiceExtension {
         }
     }
 }
-```
+``
 
 ## Обновление предыдущей Expo интеграции
 
