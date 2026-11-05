@@ -139,6 +139,8 @@ Register a callback for when push notifications are received.
 
 Fires when notifications arrive, whether the app is in foreground or background.
 
+Requires a completed `await PushPlatform.initialize(...)`. Calling this before init throws `SDK not initialized`.
+
 ```typescript
 static onNotificationReceived(
   callback: (context: NotificationContext) => void
@@ -154,6 +156,11 @@ static onNotificationReceived(
 **Example:**
 
 ```typescript
+await PushPlatform.initialize({
+  applicationId: 'your-application-uuid',
+  url: 'https://api.pushpilot.ru',
+});
+
 const subscription = PushPlatform.onNotificationReceived((context) => {
   console.log('Notification received:', context.notification.title);
   console.log('In foreground:', context.foreground);
