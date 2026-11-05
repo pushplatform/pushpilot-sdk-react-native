@@ -72,7 +72,13 @@ export async function verifyIosPublication(ios, fetcher = globalThis.fetch) {
 }
 
 export function iosGitPodLine(ios) {
-  return `pod '${ios.pod}', :git => 'https://github.com/${ios.repository}.git', :tag => 'v${ios.version}'`;
+  const git = `https://github.com/${ios.repository}.git`;
+  const tag = `v${ios.version}`;
+  // Trunk may omit new specs: pin Extension + SDK from the same public git tag.
+  return [
+    `pod 'PushPlatformExtension', :git => '${git}', :tag => '${tag}'`,
+    `pod '${ios.pod}', :git => '${git}', :tag => '${tag}'`,
+  ].join('\n');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

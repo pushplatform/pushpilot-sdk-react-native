@@ -25,7 +25,7 @@ Pod::Spec.new do |s|
   # Exact native version. CocoaPods Trunk may not list new specs (read-only trial /
   # permanent freeze): the app Podfile must pin the same version from git or from
   # native/ios inside this package (Expo plugin does the path form automatically).
-  s.dependency "PushPlatformSDK", "1.2.9"
+  s.dependency "PushPlatformSDK", "1.2.10"
 
   s.swift_version = "5.9"
 

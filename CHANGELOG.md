@@ -1,3 +1,7 @@
+# 1.3.11 — 2026-11-04
+
+- Native pin: `PushPlatformSDK` **1.2.10** + отдельный pod `PushPlatformExtension` / `sdk-android` 1.2.5. NSE: `pod 'PushPlatformExtension'` (не subspec). Bare Podfile и Expo plugin pin'ят оба pod с одного git-тега / `native/ios` path (Trunk read-only).
+
 # 1.3.10 — 2026-11-04
 
 - Current **latest** npm-релиз (GHA-verified tarball). После publish `1.3.9` registry сначала держал версию в невидимом stage (E409 / empty `npm stage list`); `1.3.9` затем вышел и тоже GHA-ok — предпочтителен **`@1.3.10`**.
