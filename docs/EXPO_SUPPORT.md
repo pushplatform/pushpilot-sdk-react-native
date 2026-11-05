@@ -16,7 +16,7 @@
 `app.plugin.js` экспортирует `withPushPlatform` через стандартную точку входа пакета. Во время prebuild он:
 
 - добавляет `POST_NOTIFICATIONS` и PushPilot application metadata в Android Manifest;
-- добавляет Maven repository из установленного npm пакета (`native/android/maven`) для `com.pushplatform:sdk-android:1.2.5`; Maven Local пользователю не нужен;
+- добавляет Maven repository из установленного npm пакета (`native/android/maven`) для `com.pushplatform:sdk-android:1.2.6`; Maven Local пользователю не нужен;
 - при `android.googleServicesFile` добавляет Google Services Gradle plugin и оставляет путь к конфигу в Expo config;
 - добавляет `aps-environment`, `remote-notification`, application UUID и Pod `PushPlatformSDK` из `native/ios` установленного npm пакета; приватный Git пользователю не нужен;
 - прокидывает APNs token, foreground notification и notification response через стандартный Swift AppDelegate;
@@ -27,7 +27,7 @@ Plugin не создаёт Notification Service Extension. Для `received` п�
 
 `applicationId` можно также задавать динамически из `app.config.ts`; plugin не записывает API key в native project.
 
-Native SDK в 1.3.12: iOS — опубликованный `PushPlatformSDK` 1.2.11, Android — `com.pushplatform:sdk-android:1.2.5`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
+Native SDK в 1.3.12: iOS — опубликованный `PushPlatformSDK` 1.2.11, Android — `com.pushplatform:sdk-android:1.2.6`. Те же артефакты собираются из `release/native-lock.json` и входят в tarball для Expo. Autolinking iOS дополнительно берёт под из CocoaPods. Старые `ios.sdkGitUrl` / `ios.sdkGitBranch` нужно удалить; plugin переводит собственные ранее сгенерированные Git/Maven Local записи на bundled dependencies.
 
 ## Проверки native интеграции — история 2026-10-04
 

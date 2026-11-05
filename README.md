@@ -190,7 +190,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 ### Текущая поставка · 1.3.13
 
-`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.5`. iOS autolinking требует `PushPlatformSDK` 1.2.11; пока Trunk read-only — pin в Podfile с git-тега `v1.2.11` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
+`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.6`. iOS autolinking требует `PushPlatformSDK` 1.2.11; пока Trunk read-only — pin в Podfile с git-тега `v1.2.11` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
 
 Открытие уведомления нативный SDK сообщает сам: при клике, в том числе при холодном старте, он отправляет `PUT /notifications/{id}`; до `initialize` открытие ждёт в очереди. В `onNotificationOpened` и `onNotificationWillDisplay` у уведомления есть необязательный `notificationId` — id из ответа `POST /notifications`. Экспорты пакета не изменились: только `PushPlatform`, `SDKError`, `ErrorCode` и типы.
 

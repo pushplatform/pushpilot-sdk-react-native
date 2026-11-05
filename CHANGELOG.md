@@ -1,3 +1,7 @@
+# 1.3.14 — 2026-11-05
+
+- Android: `sdk-android` **1.2.6** (явный `firebase-messaging`, совместимо с Firebase BoM 34+ / RN Firebase).
+
 # 1.3.13 — 2026-11-05
 
 - `debugMode: true` разрешает HTTP на RFC1918 LAN (`192.168.x.x`, `10.x`, `172.16–31.x`), не только localhost / `10.0.2.2`.
