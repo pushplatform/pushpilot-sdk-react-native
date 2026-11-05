@@ -95,8 +95,8 @@ Ensure you installed a prepared release tarball with `native/ios/PushPlatformSDK
 While Trunk omits 1.2.11, pin both pods from the public git tag in `ios/Podfile` (right after `platform :ios`):
 
 ```ruby
-pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
-pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
+pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.11'
+pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.11'
 ```
 
 Or path pods from the npm package (`native/ios`) for Expo / bundled installs.
