@@ -75,7 +75,7 @@ export class PushPlatform {
       const normalizedConfig = {
         applicationId: config.applicationId,
         ...(config.url ? { url: config.url } : {}),
-        ...(config.environment ? { environment: config.environment } : config.url ? { environment: 'development' as const } : {}),
+        ...(config.environment ? { environment: config.environment } : {}),
         debugMode: config.debugMode ?? false,
         ...(typeof config.foregroundBannerFallback === 'number'
           ? { foregroundBannerFallback: config.foregroundBannerFallback }
