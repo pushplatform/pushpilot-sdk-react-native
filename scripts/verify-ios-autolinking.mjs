@@ -67,7 +67,22 @@ const podEnv = { ...process.env,
 };
 if (linkage === 'static') podEnv.USE_FRAMEWORKS = 'static';
 else delete podEnv.USE_FRAMEWORKS;
-const installPods = (updating = false) => run('pod', updating ? ['update', 'PushPlatform', 'PushPlatformSDK', 'PushPlatformExtension', '--repo-update'] : ['install', '--repo-update'], ios, podEnv);
+const installPods = (updating = false) => {
+  if (!updating) {
+    run('pod', ['install', '--repo-update'], ios, podEnv);
+    return;
+  }
+  // `pod update NAME` fails if NAME is not already in Podfile.lock (upgrade from
+  // 1.0.x has no PushPlatformExtension yet). Update only installed pods, then
+  // `pod install` picks up the newly pinned Extension from the Podfile.
+  const lockText = fs.existsSync(path.join(ios, 'Podfile.lock'))
+    ? fs.readFileSync(path.join(ios, 'Podfile.lock'), 'utf8')
+    : '';
+  const names = ['PushPlatform', 'PushPlatformSDK'].filter((name) => lockText.includes(`${name} (`));
+  if (lockText.includes('PushPlatformExtension (')) names.push('PushPlatformExtension');
+  if (names.length) run('pod', ['update', ...names, '--repo-update'], ios, podEnv);
+  run('pod', ['install', '--repo-update'], ios, podEnv);
+};
 const pinLockedNativeFromGit = () => {
   // Trunk may omit the locked version. Pin Extension + SDK from the same public git tag.
   podfile = fs.readFileSync(path.join(ios, 'Podfile'), 'utf8');
