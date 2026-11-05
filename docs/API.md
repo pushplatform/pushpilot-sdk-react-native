@@ -139,6 +139,8 @@ Register a callback for when push notifications are received.
 
 Fires when notifications arrive, whether the app is in foreground or background.
 
+Requires a completed `await PushPlatform.initialize(...)`. Calling this before init throws `SDK not initialized`.
+
 ```typescript
 static onNotificationReceived(
   callback: (context: NotificationContext) => void
@@ -154,6 +156,11 @@ static onNotificationReceived(
 **Example:**
 
 ```typescript
+await PushPlatform.initialize({
+  applicationId: 'your-application-uuid',
+  url: 'https://api.pushpilot.ru',
+});
+
 const subscription = PushPlatform.onNotificationReceived((context) => {
   console.log('Notification received:', context.notification.title);
   console.log('In foreground:', context.foreground);
@@ -175,6 +182,8 @@ Register a callback for when user taps a notification.
 
 Fires when the user opens a notification (app was terminated or backgrounded).
 
+Requires a completed `await PushPlatform.initialize(...)`. Calling this before init throws `SDK not initialized`.
+
 ```typescript
 static onNotificationOpened(
   callback: (context: NotificationContext) => void
@@ -190,6 +199,11 @@ static onNotificationOpened(
 **Example:**
 
 ```typescript
+await PushPlatform.initialize({
+  applicationId: 'your-application-uuid',
+  url: 'https://api.pushpilot.ru',
+});
+
 const subscription = PushPlatform.onNotificationOpened((context) => {
   console.log('Notification opened:', context.notification.title);
   
@@ -360,19 +374,37 @@ sub2.remove();
 
 ### Cleanup Pattern
 
-Use React hooks for automatic cleanup:
+Use React hooks for automatic cleanup. Await `initialize` before notification listeners:
 
 ```typescript
 useEffect(() => {
-  const subscription = PushPlatform.onNotificationReceived(handleNotification);
-  
-  return () => subscription.remove();
+  let subscription: { remove: () => void } | undefined;
+  let cancelled = false;
+
+  (async () => {
+    await PushPlatform.initialize({
+      applicationId: 'your-application-uuid',
+      url: 'https://api.pushpilot.ru',
+    });
+    if (cancelled) return;
+    subscription = PushPlatform.onNotificationReceived(handleNotification);
+  })();
+
+  return () => {
+    cancelled = true;
+    subscription?.remove();
+  };
 }, []);
 ```
 
 ### Deep Link Routing
 
 ```typescript
+await PushPlatform.initialize({
+  applicationId: 'your-application-uuid',
+  url: 'https://api.pushpilot.ru',
+});
+
 PushPlatform.onNotificationOpened((context) => {
   const { data } = context.notification;
   

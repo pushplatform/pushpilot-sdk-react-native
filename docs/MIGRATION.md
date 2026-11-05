@@ -194,7 +194,7 @@ await PushPlatform.initialize({
 
 ### Step 3: Register Event Handlers
 
-Set up handlers for both SDKs:
+Set up handlers for both SDKs **after** `await PushPlatform.initialize(...)` from Step 2 (`onNotificationReceived` / `onNotificationOpened` throw if registered earlier):
 
 ```typescript
 // Push Platform handlers

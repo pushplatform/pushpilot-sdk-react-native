@@ -13,7 +13,7 @@ Complete the platform setup in [INSTALLATION.md](INSTALLATION.md):
 - **Expo:** install `expo-dev-client`, add `@pushplatform/react-native` to the Expo plugins with the PushPilot application UUID, APNs environment and Firebase config, then run `npx expo prebuild` and `npx expo run:android` / `npx expo run:ios`. Use a development build. Expo Go does not include this native bridge.
 - **Bare React Native:** autolinking connects the bridge and the public `PushPlatformSDK` 1.2.10 pod. Add the bundled Maven repository to the Android repositories, then run `pod install`.
 
-Initialize once during app startup:
+Initialize once during app startup. Always `await initialize` before `onNotificationOpened` / `onNotificationReceived` / `onNotificationWillDisplay` (those throw `SDK not initialized` otherwise). `onRegistrationUpdated` may be registered earlier:
 
 ```tsx
 import PushPlatform from '@pushplatform/react-native';
@@ -25,10 +25,14 @@ export async function startPushPlatform() {
 
   await PushPlatform.initialize('00000000-0000-4000-8000-000000000000');
 
+  const opened = PushPlatform.onNotificationOpened((context) => {
+    console.info('Opened', context.notification.id);
+  });
+
   const installationId = await PushPlatform.getInstallationId();
   const permissionGranted = await PushPlatform.requestPermissions();
 
-  return { installationId, permissionGranted, registration };
+  return { installationId, permissionGranted, registration, opened };
 }
 ```
 

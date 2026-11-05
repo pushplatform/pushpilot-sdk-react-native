@@ -283,20 +283,23 @@ if (Platform.OS === 'android' && Platform.Version >= 33) {
 
 ### SDK not initialized error
 
-**Problem:** `SDKError: NOT_CONFIGURED - SDK not initialized`
+**Problem:** `SDKError: SDK not initialized. Call PushPlatform.initialize() first.` (often from `onNotificationOpened` / `onNotificationReceived` / `onNotificationWillDisplay` in a `useEffect` that did not wait for init)
 
 **Solution:**
 
-Call `PushPlatform.initialize()` before using any other SDK methods:
+`await` `PushPlatform.initialize()` **before** those listeners (and before other SDK methods). `onRegistrationUpdated` may be registered earlier. Do not fire-and-forget `initialize()` without awaiting it.
 
 ```typescript
 await PushPlatform.initialize({
-  apiKey: 'your-api-key',
-  appId: 'your-app-id',
-  environment: 'production',
+  applicationId: 'your-application-uuid',
+  url: 'https://api.pushpilot.ru',
+  debugMode: __DEV__,
 });
 
-// Now you can use other methods
+const opened = PushPlatform.onNotificationOpened((context) => {
+  // ...
+});
+
 const installationId = await PushPlatform.getInstallationId();
 ```
 

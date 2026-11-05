@@ -313,11 +313,15 @@ export class PushPlatform {
    * Fired when notification is received while app is running
    * (foreground or background).
    *
+   * Call only after `await PushPlatform.initialize(...)`.
+   *
    * @param callback - Callback function with notification context
    * @returns Subscription handle to remove listener
+   * @throws {SDKError} If SDK not initialized
    *
    * @example
    * ```typescript
+   * await PushPlatform.initialize({ applicationId, url });
    * const subscription = PushPlatform.onNotificationReceived((context) => {
    *   console.log('Notification received:', context.notification);
    *   if (context.isForegrounded) {
@@ -339,11 +343,15 @@ export class PushPlatform {
    *
    * Fired when user taps on notification (app was terminated or backgrounded).
    *
+   * Call only after `await PushPlatform.initialize(...)`.
+   *
    * @param callback - Callback function with notification context
    * @returns Subscription handle to remove listener
+   * @throws {SDKError} If SDK not initialized
    *
    * @example
    * ```typescript
+   * await PushPlatform.initialize({ applicationId, url });
    * const subscription = PushPlatform.onNotificationOpened((context) => {
    *   console.log('Notification opened:', context.notification);
    *   // Navigate to specific screen based on notification data
@@ -363,22 +371,28 @@ export class PushPlatform {
   }
 
   /**
-   * Remove all event listeners
+   * Add listener for notification will-display (foreground) event.
    *
-   * Clears all registered event listeners.
-   * Useful for cleanup when component unmounts.
+   * Call only after `await PushPlatform.initialize(...)`.
+   *
+   * @throws {SDKError} If SDK not initialized
    *
    * @example
    * ```typescript
    * useEffect(() => {
-   *   const sub1 = PushPlatform.onNotificationReceived(handler);
-   *   const sub2 = PushPlatform.onNotificationOpened(handler);
-   *
+   *   let sub1: { remove: () => void } | undefined;
+   *   let sub2: { remove: () => void } | undefined;
+   *   let cancelled = false;
+   *   (async () => {
+   *     await PushPlatform.initialize({ applicationId, url });
+   *     if (cancelled) return;
+   *     sub1 = PushPlatform.onNotificationReceived(handler);
+   *     sub2 = PushPlatform.onNotificationOpened(handler);
+   *   })();
    *   return () => {
-   *     sub1.remove();
-   *     sub2.remove();
-   *     // Or remove all at once:
-   *     // PushPlatform.removeAllListeners();
+   *     cancelled = true;
+   *     sub1?.remove();
+   *     sub2?.remove();
    *   };
    * }, []);
    * ```

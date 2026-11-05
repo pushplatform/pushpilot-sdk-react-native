@@ -112,12 +112,10 @@ Extension не меняет баннер. Приложение при `initializ
 import PushPilot from '@pushplatform/react-native';
 
 export async function initializePushPilot() {
+  // onRegistrationUpdated можно до initialize. onNotificationOpened /
+  // onNotificationReceived / onNotificationWillDisplay — только после await.
   const registration = PushPilot.onRegistrationUpdated((update) => {
     console.info('Регистрация push-токена обновлена', update.token);
-  });
-  const opened = PushPilot.onNotificationOpened(notification => {
-    // Откройте нужный экран через навигацию вашего приложения.
-    console.info('Открыто уведомление', notification.id);
   });
 
   try {
@@ -128,9 +126,13 @@ export async function initializePushPilot() {
     });
   } catch (error) {
     registration.remove();
-    opened.remove();
     throw error;
   }
+
+  const opened = PushPilot.onNotificationOpened(notification => {
+    // Откройте нужный экран через навигацию вашего приложения.
+    console.info('Открыто уведомление', notification.id);
+  });
 
   return () => {
     registration.remove();
@@ -146,7 +148,7 @@ export function requestPushPermission() {
 
 `url` — адрес API PushPilot. `applicationId` — UUID приложения. `apiKey` не отправляется. Приватные APNs/FCM/VAPID credentials остаются на сервере.
 
-`getInstallationId()` возвращает ID установки. `getDeviceToken()` возвращает последний APNs или FCM токен. При успешной регистрации `onRegistrationUpdated` содержит `token`. `onNotificationReceived` — доставка, `onNotificationOpened` — клик, `onNotificationWillDisplay` — показ в foreground. `preventDefault()` до возврата обработчика скрывает баннер, звук и бейдж. Удаляйте listeners, когда они больше не нужны.
+`initialize` возвращает Promise — дождитесь `await`, иначе `onNotificationOpened` / `onNotificationReceived` / `onNotificationWillDisplay` бросят `SDK not initialized`. `getInstallationId()` возвращает ID установки. `getDeviceToken()` возвращает последний APNs или FCM токен. При успешной регистрации `onRegistrationUpdated` содержит `token`. `onNotificationReceived` — доставка, `onNotificationOpened` — клик, `onNotificationWillDisplay` — показ в foreground. `preventDefault()` до возврата обработчика скрывает баннер, звук и бейдж. Удаляйте listeners, когда они больше не нужны.
 
 ## Поддержка и ограничения
 

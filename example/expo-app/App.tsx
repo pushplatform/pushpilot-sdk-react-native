@@ -16,25 +16,29 @@ export default function App() {
   const log = (message: string) => setLogs((current) => [...current, message]);
 
   useEffect(() => {
+    let received: { remove: () => void } | undefined;
+    let opened: { remove: () => void } | undefined;
     const registration = PushPlatform.onRegistrationUpdated((update) => {
       log(`registration: ${update.type || 'native'} / ${update.success ? 'success' : update.error || 'failed'}`);
     });
-    const received = PushPlatform.onNotificationReceived((context) => {
-      log(`received: ${context.notification.title || context.notification.id}`);
-    });
-    const opened = PushPlatform.onNotificationOpened((context) => {
-      log(`opened: ${context.notification.id}`);
-    });
 
     PushPlatform.initialize(config)
-      .then(() => PushPlatform.getInstallationId())
+      .then(() => {
+        received = PushPlatform.onNotificationReceived((context) => {
+          log(`received: ${context.notification.title || context.notification.id}`);
+        });
+        opened = PushPlatform.onNotificationOpened((context) => {
+          log(`opened: ${context.notification.id}`);
+        });
+        return PushPlatform.getInstallationId();
+      })
       .then((installationId) => log(`initialized: ${installationId}`))
       .catch((error) => log(`initialization error: ${error.message}`));
 
     return () => {
       registration.remove();
-      received.remove();
-      opened.remove();
+      received?.remove();
+      opened?.remove();
     };
   }, []);
 
