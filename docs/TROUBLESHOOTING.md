@@ -92,12 +92,24 @@ yarn add @pushplatform/react-native --ignore-engines
 
 Ensure you installed a prepared release tarball with `native/ios/PushPlatformSDK.podspec`. For Expo, remove old `sdkGitUrl`/`sdkGitBranch` options and run prebuild.
 
-Inside the app target in `ios/Podfile`, add:
+While Trunk omits 1.2.10, pin both pods from the public git tag in `ios/Podfile` (right after `platform :ios`):
 
 ```ruby
-pushpilot_package = File.dirname(`node --print "require.resolve('@pushplatform/react-native/package.json')"`.strip)
-pod 'PushPlatformSDK', :path => File.join(pushpilot_package, 'native/ios')
+pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
+pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
 ```
+
+Or path pods from the npm package (`native/ios`) for Expo / bundled installs.
+
+---
+
+### Notification Service Extension — No such module 'PushPlatformSDK'
+
+**Problem:** NSE `NotificationService.swift` fails on `import PushPlatformSDK`.
+
+**Cause:** The extension target links only `PushPlatformExtension`. The full SDK is for the app, not the NSE.
+
+**Solution:** Use `import PushPlatformExtension` and keep the NSE Podfile target on `pod 'PushPlatformExtension'` only. See [INSTALLATION.md](INSTALLATION.md#ios-notification-service-extension).
 
 ---
 

@@ -123,7 +123,7 @@ maven {
 1. **File → New → Target → Notification Service Extension**. **Don't Activate**. Deployment Target как у приложения, не ниже iOS 13.
 2. Bundle ID: `<bundle id приложения>.PushPlatformNotificationService`.
 3. **App Groups** на приложении и на extension: `group.<bundle id приложения>.pushplatform`.
-4. В Podfile уже должен быть git-pin `v1.2.10` (см. выше). Добавьте target extension и замените `NotificationService.swift` кодом ниже. Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.10/Sources/PushPlatformNotificationService/NotificationService.swift).
+4. В Podfile уже должен быть git-pin `v1.2.10` (см. выше). Добавьте target extension и замените `NotificationService.swift` кодом ниже. В extension — `import PushPlatformExtension`, не `import PushPlatformSDK` (иначе `No such module 'PushPlatformSDK'`). Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.10/Sources/PushPlatformNotificationService/NotificationService.swift).
 
 ```ruby
 target 'PushPlatformNotificationServiceExtension' do
