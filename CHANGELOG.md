@@ -1,6 +1,6 @@
 # 1.3.12 — 2026-11-05
 
-- Один режим storage: custom `url` больше не ставит `environment: development`. Default production; native iOS **1.2.11** (sandbox из профиля). Чинит universal `ios_badgeType Increase` при локальном API.
+- Один режим storage: custom `url` больше не ставит `environment: development` (default production). Native pin остаётся `PushPlatformSDK` **1.2.10** до тега `v1.2.11`; серверный coerce + этот JS-fix уже чинят badge Increase с локальным url.
 
 # 1.3.11 — 2026-11-04
 
