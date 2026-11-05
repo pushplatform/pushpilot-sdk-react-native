@@ -1,3 +1,7 @@
+# 1.3.13 — 2026-11-05
+
+- `debugMode: true` разрешает HTTP на RFC1918 LAN (`192.168.x.x`, `10.x`, `172.16–31.x`), не только localhost / `10.0.2.2`.
+
 # 1.3.12 — 2026-11-05
 
 - Один режим storage: custom `url` больше не ставит `environment: development` (default production). Native pin: `PushPlatformSDK` **1.2.11** + `PushPlatformExtension` / `sdk-android` 1.2.5 (git-тег `v1.2.11`; Trunk read-only).

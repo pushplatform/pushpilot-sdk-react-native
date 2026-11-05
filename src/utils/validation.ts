@@ -28,7 +28,7 @@ export function validateConfig(config: PushPlatformConfig): void {
   // Storage is always production unless the app explicitly sets environment (legacy).
   // Custom url must not imply development — that broke universal badge Increase.
   const environment = config.environment || 'production';
-  const localDebug = !!baseURL && config.debugMode === true && ['localhost', '127.0.0.1', '[::1]', '10.0.2.2'].includes(new URL(baseURL).hostname);
+  const localDebug = !!baseURL && config.debugMode === true && isLocalDebugHost(new URL(baseURL).hostname);
   if (environment === 'production' && baseURL && !baseURL.startsWith('https://') && !localDebug) {
     throw new SDKError(
       ErrorCode.INVALID_CONFIG,
@@ -88,6 +88,23 @@ export function validateUserId(userId: unknown): void {
       'userId contains invalid characters'
     );
   }
+}
+
+/** Loopback, Android emulator bridge, and RFC1918 hosts for debugMode HTTP. */
+export function isLocalDebugHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  if (host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '::1' || host === '10.0.2.2') {
+    return true;
+  }
+  const parts = host.split('.').map((part) => Number(part));
+  if (parts.length !== 4 || parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) {
+    return false;
+  }
+  const [a, b] = parts;
+  if (a === 10) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  return false;
 }
 
 /**

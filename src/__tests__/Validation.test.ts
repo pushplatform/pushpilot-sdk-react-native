@@ -85,6 +85,19 @@ describe('Validation Utilities', () => {
       expect(() => validateConfig({ ...config, url: 'http://remote.example', environment: 'production' })).toThrow('HTTPS');
     });
 
+    test('allows RFC1918 LAN HTTP only in explicit debug mode', () => {
+      const config: PushPlatformConfig = {
+        applicationId: '11111111-1111-1111-1111-111111111111',
+        url: 'http://192.168.0.109:18086',
+        debugMode: true,
+      };
+      expect(() => validateConfig(config)).not.toThrow();
+      expect(() => validateConfig({ ...config, url: 'http://10.1.2.3:18086' })).not.toThrow();
+      expect(() => validateConfig({ ...config, url: 'http://172.16.0.1:18086' })).not.toThrow();
+      expect(() => validateConfig({ ...config, debugMode: false })).toThrow('HTTPS');
+      expect(() => validateConfig({ ...config, url: 'http://8.8.8.8:18086' })).toThrow('HTTPS');
+    });
+
     test('should allow HTTP in development', () => {
       const config: PushPlatformConfig = {
         apiKey: 'test-api-key',
