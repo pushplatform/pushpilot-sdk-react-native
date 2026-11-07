@@ -9,7 +9,7 @@ npm install @pushplatform/react-native@1.3.11
 Для фиксации версии укажите её вместо `next` в команде установки.
 Схема установки такая же, как в 1.0.3: RN autolinking подключает bridge,
 Нужен `PushPlatformSDK` 1.2.10. Пока CocoaPods Trunk read-only — в Podfile pin с git-тега (ниже). Expo plugin подставляет `:path => native/ios`.
-Android-зависимость — `com.pushplatform:sdk-android:1.2.6`.
+Android-зависимость — `com.pushplatform:sdk-android:2.0.0`.
 Для Expo в npm также сохранены исходники iOS и Maven-артефакты Android той же версии.
 Дополнительная строка Podfile, XCFramework и исправления node_modules не требуются.
 Для обычных публичных зависимостей CocoaPods, React Native, AndroidX и Firebase нужна сеть.
@@ -173,3 +173,5 @@ Plugin заменяет собственную старую Pod Git-запись
 указывать на него.
 
 Локальный API: в Android Emulator адрес хоста — `10.0.2.2`, а не `127.0.0.1` ([Android network address space](https://developer.android.com/studio/run/emulator-networking-address)). Для локального HTTP включите `debugMode: true`; release требует HTTPS. На настоящем устройстве используйте доступный HTTPS URL API. Выбор клиентского окружения PushPilot для этого не требуется.
+
+Переход 2.0: [MIGRATION_2.md](MIGRATION_2.md).

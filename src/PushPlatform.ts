@@ -35,12 +35,14 @@ export class PushPlatform {
   // @ts-expect-error - instance tracking for singleton pattern verification in tests
   private static _instance: PushPlatform | null = null;
   private static initialized = false;
+  private static initializing: Promise<void> | null = null;
+  private static configurationScope: string | null = null;
 
   /**
    * Initialize the SDK
    *
    * Must be called before using any other SDK methods.
-   * Subsequent calls succeed without changing the existing configuration.
+   * Concurrent calls share initialization. Changing application, server or environment requires a new process.
    * Delegates to native SDK for actual initialization.
    *
    * @param config - SDK configuration
@@ -56,12 +58,20 @@ export class PushPlatform {
    * ```
    */
   static async initialize(input: string | PushPlatformConfig): Promise<void> {
-    if (PushPlatform.initialized) {
-      return;
-    }
     const config: PushPlatformConfig = typeof input === 'string' ? { applicationId: input } : input;
 
     validateConfig(config);
+
+    const scope = JSON.stringify([config.applicationId.toLowerCase(),
+      (config.url || NativeModule.serverURL || 'https://api.pushpilot.ru').replace(/\/+$/, ''),
+      config.environment || null]);
+    if (PushPlatform.initialized || PushPlatform.initializing) {
+      if (scope !== PushPlatform.configurationScope) {
+        throw new SDKError(ErrorCode.INVALID_CONFIG, 'SDK is already configured for another application, server or environment');
+      }
+      return PushPlatform.initializing ?? undefined;
+    }
+    PushPlatform.configurationScope = scope;
 
     // Enable debug logging if requested
     if (config.debugMode) {
@@ -70,6 +80,7 @@ export class PushPlatform {
 
     Logger.debug('Initializing SDK', { environment: config.environment });
 
+    const initialize = async (): Promise<void> => {
     try {
       // Normalize config with defaults
       const normalizedConfig = {
@@ -96,6 +107,10 @@ export class PushPlatform {
         { originalError: String(error) }
       );
     }
+    };
+    PushPlatform.initializing = initialize();
+    try { await PushPlatform.initializing; }
+    finally { PushPlatform.initializing = null; }
   }
 
   /**
@@ -313,7 +328,7 @@ export class PushPlatform {
    * Fired when notification is received while app is running
    * (foreground or background).
    *
-   * Call only after `await PushPlatform.initialize(...)`.
+   * May be subscribed before initialization; early native events are replayed.
    *
    * @param callback - Callback function with notification context
    * @returns Subscription handle to remove listener
@@ -333,7 +348,6 @@ export class PushPlatform {
   static onNotificationReceived(
     callback: (context: NotificationContext) => void
   ): Subscription {
-    PushPlatform.ensureInitialized();
     Logger.debug('Registering onNotificationReceived listener');
     return EventEmitter.onNotificationReceived(callback);
   }
@@ -343,7 +357,7 @@ export class PushPlatform {
    *
    * Fired when user taps on notification (app was terminated or backgrounded).
    *
-   * Call only after `await PushPlatform.initialize(...)`.
+   * May be subscribed before initialization; early native events are replayed.
    *
    * @param callback - Callback function with notification context
    * @returns Subscription handle to remove listener
@@ -365,7 +379,6 @@ export class PushPlatform {
   static onNotificationOpened(
     callback: (context: NotificationContext) => void
   ): Subscription {
-    PushPlatform.ensureInitialized();
     Logger.debug('Registering onNotificationOpened listener');
     return EventEmitter.onNotificationOpened(callback);
   }
@@ -373,7 +386,7 @@ export class PushPlatform {
   /**
    * Add listener for notification will-display (foreground) event.
    *
-   * Call only after `await PushPlatform.initialize(...)`.
+   * May be subscribed before initialization; early native events are replayed.
    *
    * @throws {SDKError} If SDK not initialized
    *
@@ -400,7 +413,6 @@ export class PushPlatform {
   static onNotificationWillDisplay(
     callback: (event: NotificationWillDisplayEvent) => void,
   ): Subscription {
-    PushPlatform.ensureInitialized();
     return EventEmitter.onNotificationWillDisplay(callback);
   }
 

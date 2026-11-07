@@ -52,7 +52,7 @@ credentials. [Установка Expo и bare React Native](https://github.com/p
 
 ## iOS: подтверждение доставки при закрытом приложении
 
-Баннер iOS показывается без запуска приложения. Счётчик `received` отправляет `PushPlatformExtension` 1.2.11 (git-тег; Trunk сейчас не принимает новые specs). Без target баннер и нажатие остаются. Нового вызова из JavaScript нет. Plugin пишет App Group только основному приложению и target не создаёт.
+Баннер iOS показывается без запуска приложения. Счётчик `received` отправляет `PushPlatformExtension` 2.0.0 (git-тег; Trunk сейчас не принимает новые specs). Без target баннер и нажатие остаются. Нового вызова из JavaScript нет. Plugin пишет App Group только основному приложению и target не создаёт.
 
 1. **File → New → Target → Notification Service Extension**. **Don't Activate**. Deployment Target как у приложения, не ниже iOS 13.
 2. Bundle ID extension — bundle ID приложения плюс `.PushPlatformNotificationService`. Для `com.example.app` это `com.example.app.PushPlatformNotificationService`.
@@ -60,15 +60,15 @@ credentials. [Установка Expo и bare React Native](https://github.com/p
 4. В `ios/Podfile` сразу после `platform :ios` добавьте pin native SDK (пока нет на Trunk/CDN):
 
 ``ruby
-pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.11'
-pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.11'
+pod 'PushPlatformExtension', :path => '../node_modules/@pushplatform/react-native/native/ios'
+pod 'PushPlatformSDK', :path => '../node_modules/@pushplatform/react-native/native/ios'
 ```
 
-5. Добавьте target extension и замените `NotificationService.swift` кодом ниже. В extension — `import PushPlatformExtension`, не `import PushPlatformSDK` (иначе `No such module 'PushPlatformSDK'`). Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/v1.2.11/Sources/PushPlatformNotificationService/NotificationService.swift).
+5. Добавьте target extension и замените `NotificationService.swift` кодом ниже. В extension — `import PushPlatformExtension`, не `import PushPlatformSDK` (иначе `No such module 'PushPlatformSDK'`). Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/main/Sources/PushPlatformNotificationService/NotificationService.swift).
 
 ``ruby
 target 'PushPlatformNotificationServiceExtension' do
-  pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.11'
+  pod 'PushPlatformExtension', :path => '../node_modules/@pushplatform/react-native/native/ios'
 end
 ```
 
@@ -190,7 +190,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 ### Текущая поставка · 1.3.13
 
-`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:1.2.6`. iOS autolinking требует `PushPlatformSDK` 1.2.11; пока Trunk read-only — pin в Podfile с git-тега `v1.2.11` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
+`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:2.0.0`. iOS autolinking требует `PushPlatformSDK` 2.0.0; пока Trunk read-only — pin в Podfile с git-тега `v1.2.11` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
 
 Открытие уведомления нативный SDK сообщает сам: при клике, в том числе при холодном старте, он отправляет `PUT /notifications/{id}`; до `initialize` открытие ждёт в очереди. В `onNotificationOpened` и `onNotificationWillDisplay` у уведомления есть необязательный `notificationId` — id из ответа `POST /notifications`. Экспорты пакета не изменились: только `PushPlatform`, `SDKError`, `ErrorCode` и типы.
 
@@ -199,3 +199,5 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 One PushPilot application contains iOS, Android and Web providers. Use the same application ID and permanent application key in SDKs and server code. The key is extractable from the client and allows sending only in that application; it cannot administer the organization or billing. Rotate/revoke it in the console.
 Omit `environment` during initialization. iOS derives APNs transport from the simulator/build entitlement; Android uses the unified registration scope. The optional legacy argument remains compatible.
 Native SDKs report actual model, OS/SDK/app version, language, time zone, permission and physical/simulator/emulator kind (unknown where unavailable). Test subscription is an independent console marker. Metadata refreshes on foreground and permission changes.
+
+Подробности перехода 2.0 и нативных звонков: [MIGRATION_2.md](docs/MIGRATION_2.md).

@@ -4,7 +4,6 @@
  * Event emitter wrapper for native events
  */
 
-import type { EmitterSubscription } from 'react-native';
 import { NativeEvents } from './NativeModule';
 import type { NotificationContext, NotificationWillDisplayEvent, PushNotification, RegistrationUpdate, Subscription } from './types';
 import { NativeModule } from './NativeModule';
@@ -18,6 +17,25 @@ export const EventNames = {
   NOTIFICATION_OPENED: 'onNotificationOpened',
   NOTIFICATION_WILL_DISPLAY: 'onNotificationWillDisplay',
 } as const;
+
+const listenerCounts = new Map<string, number>();
+
+function listen(event: string, callback: (payload: unknown) => void): Subscription {
+  const subscription = NativeEvents.addListener(event, callback);
+  const count = (listenerCounts.get(event) || 0) + 1;
+  listenerCounts.set(event, count);
+  // Native replay starts only after the JavaScript listener is installed.
+  if (count === 1) NativeModule.setEventObserved?.(event, true);
+  let removed = false;
+  return { remove() {
+    if (removed) return;
+    removed = true;
+    subscription.remove();
+    const remaining = Math.max(0, (listenerCounts.get(event) || 1) - 1);
+    listenerCounts.set(event, remaining);
+    if (remaining === 0) NativeModule.setEventObserved?.(event, false);
+  }};
+}
 
 const willDisplayListeners = new Set<(event: NotificationWillDisplayEvent) => void>();
 let willDisplayBridge: { remove(): void } | null = null;
@@ -34,7 +52,9 @@ export function deliverWillDisplay(
       if (!settled) prevented = true;
     },
   };
-  for (const listener of listeners) listener(event);
+  for (const listener of listeners) {
+    try { listener(event); } catch (error) { console.error("PushPilot foreground handler failed", error); }
+  }
   settled = true;
   return prevented;
 }
@@ -43,8 +63,9 @@ function ensureWillDisplayBridge(): void {
   if (willDisplayBridge) return;
   willDisplayBridge = NativeEvents.addListener(EventNames.NOTIFICATION_WILL_DISPLAY, (payload) => {
     const value = (payload && typeof payload === 'object' ? payload : {}) as { id?: string; notification?: PushNotification };
-    const prevented = deliverWillDisplay(willDisplayListeners, value.notification || { id: '', data: {} });
-    if (value.id) NativeModule.completeNotificationDisplay(value.id, prevented);
+    let prevented = false;
+    try { prevented = deliverWillDisplay(willDisplayListeners, value.notification || { id: '', data: {} }); }
+    finally { if (value.id) NativeModule.completeNotificationDisplay(value.id, prevented); }
   });
 }
 
@@ -59,7 +80,7 @@ export class EventEmitter {
    * Note: Token value is NOT passed to JavaScript (security).
    */
   static onRegistrationUpdated(callback: (update: RegistrationUpdate) => void): Subscription {
-    const subscription: EmitterSubscription = NativeEvents.addListener(
+    const subscription = listen(
       EventNames.REGISTRATION_UPDATED,
       (payload) => callback(payload as RegistrationUpdate)
     );
@@ -77,7 +98,7 @@ export class EventEmitter {
   static onNotificationReceived(
     callback: (context: NotificationContext) => void
   ): Subscription {
-    const subscription: EmitterSubscription = NativeEvents.addListener(
+    const subscription = listen(
       EventNames.NOTIFICATION_RECEIVED,
       (payload) => callback(normalizeNotificationContext(payload))
     );
@@ -95,7 +116,7 @@ export class EventEmitter {
   static onNotificationOpened(
     callback: (context: NotificationContext) => void
   ): Subscription {
-    const subscription: EmitterSubscription = NativeEvents.addListener(
+    const subscription = listen(
       EventNames.NOTIFICATION_OPENED,
       (payload) => callback(normalizeNotificationContext(payload))
     );
@@ -123,6 +144,8 @@ export class EventEmitter {
   }
 
   static removeAllListeners(): void {
+    for (const name of listenerCounts.keys()) NativeModule.setEventObserved?.(name, false);
+    listenerCounts.clear();
     willDisplayListeners.clear();
     NativeModule.setNotificationWillDisplayObserved(false);
     willDisplayBridge?.remove();

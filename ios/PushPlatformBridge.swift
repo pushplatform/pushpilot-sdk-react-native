@@ -8,6 +8,8 @@ import UserNotifications
 class PushPlatformBridge: RCTEventEmitter {
 
     private var hasListeners = false
+    private var observedEvents = Set<String>()
+    private var pendingEvents: [String: [[String: Any]]] = [:]
     private var willDisplayObserved = false
     private var pendingDisplays: [String: NotificationDisplayEvent] = [:]
 
@@ -21,6 +23,8 @@ class PushPlatformBridge: RCTEventEmitter {
     override static func requiresMainQueueSetup() -> Bool {
         return true
     }
+
+    override func constantsToExport() -> [AnyHashable: Any]! { ["serverURL": PushPlatform.shared.serverURL] }
 
     // MARK: - Event Emitter
 
@@ -39,6 +43,30 @@ class PushPlatformBridge: RCTEventEmitter {
 
     override func stopObserving() {
         hasListeners = false
+    }
+
+    @objc
+    func setEventObserved(_ eventName: String, observed: Bool) {
+        DispatchQueue.main.async {
+            if observed {
+                self.observedEvents.insert(eventName)
+                let events = self.pendingEvents.removeValue(forKey: eventName) ?? []
+                events.forEach { self.sendEvent(withName: eventName, body: $0) }
+            } else { self.observedEvents.remove(eventName) }
+        }
+    }
+
+    private func emitEvent(withName name: String, body: [String: Any]) {
+        let deliver = {
+            if self.observedEvents.contains(name) { self.sendEvent(withName: name, body: body) }
+            else {
+                var events = self.pendingEvents[name] ?? []
+                if events.count >= 100 { events.removeFirst() }
+                events.append(body)
+                self.pendingEvents[name] = events
+            }
+        }
+        if Thread.isMainThread { deliver() } else { DispatchQueue.main.async(execute: deliver) }
     }
 
     // MARK: - Bridge Methods
@@ -261,8 +289,8 @@ extension PushPlatformBridge: PushPlatformDelegate {
     }
 
     func didFailRegisterTokens(error: SDKError) {
-        if hasListeners {
-            sendEvent(withName: "onRegistrationUpdated", body: [
+        do {
+            emitEvent(withName: "onRegistrationUpdated", body: [
                 "success": false,
                 "error": [
                     "code": errorCode(from: error),
@@ -278,6 +306,7 @@ extension PushPlatformBridge: PushPlatformDelegate {
         pendingDisplays[displayId] = event
         event.deferDecision()
         guard hasListeners else {
+            pendingDisplays.removeValue(forKey: displayId)
             event.finish()
             return
         }
@@ -288,21 +317,12 @@ extension PushPlatformBridge: PushPlatformDelegate {
     }
 
     func didUpdateDeviceToken(_ token: String) {
-        guard hasListeners else { return }
-        var body: [String: Any] = [
-            "success": true,
-            "type": "apns",
-            "token": token
-        ]
-        if let installationId = PushPlatform.shared.getInstallationID() {
-            body["installationId"] = installationId.uuidString
-        }
-        sendEvent(withName: "onRegistrationUpdated", body: body)
+        // getDeviceToken exposes OS tokens. didUpdateAPNsToken reports backend acceptance.
     }
 
     func didReceiveNotification(_ notification: ParsedNotification, context: NotificationContext) {
-        if hasListeners {
-            sendEvent(withName: "onNotificationReceived", body: [
+        do {
+            emitEvent(withName: "onNotificationReceived", body: [
                 "notification": serializeNotification(notification),
                 "foreground": context.isForeground
             ])
@@ -310,7 +330,7 @@ extension PushPlatformBridge: PushPlatformDelegate {
     }
 
     func didOpenNotification(_ notification: ParsedNotification, action: String?, context: NotificationContext) {
-        if hasListeners {
+        do {
             var body: [String: Any] = [
                 "notification": serializeNotification(notification),
                 "foreground": context.isForeground,
@@ -321,13 +341,13 @@ extension PushPlatformBridge: PushPlatformDelegate {
                 body["actionId"] = actionId
             }
 
-            sendEvent(withName: "onNotificationOpened", body: body)
+            emitEvent(withName: "onNotificationOpened", body: body)
         }
     }
 
     func didReceiveIncomingCall(callID: String, callerName: String, metadata: [String: Any]) {
-        if hasListeners {
-            sendEvent(withName: "onNotificationReceived", body: [
+        do {
+            emitEvent(withName: "onNotificationReceived", body: [
                 "notification": [
                     "id": callID,
                     "title": callerName,
@@ -340,7 +360,7 @@ extension PushPlatformBridge: PushPlatformDelegate {
     }
 
     func didUpdateAPNsToken() {
-        if hasListeners {
+        do {
             var body: [String: Any] = [
                 "success": true,
                 "type": "apns"
@@ -351,13 +371,13 @@ extension PushPlatformBridge: PushPlatformDelegate {
             if let installationId = PushPlatform.shared.getInstallationID() {
                 body["installationId"] = installationId.uuidString
             }
-            sendEvent(withName: "onRegistrationUpdated", body: body)
+            emitEvent(withName: "onRegistrationUpdated", body: body)
         }
     }
 
     func didUpdateVoIPToken() {
-        if hasListeners {
-            sendEvent(withName: "onRegistrationUpdated", body: [
+        do {
+            emitEvent(withName: "onRegistrationUpdated", body: [
                 "success": true,
                 "type": "voip"
             ])

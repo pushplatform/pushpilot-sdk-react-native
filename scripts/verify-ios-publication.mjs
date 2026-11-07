@@ -7,6 +7,7 @@ import { pathToFileURL } from 'node:url';
 // React Native resolves PushPlatformSDK from the public Git tag (or bundled
 // native/ios path). CDN presence is best-effort, not a release gate.
 export async function verifyIosPublication(ios, fetcher = globalThis.fetch) {
+  assert(!ios.workingTree, "Native sources are a working-tree candidate. Commit, tag and refresh native-lock.json before publishing.");
   const name = ios.pod;
   const version = ios.version;
   const tag = `v${version}`;
