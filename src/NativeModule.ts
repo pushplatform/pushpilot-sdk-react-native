@@ -11,6 +11,7 @@ import type { JSONObject } from './types';
  * Native module interface (type-safe bridge)
  */
 export interface PushPlatformNativeModule {
+  readonly serverURL?: string;
   /**
    * Initialize the SDK with configuration
    */
@@ -49,6 +50,8 @@ export interface PushPlatformNativeModule {
   getPermissionStatus(): Promise<string>;
 
   getDeviceToken(): Promise<string | null>;
+
+  setEventObserved?(eventName: string, observed: boolean): void;
 
   setNotificationWillDisplayObserved(observed: boolean): void;
 

@@ -19,7 +19,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run release:verify-ios
+      - run: npm run release:verify-ios -- --source
       - run: npm run test:release
       - run: npm run typecheck
       - run: npm test -- --runInBand --watchman=false
@@ -35,9 +35,9 @@ jobs:
       matrix:
         include:
           - scenario: current
-            args: '--build'
+            args: '--source --build'
           - scenario: current-static
-            args: '--linkage static --build'
+            args: '--source --linkage static --build'
     name: ios-autolinking (${{ matrix.scenario }})
     runs-on: macos-latest
     timeout-minutes: 90

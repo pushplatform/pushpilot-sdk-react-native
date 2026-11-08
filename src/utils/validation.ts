@@ -37,7 +37,7 @@ export function validateConfig(config: PushPlatformConfig): void {
   }
 
   // Validate environment
-  const validEnvironments = ['development', 'staging', 'production'];
+  const validEnvironments = ['development', 'production'];
   if (config.environment && !validEnvironments.includes(config.environment)) {
     throw new SDKError(
       ErrorCode.INVALID_CONFIG,

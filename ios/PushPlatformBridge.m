@@ -27,6 +27,8 @@ RCT_EXTERN_METHOD(getPermissionStatus:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(getDeviceToken:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(setEventObserved:(NSString *)eventName observed:(BOOL)observed)
+
 RCT_EXTERN_METHOD(setNotificationWillDisplayObserved:(BOOL)observed)
 
 RCT_EXTERN_METHOD(completeNotificationDisplay:(NSString *)displayId

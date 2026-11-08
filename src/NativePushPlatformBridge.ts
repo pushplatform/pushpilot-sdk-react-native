@@ -3,6 +3,8 @@
  * This file provides TypeScript types for the native module interface
  */
 
+import type { JSONObject } from './types';
+
 export interface NativePushPlatformBridge {
   /**
    * Initialize the PushPlatform SDK
@@ -24,7 +26,7 @@ export interface NativePushPlatformBridge {
    * @param userData Optional user metadata
    * @returns Promise that resolves when login completes
    */
-  login(userId: string, userData?: Record<string, any> | null): Promise<void>;
+  login(userId: string, userData?: JSONObject | null): Promise<void>;
 
   /**
    * Logout current user

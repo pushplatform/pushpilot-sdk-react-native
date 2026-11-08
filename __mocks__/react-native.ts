@@ -8,6 +8,7 @@ export const NativeModules = {
     requestPermissions: jest.fn(),
     getPermissionStatus: jest.fn(),
     getDeviceToken: jest.fn(),
+    setEventObserved: jest.fn(),
     setNotificationWillDisplayObserved: jest.fn(),
     completeNotificationDisplay: jest.fn(),
   },

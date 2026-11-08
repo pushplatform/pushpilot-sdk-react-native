@@ -26,14 +26,14 @@ Main SDK class for Push Platform integration.
 
 ### initialize()
 
-Initialize the SDK with your API credentials.
+Initialize the SDK with your PushPilot application UUID.
 
-**Must be called before using any other SDK methods.**
+**Await initialization before accessing installation state. Notification listeners may be registered earlier.**
 
-If the SDK is already initialized, subsequent calls resolve successfully without changing the existing configuration.
+Concurrent calls for the same configuration share initialization. Changing application, server or environment in the same process is rejected.
 
 ```typescript
-static initialize(config: PushPlatformConfig): Promise<void>
+static initialize(config: string | PushPlatformConfig): Promise<void>
 ```
 
 **Parameters:**
@@ -137,9 +137,9 @@ await PushPlatform.logout();
 
 Register a callback for when push notifications are received.
 
-Fires when notifications arrive, whether the app is in foreground or background.
+Delivers native events while JavaScript is running, including queued early events. A push does not guarantee background JS execution.
 
-Requires a completed `await PushPlatform.initialize(...)`. Calling this before init throws `SDK not initialized`.
+May be registered before initialization; early native events are queued until the corresponding listener is attached.
 
 ```typescript
 static onNotificationReceived(
@@ -182,7 +182,7 @@ Register a callback for when user taps a notification.
 
 Fires when the user opens a notification (app was terminated or backgrounded).
 
-Requires a completed `await PushPlatform.initialize(...)`. Calling this before init throws `SDK not initialized`.
+May be registered before initialization; early native events are queued until the corresponding listener is attached.
 
 ```typescript
 static onNotificationOpened(
@@ -418,28 +418,22 @@ PushPlatform.onNotificationOpened((context) => {
 });
 ```
 
-### VoIP/Call Push (iOS Only)
+### VoIP/Call Push (iOS)
 
-VoIP push notifications are handled automatically by the native iOS SDK. Your JavaScript code receives events after CallKit registration:
+Ordinary initialization enables APNs transport. Configure VoIP in the native app:
+use one CallKit provider and either forward tokens/payloads from the existing
+PushKit registry or call `startVoIPNotifications(handler:)` with a native handler.
+The handler reports the call to CallKit and completes PushKit without waiting for
+JavaScript. Use the calling framework's answer/end events to restore signalling
+and media state in JavaScript.
 
-```typescript
-PushPlatform.onNotificationReceived((context) => {
-  const { notification } = context;
-  
-  if (notification.data?.callId) {
-    // Incoming call notification (after CallKit registration)
-    showIncomingCallUI(notification.data.callId, notification.title);
-  }
-});
-```
+See [MIGRATION_2.md](MIGRATION_2.md) for registration and lifecycle requirements.
 
----
+## Client configuration
 
-## Security Notes
-
-- **Push tokens are never exposed to JavaScript** — Token registration is handled entirely by native SDKs
-- **Event callbacks provide registration status only** — No token values are passed to JavaScript
-- **VoIP/CallKit logic remains in Swift (iOS)** — JavaScript receives informational events only
+- Initialize with the application ID and API URL. The server send key is not required for device registration.
+- `getDeviceToken()` returns the APNs/FCM token when available; registration events report backend subscription state.
+- The application owns CallKit UI, signalling, answer/end actions and audio.
 
 ---
 

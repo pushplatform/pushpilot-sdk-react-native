@@ -49,3 +49,19 @@ describe('notificationId', () => {
     expect(seen?.notification.notificationId).toBe('notification-2');
   });
 });
+
+
+describe('cold-start subscriptions', () => {
+  test('installs listeners before requesting replay and before initialization', () => {
+    PushPlatform.removeAllListeners();
+    jest.clearAllMocks();
+    (PushPlatform as any).initialized = false;
+    const subscription = PushPlatform.onNotificationOpened(jest.fn());
+    expect(mockNativeModule.setEventObserved).toHaveBeenCalledWith('onNotificationOpened', true);
+    const installed = (NativeEvents.addListener as jest.Mock).mock.invocationCallOrder[0];
+    const replayed = mockNativeModule.setEventObserved.mock.invocationCallOrder[0];
+    expect(installed).toBeLessThan(replayed);
+    subscription.remove();
+    expect(mockNativeModule.setEventObserved).toHaveBeenLastCalledWith('onNotificationOpened', false);
+  });
+});

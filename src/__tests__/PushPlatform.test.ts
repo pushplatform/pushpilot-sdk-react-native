@@ -156,6 +156,24 @@ describe('PushPlatform Core API', () => {
     });
   });
 
+  test('serializes concurrent initialization and rejects a different scope', async () => {
+    let resolve!: () => void;
+    mockNativeModule.initialize.mockImplementationOnce(() => new Promise<void>(done => { resolve = done; }));
+    const first = PushPlatform.initialize('11111111-1111-1111-1111-111111111111');
+    const second = PushPlatform.initialize('11111111-1111-1111-1111-111111111111');
+    await expect(PushPlatform.initialize('22222222-2222-2222-2222-222222222222')).rejects.toThrow('already configured');
+    expect(mockNativeModule.initialize).toHaveBeenCalledTimes(1);
+    resolve();
+    await Promise.all([first, second]);
+  });
+
+  test('retries native initialization after a failed attempt', async () => {
+    mockNativeModule.initialize.mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce(undefined);
+    await expect(PushPlatform.initialize('11111111-1111-1111-1111-111111111111')).rejects.toThrow('offline');
+    await PushPlatform.initialize('11111111-1111-1111-1111-111111111111');
+    expect(mockNativeModule.initialize).toHaveBeenCalledTimes(2);
+  });
+
   describe('Login', () => {
     beforeEach(async () => {
       mockNativeModule.initialize.mockResolvedValue(undefined);

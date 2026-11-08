@@ -1,6 +1,7 @@
 package com.pushplatform.reactnative
 
 import android.Manifest
+import android.content.Intent
 import android.os.Build
 import com.facebook.react.bridge.*
 import com.facebook.react.modules.core.PermissionAwareActivity
@@ -21,6 +22,9 @@ import java.util.concurrent.ConcurrentHashMap
 class PushPlatformModule(reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext), PushPlatformDelegate, LifecycleEventListener {
 
+    private val eventLock = Any()
+    private val observedEvents = mutableSetOf<String>()
+    private val pendingEvents = mutableMapOf<String, MutableList<WritableMap?>>()
     private val pushPlatform = PushPlatform.getInstance()
     private val pendingDisplays = ConcurrentHashMap<String, NotificationDisplay>()
     @Volatile private var willDisplayObserved = false
@@ -39,10 +43,21 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
         }
     }
 
+    private val notificationIntents = object : BaseActivityEventListener() {
+        override fun onNewIntent(intent: Intent) {
+            if (pushPlatform.handleNotificationIntent(intent)) {
+                reactApplicationContext.currentActivity?.intent = intent
+            }
+        }
+    }
+
     init {
         pushPlatform.delegate = this
         reactContext.addLifecycleEventListener(this)
+        reactContext.addActivityEventListener(notificationIntents)
     }
+
+    override fun getConstants(): MutableMap<String, Any> = mutableMapOf("serverURL" to pushPlatform.getServerURL())
 
     override fun getName(): String {
         return "PushPlatformBridge"
@@ -51,6 +66,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     override fun onHostResume() {
         val activity = reactApplicationContext.currentActivity ?: return
         val intent = activity.intent ?: return
+        if (pushPlatform.handleNotificationIntent(intent)) return
         if (intent.getBooleanExtra(OPENED_EMITTED, false)) return
         if (!intent.hasExtra("event_id") && !intent.hasExtra("call_id") && !intent.hasExtra(NOTIFICATION_ID)) return
 
@@ -250,10 +266,31 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
         }
     }
 
+    @ReactMethod
+    fun setEventObserved(eventName: String, observed: Boolean) {
+        val events = synchronized(eventLock) {
+            if (!observed) { observedEvents.remove(eventName); return }
+            observedEvents.add(eventName)
+            pendingEvents.remove(eventName).orEmpty().toList()
+        }
+        events.forEach { emitNativeEvent(eventName, it) }
+    }
+
+    private fun emitNativeEvent(eventName: String, params: WritableMap?) {
+        reactApplicationContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java).emit(eventName, params)
+    }
+
     private fun sendEvent(eventName: String, params: WritableMap?) {
-        reactApplicationContext
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
-            .emit(eventName, params)
+        val ready = synchronized(eventLock) {
+            if (eventName == "onNotificationWillDisplay" || eventName in observedEvents) true
+            else {
+                val pending = pendingEvents.getOrPut(eventName) { mutableListOf() }
+                if (pending.size >= 100) pending.removeAt(0)
+                pending.add(params)
+                false
+            }
+        }
+        if (ready) emitNativeEvent(eventName, params)
     }
 
     // MARK: - PushPlatformDelegate
@@ -273,13 +310,7 @@ class PushPlatformModule(reactContext: ReactApplicationContext) :
     }
 
     override fun didUpdateDeviceToken(token: String) {
-        val body = Arguments.createMap().apply {
-            putBoolean("success", true)
-            putString("type", "fcm")
-            putString("token", token)
-            pushPlatform.getInstallationId()?.let { putString("installationId", it) }
-        }
-        sendEvent("onRegistrationUpdated", body)
+        // getDeviceToken exposes OS tokens. didUpdateFcmToken reports backend acceptance.
     }
 
     override fun notificationWillDisplay(event: NotificationDisplay) {
