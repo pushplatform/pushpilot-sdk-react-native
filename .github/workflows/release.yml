@@ -74,9 +74,19 @@ jobs:
           path: .release-sources/ios
           token: ${{ github.token }}
           persist-credentials: false
-      - name: Build native Android release into isolated staging repository
+      - name: Read the pinned native Gradle version
+        id: gradle_version
         working-directory: .release-sources/android
-        run: ./gradlew :sdk:publishReleasePublicationToMavenLocal --no-daemon -Dmaven.repo.local="$RUNNER_TEMP/pushpilot-maven"
+        run: |
+          pushpilot_gradle_version=$(sed -nE 's/^distributionUrl=.*\/gradle-(.+)-(bin|all)\.zip$/\1/p' gradle/wrapper/gradle-wrapper.properties)
+          test -n "$pushpilot_gradle_version"
+          printf 'value=%s\n' "$pushpilot_gradle_version" >> "$GITHUB_OUTPUT"
+      - uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-version: ${{ steps.gradle_version.outputs.value }}
+          cache-provider: basic
+      - name: Fetch the exact publicly published Android artifacts
+        run: node scripts/fetch-native-maven.mjs "$RUNNER_TEMP/pushpilot-maven"
       - run: npm ci
       - run: npm run typecheck
       - run: npm test -- --runInBand --watchman=false
@@ -93,7 +103,7 @@ jobs:
           cp native/manifest.json dist/native-manifest.json
           printf '%s\n' "$GITHUB_SHA" > dist/source-commit.txt
       - name: Resolve bundled SDK from an external npm consumer
-        run: node scripts/verify-distribution.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")" --gradle .release-sources/android/gradlew
+        run: node scripts/verify-distribution.mjs --archive "$(node -p "'dist/' + require('./dist/pack.json')[0].filename")" --gradle "$(command -v gradle)"
       - uses: actions/upload-artifact@v4
         with:
           name: rn-sdk-candidate
@@ -110,7 +120,7 @@ jobs:
       matrix:
         include:
           - linkage: default
-            args: '--upgrade-from 1.0.3 --reinstall'
+            args: '--upgrade-from 2.0.3 --reinstall'
           - linkage: static
             args: ''
     steps:

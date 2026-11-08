@@ -1,110 +1,67 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { iosGitPodLine, verifyIosPublication } from './verify-ios-publication.mjs';
-
-const ios = {
-  pod: 'PushPlatformSDK',
-  version: '1.2.11',
-  repository: 'pushplatform/pushpilot-sdk-ios',
-  commit: 'd4c82f6e89713a2bdd84043f11ee3eab788e5754',
-};
-
-function githubFixture({ commit = ios.commit, annotated = false } = {}) {
+import { verifyIosPublication, verifyIosSource, verifyNativePodSource } from './verify-ios-publication.mjs';
+const ios = { pod: 'PushPlatformSDK', version: '2.0.3', repository: 'pushplatform/pushpilot-sdk-ios', commit: '78cbcf0f3a6d7b2c60393cf1ef9fb96364018fea' };
+function fixture({ commit = ios.commit, annotated = false, missingIndex, missingSpec, corrupt } = {}) {
   return async url => {
-    if (url.includes('/git/ref/tags/')) {
-      if (annotated) {
-        return new Response(JSON.stringify({ object: { sha: 'tagobjectsha', type: 'tag' } }));
-      }
-      return new Response(JSON.stringify({ object: { sha: commit, type: 'commit' } }));
+    if (url.includes('/git/ref/tags/')) return Response.json({ object: { sha: annotated ? 'tagobject' : commit, type: annotated ? 'tag' : 'commit' } });
+    if (url.includes('/git/tags/')) return Response.json({ object: { sha: commit, type: 'commit' } });
+    if (url.endsWith('.txt')) return new Response(['PushPlatformSDK', 'PushPlatformExtension'].map(name => `${name}/${name === missingIndex ? '2.0.1' : ios.version}`).join('\n'));
+    if (url.endsWith('.podspec.json')) {
+      const name = url.includes('/PushPlatformExtension/') ? 'PushPlatformExtension' : ios.pod;
+      if (name === missingSpec) return new Response('', { status: 404 });
+      const spec = { name, version: ios.version, source: { git: `https://github.com/${ios.repository}.git`, tag: `v${ios.version}` } };
+      if (name === ios.pod) spec.dependencies = { PushPlatformExtension: [ios.version] };
+      if (corrupt) corrupt(spec);
+      return Response.json(spec);
     }
-    if (url.includes('/git/tags/')) {
-      return new Response(JSON.stringify({ object: { sha: commit, type: 'commit' } }));
-    }
-    if (url.endsWith('.txt')) {
-      return new Response('PushPlatformSDK/1.0.0\n');
-    }
-    return new Response('', { status: 404 });
+    throw new Error(`Unexpected request ${url}`);
   };
 }
-
-test('accepts a GitHub tag that matches the locked commit when CDN has no version', async () => {
-  const result = await verifyIosPublication(ios, githubFixture());
-  assert.equal(result.version, '1.2.11');
+test('requires both public pods and resolves annotated tags to the pinned source', async () => {
+  const result = await verifyIosPublication(ios, fixture({ annotated: true }));
   assert.equal(result.commit, ios.commit);
-  assert.equal(result.cocoapods, null);
+  assert.equal(Object.keys(result.cocoapods.specs).length, 2);
 });
-
-test('dereferences an annotated GitHub tag to the locked commit', async () => {
-  const result = await verifyIosPublication(ios, githubFixture({ annotated: true }));
-  assert.equal(result.commit, ios.commit);
+for (const pod of ['PushPlatformSDK', 'PushPlatformExtension']) {
+  test(`rejects ${pod} missing from the public index`, async () => {
+    await assert.rejects(verifyIosPublication(ios, fixture({ missingIndex: pod })), /missing from the CocoaPods index/);
+  });
+  test(`rejects an unavailable ${pod} spec`, async () => {
+    await assert.rejects(verifyIosPublication(ios, fixture({ missingSpec: pod })), /spec HTTP 404/);
+  });
+}
+for (const [field, corrupt] of [
+  ['version', spec => { spec.version = '2.0.1'; }],
+  ['source', spec => { spec.source.git = 'https://example.com/wrong.git'; }],
+  ['tag', spec => { spec.source.tag = 'v2.0.1'; }],
+  ['extension dependency', spec => { if (spec.dependencies) spec.dependencies.PushPlatformExtension = ['2.0.1']; }],
+]) test(`rejects mismatched public ${field}`, async () => {
+  await assert.rejects(verifyIosPublication(ios, fixture({ corrupt })), /Unexpected CocoaPods|versions differ/);
 });
-
-test('rejects a GitHub tag that points at the wrong commit', async () => {
-  await assert.rejects(
-    verifyIosPublication(ios, githubFixture({ commit: '0'.repeat(40) })),
-    /points at/,
-  );
+test('rejects wrong native commit and missing Git tag', async () => {
+  await assert.rejects(verifyIosPublication(ios, fixture({ commit: '0'.repeat(40) })), /points at/);
+  await assert.rejects(verifyIosPublication(ios, async () => new Response('', { status: 404 })), /GitHub tag.*HTTP 404/);
 });
-
-test('rejects a missing GitHub tag', async () => {
-  await assert.rejects(
-    verifyIosPublication(ios, async () => new Response('', { status: 404 })),
-    /GitHub tag v1\.2\.11 HTTP 404/,
-  );
+test('CDN/network failure blocks release', async () => {
+  const fetcher = fixture();
+  await assert.rejects(verifyIosPublication(ios, url => url.includes('cdn.cocoapods.org') ? Promise.reject(new Error('offline')) : fetcher(url)), /offline/);
 });
-
-test('still accepts CDN metadata when the index already has the version', async () => {
-  const spec = {
-    name: ios.pod,
-    version: ios.version,
-    source: { git: `https://github.com/${ios.repository}.git`, tag: 'v1.2.11' },
-  };
-  const fetcher = async url => {
-    if (url.includes('/git/ref/tags/')) {
-      return new Response(JSON.stringify({ object: { sha: ios.commit, type: 'commit' } }));
-    }
-    if (url.endsWith('.txt')) return new Response('PushPlatformSDK/1.2.6/1.2.11\n');
-    if (url.includes('.podspec.json')) return new Response(JSON.stringify(spec));
-    return new Response('', { status: 404 });
-  };
-  const result = await verifyIosPublication(ios, fetcher);
-  assert.match(result.cocoapods.specURL, /PushPlatformSDK\/1\.2\.11/);
-});
-
-test('formats the Podfile git override for Extension and SDK', () => {
-  assert.equal(
-    iosGitPodLine(ios),
-    [
-      "pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.11'",
-      "pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.11'",
-    ].join('\n'),
-  );
-});
-
-test('validates both pod versions at the exact commit before release tags exist', async () => {
-  const { verifyIosSource } = await import('./verify-ios-publication.mjs');
+test('validates both source pod versions at the exact locked commit', async () => {
   const requests = [];
-  const result = await verifyIosSource(ios, async url => {
+  await verifyIosSource(ios, async url => {
     requests.push(url);
     const name = url.endsWith('/PushPlatformExtension.podspec') ? 'PushPlatformExtension' : ios.pod;
     return new Response(`s.name = '${name}'\ns.version = '${ios.version}'\n`);
   });
-  assert.equal(result.commit, ios.commit);
   assert.equal(requests.length, 2);
   assert(requests.every(url => url.includes(`/${ios.commit}/`)));
-  assert(iosGitPodLine(ios, { source: true }).includes(`:commit => '${ios.commit}'`));
 });
-
-test('source validation rejects a mismatched native version', async () => {
-  const { verifyIosSource } = await import('./verify-ios-publication.mjs');
-  await assert.rejects(verifyIosSource(ios, async () => new Response("s.name = 'PushPlatformExtension'\ns.version = '0.0.0'\n")), /version differs/);
-});
-
-test('accepts CocoaPods Ruby-symbol keys serialized to JSON without colons and rejects a wrong checkout', async () => {
-  const { verifyNativePodSource } = await import('./verify-ios-publication.mjs');
-  const pin = { git: `https://github.com/${ios.repository}.git`, commit: ios.commit };
-  const lock = { 'EXTERNAL SOURCES': { [ios.pod]: pin }, 'CHECKOUT OPTIONS': { [ios.pod]: { ...pin } } };
-  verifyNativePodSource(lock, ios.pod, ios, { source: true });
-  lock['CHECKOUT OPTIONS'][ios.pod].commit = '0'.repeat(40);
-  assert.throws(() => verifyNativePodSource(lock, ios.pod, ios, { source: true }), /checked-out commit differs/);
+test('ordinary consumers must use the public spec repository without overrides', () => {
+  const lock = { 'SPEC REPOS': { trunk: [ios.pod, 'PushPlatformExtension'] } };
+  verifyNativePodSource(lock, ios.pod);
+  for (const override of [{ git: 'https://github.com/example/repo.git' }, { path: '../native/ios' }]) {
+    assert.throws(() => verifyNativePodSource({ ...lock, 'EXTERNAL SOURCES': { [ios.pod]: override } }, ios.pod), /must not use/);
+  }
+  assert.throws(() => verifyNativePodSource({ 'SPEC REPOS': { private: [ios.pod] } }, ios.pod), /public CocoaPods/);
 });

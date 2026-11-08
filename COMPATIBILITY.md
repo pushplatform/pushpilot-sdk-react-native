@@ -1,6 +1,6 @@
-# Совместимость SDK 2.0.3
+# Совместимость SDK 2.0.4
 
-- Нативные зависимости: PushPlatformSDK/PushPlatformExtension совместимой ветки 2.x и sdk-android 2.0.1.
+- Нативные зависимости: PushPlatformSDK/PushPlatformExtension совместимой ветки 2.x и sdk-android 2.0.3.
 - Node.js: >=18, согласно package.json.
 - iOS: >=13.0; Android RN bridge: API >=26.
 - Expo использует native build и plugin из npm-пакета; Expo Go не поддерживается.

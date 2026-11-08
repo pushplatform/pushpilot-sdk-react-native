@@ -47,11 +47,14 @@ native SDK в основном target Podfile не добавляются.
 
 ```sh
 cd ios
-bundle exec pod install
+bundle exec pod install --repo-update
 ```
 
-Без Bundler выполните `pod install`. При обновлении используйте штатный
-`pod update PushPlatform` и сохраняйте lockfile приложения.
+Без Bundler выполните `pod install --repo-update`. При обновлении npm-пакета
+выполните `pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update`
+в каталоге `ios` (с `bundle exec`, если проект использует Bundler). Это обновляет
+только зависимости PushPilot; сохраняйте Podfile.lock приложения.
+Для Expo после обновления npm-пакета повторите `npx expo prebuild` и пересоберите приложение.
 Включите Push Notifications, `aps-environment` и background mode
 `remote-notification`; передавайте APNs callbacks, как показано ниже.
 

@@ -3,9 +3,8 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
-// CocoaPods Trunk is read-only for new specs (trial week, then permanent).
-// React Native resolves PushPlatformSDK from the public Git tag (or bundled
-// native/ios path). CDN presence is best-effort, not a release gate.
+// A public Git tag alone does not make a CocoaPods dependency installable.
+// Require both native pods in the public CDN index and validate their specs.
 export async function verifyIosPublication(ios, fetcher = globalThis.fetch) {
   assert(!ios.workingTree, "Native sources are a working-tree candidate. Commit, tag and refresh native-lock.json before publishing.");
   const name = ios.pod;
@@ -38,29 +37,27 @@ export async function verifyIosPublication(ios, fetcher = globalThis.fetch) {
   assert.equal(objectType, 'commit', `GitHub tag ${tag} does not point at a commit`);
   assert.equal(objectSha, ios.commit, `GitHub tag ${tag} points at ${objectSha}, lock expects ${ios.commit}`);
 
-  const shard = createHash('md5').update(name).digest('hex').slice(0, 3).split('');
-  const indexURL = `https://cdn.cocoapods.org/all_pods_versions_${shard.join('_')}.txt`;
-  let cocoapods = null;
-  try {
-    const index = await fetcher(indexURL, { signal: AbortSignal.timeout(15000) });
-    if (index.ok) {
-      const entry = (await index.text()).split(/\r?\n/).find(line => line.startsWith(`${name}/`));
-      if (entry?.split('/').slice(1).includes(version)) {
-        const specURL = `https://cdn.cocoapods.org/Specs/${shard.join('/')}/${name}/${version}/${name}.podspec.json`;
-        const response = await fetcher(specURL, { signal: AbortSignal.timeout(15000) });
-        if (response.ok) {
-          const spec = await response.json();
-          assert.equal(spec.name, name, 'Unexpected CocoaPods name');
-          assert.equal(spec.version, version, 'Unexpected CocoaPods version');
-          assert.equal(spec.source?.git, `https://github.com/${repo}.git`, 'Unexpected CocoaPods source');
-          assert.equal(spec.source?.tag, tag, 'Unexpected CocoaPods source tag');
-          cocoapods = { specURL };
-        }
-      }
-    }
-  } catch {
-    // Trunk/CDN outage must not block Git-published native SDKs.
+  const specs = {};
+  for (const pod of ['PushPlatformExtension', name]) {
+    const shard = createHash('md5').update(pod).digest('hex').slice(0, 3).split('');
+    const indexURL = `https://cdn.cocoapods.org/all_pods_versions_${shard.join('_')}.txt`;
+    const options = { headers: { 'User-Agent': 'CocoaPods/1.16.2 pushplatform-release' }, signal: AbortSignal.timeout(30000) };
+    const index = await fetcher(indexURL, options);
+    assert(index.ok, `${pod} CocoaPods index HTTP ${index.status}`);
+    const entry = (await index.text()).split(/\r?\n/).find(line => line.startsWith(`${pod}/`));
+    assert(entry?.split('/').slice(1).includes(version), `${pod} ${version} is missing from the CocoaPods index`);
+    const specURL = `https://cdn.cocoapods.org/Specs/${shard.join('/')}/${pod}/${version}/${pod}.podspec.json`;
+    const response = await fetcher(specURL, { ...options, signal: AbortSignal.timeout(30000) });
+    assert(response.ok, `${pod} CocoaPods spec HTTP ${response.status}`);
+    const spec = await response.json();
+    assert.equal(spec.name, pod, 'Unexpected CocoaPods name');
+    assert.equal(spec.version, version, 'Unexpected CocoaPods version');
+    assert.equal(spec.source?.git, `https://github.com/${repo}.git`, 'Unexpected CocoaPods source');
+    assert.equal(spec.source?.tag, tag, 'Unexpected CocoaPods source tag');
+    if (pod === name) assert.deepEqual(spec.dependencies?.PushPlatformExtension, [version], 'Native SDK and Extension versions differ');
+    specs[pod] = { specURL };
   }
+  const cocoapods = { ...specs[name], specs };
 
   return {
     name,
@@ -87,28 +84,11 @@ export async function verifyIosSource(ios, fetcher = globalThis.fetch) {
   return { name: ios.pod, version: ios.version, commit: ios.commit };
 }
 
-export function iosGitPodLine(ios, { source = false } = {}) {
-  const git = `https://github.com/${ios.repository}.git`;
-  const tag = `v${ios.version}`;
-  // Trunk may omit new specs: pin Extension + SDK from the same public git tag.
-  const ref = source ? `:commit => '${ios.commit}'` : `:tag => '${tag}'`;
-  return [
-    `pod 'PushPlatformExtension', :git => '${git}', ${ref}`,
-    `pod '${ios.pod}', :git => '${git}', ${ref}`,
-  ].join('\n');
-}
-
-export function verifyNativePodSource(lock, podName, native, { source = false } = {}) {
-  const external = lock['EXTERNAL SOURCES']?.[podName];
-  assert(external, `${podName} must resolve through the pinned native git source`);
-  assert.equal(external[':git'] || external.git, `https://github.com/${native.repository}.git`, `${podName} git remote differs from the lock`);
-  if (source) {
-    const checkout = lock['CHECKOUT OPTIONS']?.[podName];
-    assert.equal(external[':commit'] || external.commit, native.commit, `${podName} source commit differs from the lock`);
-    assert.equal(checkout?.[':commit'] || checkout?.commit, native.commit, `${podName} checked-out commit differs from the lock`);
-  } else {
-    assert.equal(external[':tag'] || external.tag, `v${native.version}`, `${podName} git tag differs from the lock`);
-  }
+export function verifyNativePodSource(lock, podName) {
+  assert(!lock['EXTERNAL SOURCES']?.[podName], `${podName} must not use a Git or path override`);
+  const official = Object.entries(lock['SPEC REPOS'] || {}).some(([repo, pods]) =>
+    /^(trunk|https:\/\/cdn\.cocoapods\.org\/?|https:\/\/github\.com\/CocoaPods\/Specs(?:\.git)?\/?)$/.test(repo) && pods.includes(podName));
+  assert(official, `${podName} must resolve from the public CocoaPods repository`);
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -119,7 +99,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     assert(podspec.includes(`s.dependency "${lock.ios.pod}", "${lock.ios.version}"`), 'Bridge dependency differs from the native lock');
     const source = process.argv.includes('--source');
     const result = source ? await verifyIosSource(lock.ios) : await verifyIosPublication(lock.ios);
-    const via = source ? 'pinned Git commit' : result.cocoapods ? `GitHub tag + CocoaPods CDN (${result.cocoapods.specURL})` : 'GitHub tag';
+    const via = source ? 'pinned Git commit' : `GitHub tag + CocoaPods CDN (${result.cocoapods.specURL})`;
     console.log(`Native iOS dependency verified: ${result.name} ${result.version} @ ${result.commit} — ${via}`);
   } catch (error) {
     console.error(error.message);

@@ -20,7 +20,8 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm run release:verify-ios -- --source
+      - run: npm run release:verify-ios
+      - run: node scripts/fetch-native-maven.mjs "$RUNNER_TEMP/pushpilot-maven"
       - run: npm run test:release
       - run: npm run typecheck
       - run: npm test -- --runInBand --watchman=false
@@ -36,7 +37,7 @@ jobs:
       matrix:
         include:
           - scenario: current
-            args: '--source --build'
+            args: '--source --build --upgrade-from 2.0.3 --reinstall'
           - scenario: current-static
             args: '--source --linkage static --build'
     name: ios-autolinking (${{ matrix.scenario }})
