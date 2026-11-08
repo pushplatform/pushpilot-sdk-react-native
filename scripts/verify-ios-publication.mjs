@@ -72,14 +72,43 @@ export async function verifyIosPublication(ios, fetcher = globalThis.fetch) {
   };
 }
 
-export function iosGitPodLine(ios) {
+export async function verifyIosSource(ios, fetcher = globalThis.fetch) {
+  assert(!ios.workingTree, 'Native dependency must reference committed sources');
+  assert(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(ios.repository), 'Unexpected iOS repository');
+  assert(/^[a-f0-9]{40}$/.test(ios.commit), 'Expected full native iOS commit SHA');
+  for (const pod of ['PushPlatformExtension', ios.pod]) {
+    const url = `https://raw.githubusercontent.com/${ios.repository}/${ios.commit}/${pod}.podspec`;
+    const response = await fetcher(url, { signal: AbortSignal.timeout(30000) });
+    assert(response.ok, `${pod} at pinned commit HTTP ${response.status}`);
+    const spec = await response.text();
+    assert.equal(spec.match(/s\.name\s*=\s*['"]([^'"]+)['"]/)?.[1], pod, 'Unexpected native pod name');
+    assert.equal(spec.match(/s\.version\s*=\s*['"]([^'"]+)['"]/)?.[1], ios.version, `${pod} version differs from native lock`);
+  }
+  return { name: ios.pod, version: ios.version, commit: ios.commit };
+}
+
+export function iosGitPodLine(ios, { source = false } = {}) {
   const git = `https://github.com/${ios.repository}.git`;
   const tag = `v${ios.version}`;
   // Trunk may omit new specs: pin Extension + SDK from the same public git tag.
+  const ref = source ? `:commit => '${ios.commit}'` : `:tag => '${tag}'`;
   return [
-    `pod 'PushPlatformExtension', :git => '${git}', :tag => '${tag}'`,
-    `pod '${ios.pod}', :git => '${git}', :tag => '${tag}'`,
+    `pod 'PushPlatformExtension', :git => '${git}', ${ref}`,
+    `pod '${ios.pod}', :git => '${git}', ${ref}`,
   ].join('\n');
+}
+
+export function verifyNativePodSource(lock, podName, native, { source = false } = {}) {
+  const external = lock['EXTERNAL SOURCES']?.[podName];
+  assert(external, `${podName} must resolve through the pinned native git source`);
+  assert.equal(external[':git'] || external.git, `https://github.com/${native.repository}.git`, `${podName} git remote differs from the lock`);
+  if (source) {
+    const checkout = lock['CHECKOUT OPTIONS']?.[podName];
+    assert.equal(external[':commit'] || external.commit, native.commit, `${podName} source commit differs from the lock`);
+    assert.equal(checkout?.[':commit'] || checkout?.commit, native.commit, `${podName} checked-out commit differs from the lock`);
+  } else {
+    assert.equal(external[':tag'] || external.tag, `v${native.version}`, `${podName} git tag differs from the lock`);
+  }
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -88,8 +117,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const lock = JSON.parse(readFileSync(new URL('release/native-lock.json', root)));
     const podspec = readFileSync(new URL('PushPlatform.podspec', root), 'utf8');
     assert(podspec.includes(`s.dependency "${lock.ios.pod}", "${lock.ios.version}"`), 'Bridge dependency differs from the native lock');
-    const result = await verifyIosPublication(lock.ios);
-    const via = result.cocoapods ? `GitHub tag + CocoaPods CDN (${result.cocoapods.specURL})` : 'GitHub tag (CocoaPods CDN absent; resolve via git/path)';
+    const source = process.argv.includes('--source');
+    const result = source ? await verifyIosSource(lock.ios) : await verifyIosPublication(lock.ios);
+    const via = source ? 'pinned Git commit' : result.cocoapods ? `GitHub tag + CocoaPods CDN (${result.cocoapods.specURL})` : 'GitHub tag';
     console.log(`Native iOS dependency verified: ${result.name} ${result.version} @ ${result.commit} — ${via}`);
   } catch (error) {
     console.error(error.message);

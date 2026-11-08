@@ -80,3 +80,31 @@ test('formats the Podfile git override for Extension and SDK', () => {
     ].join('\n'),
   );
 });
+
+test('validates both pod versions at the exact commit before release tags exist', async () => {
+  const { verifyIosSource } = await import('./verify-ios-publication.mjs');
+  const requests = [];
+  const result = await verifyIosSource(ios, async url => {
+    requests.push(url);
+    const name = url.endsWith('/PushPlatformExtension.podspec') ? 'PushPlatformExtension' : ios.pod;
+    return new Response(`s.name = '${name}'\ns.version = '${ios.version}'\n`);
+  });
+  assert.equal(result.commit, ios.commit);
+  assert.equal(requests.length, 2);
+  assert(requests.every(url => url.includes(`/${ios.commit}/`)));
+  assert(iosGitPodLine(ios, { source: true }).includes(`:commit => '${ios.commit}'`));
+});
+
+test('source validation rejects a mismatched native version', async () => {
+  const { verifyIosSource } = await import('./verify-ios-publication.mjs');
+  await assert.rejects(verifyIosSource(ios, async () => new Response("s.name = 'PushPlatformExtension'\ns.version = '0.0.0'\n")), /version differs/);
+});
+
+test('accepts CocoaPods Ruby-symbol keys serialized to JSON without colons and rejects a wrong checkout', async () => {
+  const { verifyNativePodSource } = await import('./verify-ios-publication.mjs');
+  const pin = { git: `https://github.com/${ios.repository}.git`, commit: ios.commit };
+  const lock = { 'EXTERNAL SOURCES': { [ios.pod]: pin }, 'CHECKOUT OPTIONS': { [ios.pod]: { ...pin } } };
+  verifyNativePodSource(lock, ios.pod, ios, { source: true });
+  lock['CHECKOUT OPTIONS'][ios.pod].commit = '0'.repeat(40);
+  assert.throws(() => verifyNativePodSource(lock, ios.pod, ios, { source: true }), /checked-out commit differs/);
+});

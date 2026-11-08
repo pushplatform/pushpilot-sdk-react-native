@@ -1,5 +1,9 @@
 # 1.3.14 — 2026-11-05
 
+## 2.0.1
+
+Align package/native dependency versions, installation instructions and production integration documentation.
+
 - Android: `sdk-android` **1.2.6** (явный `firebase-messaging`, совместимо с Firebase BoM 34+ / RN Firebase).
 
 # 1.3.13 — 2026-11-05
