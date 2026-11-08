@@ -16,12 +16,12 @@ Align package/native dependency versions, installation instructions and producti
 
 # 1.3.11 — 2026-11-04
 
-- Native pin: `PushPlatformSDK` **1.2.10** + отдельный pod `PushPlatformExtension` / `sdk-android` 1.2.5. NSE: `pod 'PushPlatformExtension'` (не subspec). Bare Podfile и Expo plugin pin'ят оба pod с одного git-тега / `native/ios` path (Trunk read-only).
+- Native pin: `PushPlatformSDK` **1.2.10** + отдельный pod `PushPlatformExtension` / `sdk-android` 1.2.5. NSE: `PushPlatformExtension` (не subspec). Bare Podfile и Expo plugin pin'ят оба pod с одного git-тега / `native/ios` path (Trunk read-only).
 
 # 1.3.10 — 2026-11-04
 
 - Current **latest** npm-релиз (GHA-verified tarball). После publish `1.3.9` registry сначала держал версию в невидимом stage (E409 / empty `npm stage list`); `1.3.9` затем вышел и тоже GHA-ok — предпочтителен **`@1.3.10`**.
-- Native pin: `PushPlatformSDK` **1.2.9** / `sdk-android` 1.2.5. NSE: `pod 'PushPlatformSDK/Extension'` + `import PushPlatformExtension` (не полный App SDK). `1.3.8` помечен `npm deprecate` (битый hand-publish).
+- Native pin: `PushPlatformSDK` **1.2.9** / `sdk-android` 1.2.5. NSE: `PushPlatformSDK/Extension` + `import PushPlatformExtension` (не полный App SDK). `1.3.8` помечен `npm deprecate` (битый hand-publish).
 
 # 1.3.9 — 2026-11-04
 
@@ -68,12 +68,12 @@ Align package/native dependency versions, installation instructions and producti
 # 1.3.1 — 2026-11-02
 
 - `onNotificationWillDisplay` с `preventDefault()` до возврата обработчика. `getDeviceToken()` возвращает последний токен. Успешный `onRegistrationUpdated` содержит `token`.
-- Адрес только `url`. `apiKey` не отправляется.
+- `apiKey` не отправляется.
 - Зависит от `PushPlatformSDK` 1.2.2 и `sdk-android` 1.2.1.
 
 # 1.3.0 — 2026-11-01
 
-- `initialize` takes an application id or `{applicationId, url, environment}`. No API key is sent.
+- `initialize` takes an application id or `{applicationId, environment}`. No API key is sent.
 - Depends on PushPlatformSDK 1.2.0.
 - iOS autolinking is checked on the repository test app and its current React Native, including a static-framework build. It is not pinned to another application's Firebase, Vision Camera or Nitro versions.
 
