@@ -2,8 +2,8 @@
 
 ## Status: ✅ PASS
 
-**Date**: 2026-09-19  
-**Commit**: `4a5b764` - fix(packaging): exclude test files and mocks from npm package  
+**Date**: 2026-09-19
+**Commit**: `4a5b764` - fix(packaging): exclude test files and mocks from npm package
 **Previous**: `eb5d24b` - fix(ios): resolve race condition in bridge initialization
 
 ---
@@ -12,7 +12,7 @@
 
 Stage 6C контрольный запуск React Native SDK iOS завершен успешно. Все критические функции проверены в production flow.
 
-**Результат**: 
+**Результат**:
 - ✅ Native module loaded
 - ✅ `initialize()` succeeded
 - ✅ `getInstallationId()` returned valid UUID
@@ -36,7 +36,7 @@ Stage 6C контрольный запуск React Native SDK iOS заверше
 ### Step 1: Import SDK ✅
 **Objective**: Verify SDK imports without side effects
 
-**Method**: 
+**Method**:
 - Clean npm package created (41 files, 80.3 kB)
 - Installed via `npm install pushplatform-react-native-1.0.0.tgz`
 - Verified single react-native instance (deduped)
@@ -59,8 +59,7 @@ typeof PushPlatform.initialize === 'function'
 
 // 2. Initialize
 await PushPlatform.initialize({
-  apiKey: 'test-api-key',
-  url: 'https://api.test.pushplatform.example',
+  applicationId: 'YOUR_APPLICATION_UUID',
   environment: 'production',
   debugMode: true,
 });
@@ -132,7 +131,7 @@ npm run lint
 ### Before Fixes
 - **Size**: 280.9 kB
 - **Files**: 253
-- **Issues**: 
+- **Issues**:
   - ❌ `android/build/` artifacts (200+ files)
   - ❌ `android/.gradle/` cache
   - ❌ `ios/Tests/` test files
@@ -161,7 +160,7 @@ npm run lint
 ### Push Event Delivery
 **Status**: Deferred to E2E
 
-**Reason**: 
+**Reason**:
 - Actual push notifications require APNs/FCM infrastructure
 - Subscription lifecycle verified ✅
 - Event callback registration verified ✅
@@ -231,7 +230,7 @@ Stage 6C контрольный запуск завершен успешно. Re
 
 **Stage 6C**: ✅ **PASS**
 
-**Next Steps**: 
+**Next Steps**:
 - Stage 6D: Android verification (if required)
 - Stage 6E: Flutter SDK (pending)
 - E2E: Full push notification flow with APNs/FCM

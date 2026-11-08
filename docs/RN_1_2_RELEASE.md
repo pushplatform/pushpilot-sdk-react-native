@@ -2,7 +2,7 @@
 
 `@pushplatform/react-native` 1.3.0 is the release that installs with an application id and native SDK 1.2.0.
 
-- `initialize` takes an application id string or `{ applicationId, url, environment }`. It does not send a secret key.
+- `initialize` takes an application id string or `{ applicationId, debugMode }`. It does not send a secret key.
 - Android dependency: `com.pushplatform:sdk-android:1.2.0` (commit `46c76cf`), bundled in the npm tarball.
 - iOS autolinking dependency: public CocoaPods `PushPlatformSDK` 1.2.0 (tag `v1.2.0`, commit `c7f497f`). The same sources are bundled for the Expo plugin.
 - Version 1.2.0 of this package was not published to npm. The npm `latest` tag stayed on 1.1.0 until 1.3.0.

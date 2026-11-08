@@ -4,7 +4,7 @@ Follow [INSTALLATION.md](INSTALLATION.md) for platform setup and
 [MIGRATION_2.md](MIGRATION_2.md) for native delivery and call ownership.
 
 1. Configure the application's APNs/FCM credentials on the PushPilot server.
-2. Install `@pushplatform/react-native@2.0.1`. Initialize with `applicationId`, call
+2. Install `@pushplatform/react-native`. Initialize with `applicationId`, call
    `login(externalUserId)` for the signed-in user and `logout()` on sign-out.
    Keep the permanent send key on the backend.
 3. Register notification listeners once. Restore navigation and call state after
@@ -24,8 +24,8 @@ Follow [INSTALLATION.md](INSTALLATION.md) for platform setup and
 import PushPlatform from '@pushplatform/react-native';
 
 await PushPlatform.initialize({
-  applicationId: '00000000-0000-4000-8000-000000000000',
-  url: 'https://api.pushpilot.ru',
+  applicationId: 'YOUR_APPLICATION_UUID',
+  debugMode: false,
 });
 await PushPlatform.login('your-user-id');
 await PushPlatform.requestPermissions();

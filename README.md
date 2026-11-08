@@ -4,10 +4,24 @@ PushPilot подключает push-уведомления к приложени
 регистрирует установку и токен устройства, запрашивает разрешения и передаёт
 события получения и открытия уведомлений. В пакет входят native SDK и Expo plugin.
 
+## Формы инициализации
+
+Выполните один из вариантов один раз при запуске приложения.
+`debugMode: true` включает диагностику; для обычной работы используйте `false`.
+
+```tsx
+await PushPlatform.initialize({
+  applicationId: 'YOUR_APPLICATION_UUID',
+  debugMode: __DEV__,
+});
+
+await PushPlatform.initialize('YOUR_APPLICATION_UUID');
+```
+
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native@2.0.1
+npm install @pushplatform/react-native
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
@@ -52,23 +66,18 @@ credentials. [Установка Expo и bare React Native](https://github.com/p
 
 ## iOS: подтверждение доставки при закрытом приложении
 
-Баннер iOS показывается без запуска приложения. Счётчик `received` отправляет `PushPlatformExtension` 2.0.1. Без target баннер и нажатие остаются. Нового вызова из JavaScript нет. Plugin пишет App Group только основному приложению и target не создаёт.
+Для подтверждения received добавьте Notification Service Extension и одну App Group у приложения и extension. Основные нативные зависимости подключает npm-пакет; отдельный target extension настраивается ниже.
+
 
 1. **File → New → Target → Notification Service Extension**. **Don't Activate**. Deployment Target как у приложения, не ниже iOS 13.
 2. Bundle ID extension — bundle ID приложения плюс `.PushPlatformNotificationService`. Для `com.example.app` это `com.example.app.PushPlatformNotificationService`.
 3. **App Groups** на обоих target: `group.com.example.app.pushplatform`.
-4. В `ios/Podfile` сразу после `platform :ios` добавьте pin native SDK (из установленного npm-пакета):
-
-```ruby
-pod 'PushPlatformExtension', :path => '../node_modules/@pushplatform/react-native/native/ios'
-pod 'PushPlatformSDK', :path => '../node_modules/@pushplatform/react-native/native/ios'
-```
-
+4. Нативные зависимости основного приложения подключает пакет React Native; отдельные записи для них не нужны.
 5. Добавьте target extension и замените `NotificationService.swift` кодом ниже. В extension — `import PushPlatformExtension`, не `import PushPlatformSDK` (иначе `No such module 'PushPlatformSDK'`). Образец: [NotificationService.swift](https://github.com/pushplatform/pushpilot-sdk-ios/blob/main/Sources/PushPlatformNotificationService/NotificationService.swift).
 
 ```ruby
 target 'PushPlatformNotificationServiceExtension' do
-  pod 'PushPlatformExtension', :path => '../node_modules/@pushplatform/react-native/native/ios'
+	pod 'PushPlatformExtension', '>= 2.0.0', '< 3.0'
 end
 ```
 
@@ -108,7 +117,7 @@ Extension не меняет баннер. Приложение при `initializ
 Вызывайте `initializePushPilot()` один раз при запуске приложения. Запрос
 разрешения привяжите к кнопке интерфейса:
 
-``tsx
+```tsx
 import PushPilot from '@pushplatform/react-native';
 
 export async function initializePushPilot() {
@@ -120,7 +129,6 @@ export async function initializePushPilot() {
 
   try {
     await PushPilot.initialize({
-      url: 'https://api.example.com',
       applicationId: 'YOUR_APPLICATION_UUID',
       debugMode: __DEV__,
     });
@@ -146,7 +154,7 @@ export function requestPushPermission() {
 }
 ```
 
-`url` — адрес API PushPilot. `applicationId` — UUID приложения. `apiKey` не отправляется. Приватные APNs/FCM/VAPID credentials остаются на сервере.
+`applicationId` — UUID приложения. `apiKey` не отправляется. Приватные APNs/FCM/VAPID credentials остаются на сервере.
 
 `initialize` возвращает Promise — дождитесь `await`, иначе `onNotificationOpened` / `onNotificationReceived` / `onNotificationWillDisplay` бросят `SDK not initialized`. `getInstallationId()` возвращает ID установки. `getDeviceToken()` возвращает последний APNs или FCM токен. При успешной регистрации `onRegistrationUpdated` содержит `token`. `onNotificationReceived` — доставка, `onNotificationOpened` — клик, `onNotificationWillDisplay` — показ в foreground. `preventDefault()` до возврата обработчика скрывает баннер, звук и бейдж. Удаляйте listeners, когда они больше не нужны.
 
@@ -157,7 +165,7 @@ export function requestPushPermission() {
 - Для Android нужен Firebase config приложения, для iOS — signing и APNs
   credentials. APNs private key и серверные ключи провайдеров хранятся на сервере.
 - Любая credential внутри мобильного приложения доступна при анализе приложения.
-  Общий ключ приложения намеренно разрешает регистрацию и отправку в одном приложении. Не встраивайте платформенные административные credentials или секреты APNs/FCM.
+  Ключ серверной отправки храните на сервере. Не встраивайте платформенные административные credentials или секреты APNs/FCM.
 - Запрос разрешения и регистрация токена не подтверждают доставку уведомления.
   Показ и background/silent поведение зависят от ОС, payload, Doze и ограничений
   производителя устройства. JavaScript callback не является гарантией доставки.
@@ -190,13 +198,14 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 ### Текущая поставка · 2.0.1
 
-`initialize` принимает application id или `{applicationId, url, environment, foregroundBannerFallback}` и не требует секретного ключа. Android-зависимость — `com.pushplatform:sdk-android:2.0.1`. iOS autolinking требует `PushPlatformSDK` 2.0.1; подключите в Podfile с git-тега `v2.0.1` (Expo plugin пишет `:path => native/ios`). В tarball также лежит копия этих же native-артефактов для Expo.
+`initialize` принимает UUID приложения или options с `applicationId` и `debugMode`; секретный ключ не требуется. Основные нативные SDK подключаются транзитивно через npm-пакет, отдельные app-level записи в Podfile не нужны. Для Notification Service Extension используйте отдельный target из инструкции выше.
+
 
 Открытие уведомления нативный SDK сообщает сам: при клике, в том числе при холодном старте, он отправляет `PUT /notifications/{id}`; до `initialize` открытие ждёт в очереди. В `onNotificationOpened` и `onNotificationWillDisplay` у уведомления есть необязательный `notificationId` — id из ответа `POST /notifications`. Экспорты пакета не изменились: только `PushPlatform`, `SDKError`, `ErrorCode` и типы.
 
 ### Unified applications
 
-One PushPilot application contains iOS, Android and Web providers. Use the application ID in SDKs. Keep the permanent application key in server code for sending notifications; device registration does not require that key. Rotate or revoke it in the console.
+One PushPilot application contains iOS, Android and Web providers. Use the same application ID in SDKs. Device registration does not require a secret key. Keep the permanent application key in server code for sending notifications; rotate or revoke it in the console.
 Omit `environment` during initialization. iOS derives APNs transport from the simulator/build entitlement; Android uses the unified registration scope. The optional legacy argument remains compatible.
 Native SDKs report actual model, OS/SDK/app version, language, time zone, permission and physical/simulator/emulator kind (unknown where unavailable). Test subscription is an independent console marker. Metadata refreshes on foreground and permission changes.
 

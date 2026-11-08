@@ -2,19 +2,21 @@
 
 ## Native installation
 
-Install `@pushplatform/react-native@2.0.1` and follow [INSTALLATION.md](INSTALLATION.md).
-The native iOS and Android dependencies must both be 2.0.1. Rebuild the native app
+Install `@pushplatform/react-native` and follow [INSTALLATION.md](INSTALLATION.md).
+The package declares the matching native iOS and Android dependencies. Rebuild the native app
 after upgrading; restarting Metro does not update native code. Expo requires a
 native development or production build; Expo Go does not contain the bridge.
 
-For bare iOS, pin both pods in the Podfile:
+For the main iOS application, install the package's native dependencies with `pod install`.
+Autolinking resolves them transitively. Add only the separate Notification Service
+Extension target when needed:
 
 ```ruby
-pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v2.0.1'
-pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v2.0.1'
+target 'PushPlatformNotificationServiceExtension' do
+	pod 'PushPlatformExtension', '>= 2.0.0', '< 3.0'
+end
 ```
 
-Update an existing installation with `bundle exec pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update`.
 The Expo plugin configures bundled iOS sources automatically. The Notification Service
 Extension imports `PushPlatformExtension`; the main app imports `PushPlatformSDK`.
 Android uses the bundled Maven repository at `native/android/maven`, configured as
@@ -27,8 +29,7 @@ dependencies. The RN Android bridge requires API 26 or later.
 import PushPlatform from '@pushplatform/react-native';
 
 await PushPlatform.initialize({
-  applicationId: '00000000-0000-4000-8000-000000000000',
-  url: 'https://api.pushpilot.ru',
+  applicationId: 'YOUR_APPLICATION_UUID',
   debugMode: true,
 });
 const installationId = await PushPlatform.getInstallationId();
@@ -36,7 +37,7 @@ const granted = await PushPlatform.requestPermissions();
 ```
 
 Use the PushPilot application UUID. Keep the permanent send key on your backend.
-Check connectivity, server URL and the native registration response. Concurrent
+Check connectivity, application UUID and the native registration response. Concurrent
 initializations for the same configuration share one operation; changing application,
 server or environment in the same process is rejected. Notification listeners may
 be registered before initialization; early events are queued for the corresponding

@@ -50,10 +50,10 @@ export class PushPlatform {
    *
    * @example
    * ```typescript
-   * await PushPlatform.initialize('00000000-0000-4000-8000-000000000000');
+   * await PushPlatform.initialize('YOUR_APPLICATION_UUID');
    * await PushPlatform.initialize({
-   *   applicationId: '00000000-0000-4000-8000-000000000000',
-   *   url: 'https://api.your-domain.example',
+   *   applicationId: 'YOUR_APPLICATION_UUID',
+   *   debugMode: false,
    * });
    * ```
    */
@@ -336,7 +336,7 @@ export class PushPlatform {
    *
    * @example
    * ```typescript
-   * await PushPlatform.initialize({ applicationId, url });
+   * await PushPlatform.initialize({ applicationId, debugMode: false });
    * const subscription = PushPlatform.onNotificationReceived((context) => {
    *   console.log('Notification received:', context.notification);
    *   if (context.isForegrounded) {
@@ -365,7 +365,7 @@ export class PushPlatform {
    *
    * @example
    * ```typescript
-   * await PushPlatform.initialize({ applicationId, url });
+   * await PushPlatform.initialize({ applicationId, debugMode: false });
    * const subscription = PushPlatform.onNotificationOpened((context) => {
    *   console.log('Notification opened:', context.notification);
    *   // Navigate to specific screen based on notification data
@@ -397,7 +397,7 @@ export class PushPlatform {
    *   let sub2: { remove: () => void } | undefined;
    *   let cancelled = false;
    *   (async () => {
-   *     await PushPlatform.initialize({ applicationId, url });
+   *     await PushPlatform.initialize({ applicationId, debugMode: false });
    *     if (cancelled) return;
    *     sub1 = PushPlatform.onNotificationReceived(handler);
    *     sub2 = PushPlatform.onNotificationOpened(handler);
