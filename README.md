@@ -198,6 +198,8 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 ### Текущая поставка · 2.0.4
 
+Обновление: `npm install @pushplatform/react-native@latest`, затем в `ios` — `pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update`. Сохраняйте Podfile.lock; используйте `bundle exec`, если CocoaPods управляется Bundler. Для Expo повторите prebuild и нативную сборку.
+
 `initialize` принимает UUID приложения или options с `applicationId` и `debugMode`; секретный ключ не требуется. Основные нативные SDK подключаются транзитивно через npm-пакет, отдельные app-level записи в Podfile не нужны. Для Notification Service Extension используйте отдельный target из инструкции выше.
 
 
