@@ -4,12 +4,11 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { iosGitPodLine, verifyNativePodSource } from './verify-ios-publication.mjs';
+import { verifyNativePodSource } from './verify-ios-publication.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const lockedIos = JSON.parse(fs.readFileSync(path.join(root, 'release/native-lock.json'))).ios;
 const args = process.argv.slice(2);
-const nativeGitPod = iosGitPodLine(lockedIos, { source: args.includes('--source') });
 const option = name => { const index = args.indexOf(name); return index < 0 ? null : args[index + 1]; };
 const archiveOption = option('--archive');
 assert(!option('--fixture'), 'Autolinking is checked on the current test app, not a pinned application stack');
@@ -72,9 +71,8 @@ const installPods = (updating = false) => {
     run('pod', ['install', '--repo-update'], ios, podEnv);
     return;
   }
-  // `pod update NAME` fails if NAME is not already in Podfile.lock (upgrade from
-  // 1.0.x has no PushPlatformExtension yet). Update only installed pods, then
-  // `pod install` picks up the newly pinned Extension from the Podfile.
+  // Unlock only this package's native dependencies during an existing-app upgrade.
+  // Keep the Podfile and unrelated locked dependency versions unchanged.
   const lockText = fs.existsSync(path.join(ios, 'Podfile.lock'))
     ? fs.readFileSync(path.join(ios, 'Podfile.lock'), 'utf8')
     : '';
@@ -82,18 +80,6 @@ const installPods = (updating = false) => {
   if (lockText.includes('PushPlatformExtension (')) names.push('PushPlatformExtension');
   if (names.length) run('pod', ['update', ...names, '--repo-update'], ios, podEnv);
   run('pod', ['install', '--repo-update'], ios, podEnv);
-};
-const pinLockedNativeFromGit = () => {
-  // Pin SDK and Extension to the same release tag or immutable source commit.
-  podfile = fs.readFileSync(path.join(ios, 'Podfile'), 'utf8');
-  if (podfile.includes(nativeGitPod)) return;
-  assert(!/pod\s+['"]PushPlatformSDK['"]/.test(podfile), 'Podfile has a PushPlatformSDK pin that differs from the native lock');
-  assert(!/pod\s+['"]PushPlatformExtension['"]/.test(podfile), 'Podfile has a PushPlatformExtension pin that is not the locked public git tag');
-  podfile = podfile.replace(
-    /(platform :ios,[^\n]*\n)/,
-    `$1\n# PushPlatform native iOS SDK (git — CocoaPods Trunk may omit this version)\n${nativeGitPod}\n`,
-  );
-  fs.writeFileSync(path.join(ios, 'Podfile'), podfile);
 };
 if (upgradeFrom && !resumeAfterBaseline) {
   installPods();
@@ -112,13 +98,10 @@ const nativeRequirement = evaluatedSpec.dependencies[lockedIos.pod];
 assert.equal(nativeRequirement?.length, 1, 'Expected a single exact native requirement');
 assert.equal(nativeRequirement[0].replace(/^=\s*/, ''), lockedIos.version, 'Evaluated native dependency differs from the source lock');
 
-pinLockedNativeFromGit();
-assert(fs.readFileSync(path.join(ios, 'Podfile'), 'utf8').includes(nativeGitPod), 'Probe must pin the locked native SDK from the public git tag');
 installPods(Boolean(upgradeFrom));
 if (args.includes('--reinstall')) {
   run('npm', ['uninstall', '--no-audit', '--no-fund', '@pushplatform/react-native'], consumer);
   run('npm', ['install', '--no-audit', '--no-fund', candidateArchive], consumer);
-  pinLockedNativeFromGit();
   installPods();
 }
 const lock = JSON.parse(execFileSync('ruby', ['-ryaml', '-rjson', '-e', 'puts JSON.generate(YAML.load_file(ARGV[0]))', path.join(ios, 'Podfile.lock')], { encoding: 'utf8' }));
@@ -142,14 +125,13 @@ assert(
 );
 for (const podName of [native.pod, 'PushPlatformExtension']) {
   verifyNativePodSource(lock, podName, native, { source: args.includes('--source') });
-  assert(!Object.entries(lock['SPEC REPOS'] || {}).some(([, pods]) => pods.includes(podName)), `${podName} unexpectedly came from CocoaPods trunk/CDN`);
 }
 assert(fs.existsSync(path.join(ios, 'Pods', native.pod, 'Sources/PushPlatformSDK/Core/DeviceMetadata.swift')), 'New native source was not downloaded');
 assert(
   fs.existsSync(path.join(ios, 'Pods', 'PushPlatformExtension', 'Sources/PushPlatformExtension/PushPlatformExtension.swift')),
   'PushPlatformExtension sources are missing from the locked native SDK',
 );
-console.log(`Bare RN autolinking passed: PushPlatform ${sourcePackage.version} → git ${native.pod} + PushPlatformExtension ${native.version}; linkage=${linkage}.`);
+console.log(`Bare RN autolinking passed: PushPlatform ${sourcePackage.version} → CocoaPods ${native.pod} + PushPlatformExtension ${native.version}; linkage=${linkage}.`);
 if (args.includes('--build')) {
   run('xcodebuild', ['-workspace', 'PushPlatformTestApp.xcworkspace', '-scheme', 'PushPlatformTestApp', '-configuration', 'Debug', '-sdk', 'iphonesimulator', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', path.join(consumer, 'DerivedData'), '-jobs', '2', 'CODE_SIGNING_ALLOWED=NO', 'build'], ios, podEnv);
 }

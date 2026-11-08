@@ -1,9 +1,9 @@
-# npm-пакет 2.0.3
+# npm-пакет 2.0.4
 
 ```sh
 npm install @pushplatform/react-native
 ```
 
-Пакет содержит JavaScript/TypeScript API, RN bridge, Expo plugin и нативные SDK 2.0.1.
+Пакет содержит JavaScript/TypeScript API, RN bridge, Expo plugin и нативные SDK 2.0.3.
 После обновления пересоберите нативное приложение. Установка описана в
 [INSTALLATION.md](INSTALLATION.md), выпуск — в [RELEASING.md](RELEASING.md).
