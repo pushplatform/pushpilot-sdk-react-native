@@ -144,7 +144,7 @@ Production bridge files compiled:
    ```kotlin
    // Before:
    return "PushPlatformBridge"
-   
+
    // Mutation:
    return "PushPlatformBridge_MUTATION_TEST"
    ```
@@ -155,7 +155,7 @@ Production bridge files compiled:
 3. Decompiled class:
    ```
    javap -c PushPlatformModule.class | grep -A3 getName
-   
+
    public java.lang.String getName();
      Code:
         0: ldc           #46    // String PushPlatformBridge_MUTATION_TEST
@@ -219,8 +219,8 @@ Result: ✅ Native module loaded
 import {PushPlatform} from '@pushplatform/react-native';
 
 await PushPlatform.initialize({
-  apiKey: 'test-api-key',
-  environment: 'staging',
+  applicationId: 'YOUR_APPLICATION_UUID',
+  environment: 'production',
   debugMode: true,
 });
 ```
@@ -317,12 +317,12 @@ $ grep -rn "MUTATION_PROOF" sdk-react-native/ios/
 
 ### Verification Summary
 
-✅ **Module Loading**: Native bridge loaded via NativeModules  
-✅ **Public API Initialization**: PushPlatform.initialize() succeeded  
-✅ **Production Method Execution**: PushPlatform.getInstallationId() returns valid UUID  
-✅ **Production Code Proof**: Mutation in `sdk-react-native/ios/PushPlatformBridge.swift` reflected at runtime  
-✅ **Rollback Verification**: Clean UUID returned after mutation removal  
-✅ **Sentinel Cleanup**: No test artifacts in production code  
+✅ **Module Loading**: Native bridge loaded via NativeModules
+✅ **Public API Initialization**: PushPlatform.initialize() succeeded
+✅ **Production Method Execution**: PushPlatform.getInstallationId() returns valid UUID
+✅ **Production Code Proof**: Mutation in `sdk-react-native/ios/PushPlatformBridge.swift` reflected at runtime
+✅ **Rollback Verification**: Clean UUID returned after mutation removal
+✅ **Sentinel Cleanup**: No test artifacts in production code
 ✅ **Critical Fix**: appId requirement removed, aligns with TypeScript API
 
 ### Critical Fix: Objective-C Bridge Export
@@ -487,7 +487,7 @@ $ adb logcat -d | grep "getInstallationId"
 ✅ **VERIFIED**: JavaScript test code executes production Android native bridge at runtime:
 - TurboModuleRegistry successfully loads PushPlatformModule
 - JavaScript calls reach Kotlin production code (PushPlatformModule.kt)
-- Native code calls mock SDK (PushPlatformSDKMock.kt) 
+- Native code calls mock SDK (PushPlatformSDKMock.kt)
 - Results return correctly to JavaScript
 - App remains stable after native calls
 - Runtime mutation proof confirms actual code execution (not contract test)
@@ -536,7 +536,7 @@ Production-linked test applications were successfully created for **both iOS and
 
 ### iOS
 1. ✅ Production Swift bridge compiles
-2. ✅ Production TypeScript bridge compiles  
+2. ✅ Production TypeScript bridge compiles
 3. ✅ React Native bridge infrastructure works
 4. ✅ App loads and runs
 5. ✅ Deleted .h/.m files validated

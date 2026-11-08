@@ -48,9 +48,7 @@ static initialize(config: string | PushPlatformConfig): Promise<void>
 
 ```typescript
 await PushPlatform.initialize({
-  applicationId: '00000000-0000-4000-8000-000000000000',
-  url: 'https://api.your-domain.example',
-
+  applicationId: 'YOUR_APPLICATION_UUID',
   debugMode: false,
 });
 ```
@@ -157,14 +155,14 @@ static onNotificationReceived(
 
 ```typescript
 await PushPlatform.initialize({
-  applicationId: 'your-application-uuid',
-  url: 'https://api.pushpilot.ru',
+  applicationId: 'YOUR_APPLICATION_UUID',
+  debugMode: false,
 });
 
 const subscription = PushPlatform.onNotificationReceived((context) => {
   console.log('Notification received:', context.notification.title);
   console.log('In foreground:', context.foreground);
-  
+
   if (context.notification.data) {
     console.log('Custom data:', context.notification.data);
   }
@@ -200,19 +198,19 @@ static onNotificationOpened(
 
 ```typescript
 await PushPlatform.initialize({
-  applicationId: 'your-application-uuid',
-  url: 'https://api.pushpilot.ru',
+  applicationId: 'YOUR_APPLICATION_UUID',
+  debugMode: false,
 });
 
 const subscription = PushPlatform.onNotificationOpened((context) => {
   console.log('Notification opened:', context.notification.title);
-  
+
   // Handle deep links
   const deeplink = context.notification.data?.deeplink;
   if (deeplink) {
     navigation.navigate(deeplink);
   }
-  
+
   // Handle action button clicks
   if (context.actionId) {
     console.log('User clicked action:', context.actionId);
@@ -234,7 +232,6 @@ SDK initialization configuration.
 ```typescript
 interface PushPlatformConfig {
   applicationId: string;
-  url?: string;
   environment?: 'development' | 'production';
   debugMode?: boolean;
 }
@@ -243,7 +240,6 @@ interface PushPlatformConfig {
 **Fields:**
 
 - `applicationId` — UUID приложения. Обязателен.
-- `url` — адрес API. Если поле опущено, запросы идут на `https://api.pushpilot.ru`.
 - `environment` — `development` или `production`.
 - `debugMode` — подробные логи, по умолчанию `false`.
 
@@ -383,9 +379,9 @@ useEffect(() => {
 
   (async () => {
     await PushPlatform.initialize({
-      applicationId: 'your-application-uuid',
-      url: 'https://api.pushpilot.ru',
-    });
+      applicationId: 'YOUR_APPLICATION_UUID',
+  debugMode: false,
+});
     if (cancelled) return;
     subscription = PushPlatform.onNotificationReceived(handleNotification);
   })();
@@ -401,13 +397,13 @@ useEffect(() => {
 
 ```typescript
 await PushPlatform.initialize({
-  applicationId: 'your-application-uuid',
-  url: 'https://api.pushpilot.ru',
+  applicationId: 'YOUR_APPLICATION_UUID',
+  debugMode: false,
 });
 
 PushPlatform.onNotificationOpened((context) => {
   const { data } = context.notification;
-  
+
   if (data?.screen) {
     // Navigate to specific screen
     navigation.navigate(data.screen, data.params);
@@ -431,7 +427,7 @@ See [MIGRATION_2.md](MIGRATION_2.md) for registration and lifecycle requirements
 
 ## Client configuration
 
-- Initialize with the application ID and API URL. The server send key is not required for device registration.
+- Initialize with the PushPilot application UUID. The server send key is not required for device registration.
 - `getDeviceToken()` returns the APNs/FCM token when available; registration events report backend subscription state.
 - The application owns CallKit UI, signalling, answer/end actions and audio.
 

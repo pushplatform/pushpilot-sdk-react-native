@@ -4,12 +4,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { iosGitPodLine, verifyNativePodSource } from './verify-ios-publication.mjs';
+import { iosGitPodLine } from './verify-ios-publication.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const lockedIos = JSON.parse(fs.readFileSync(path.join(root, 'release/native-lock.json'))).ios;
+const nativeGitPod = iosGitPodLine(lockedIos);
 const args = process.argv.slice(2);
-const nativeGitPod = iosGitPodLine(lockedIos, { source: args.includes('--source') });
 const option = name => { const index = args.indexOf(name); return index < 0 ? null : args[index + 1]; };
 const archiveOption = option('--archive');
 assert(!option('--fixture'), 'Autolinking is checked on the current test app, not a pinned application stack');
@@ -84,10 +84,10 @@ const installPods = (updating = false) => {
   run('pod', ['install', '--repo-update'], ios, podEnv);
 };
 const pinLockedNativeFromGit = () => {
-  // Pin SDK and Extension to the same release tag or immutable source commit.
+  // Trunk may omit the locked version. Pin Extension + SDK from the same public git tag.
   podfile = fs.readFileSync(path.join(ios, 'Podfile'), 'utf8');
   if (podfile.includes(nativeGitPod)) return;
-  assert(!/pod\s+['"]PushPlatformSDK['"]/.test(podfile), 'Podfile has a PushPlatformSDK pin that differs from the native lock');
+  assert(!/pod\s+['"]PushPlatformSDK['"]/.test(podfile), 'Podfile has a PushPlatformSDK pin that is not the locked public git tag');
   assert(!/pod\s+['"]PushPlatformExtension['"]/.test(podfile), 'Podfile has a PushPlatformExtension pin that is not the locked public git tag');
   podfile = podfile.replace(
     /(platform :ios,[^\n]*\n)/,
@@ -141,7 +141,12 @@ assert(
   'Locked PushPlatformExtension pod is missing from Podfile.lock',
 );
 for (const podName of [native.pod, 'PushPlatformExtension']) {
-  verifyNativePodSource(lock, podName, native, { source: args.includes('--source') });
+  const external = lock['EXTERNAL SOURCES']?.[podName];
+  assert(external, `${podName} must resolve through the public git pin while Trunk omits new specs`);
+  const git = external[':git'] || external.git;
+  const tag = external[':tag'] || external.tag;
+  assert.equal(git, `https://github.com/${native.repository}.git`, `${podName} git remote differs from the lock`);
+  assert.equal(tag, `v${native.version}`, `${podName} git tag differs from the lock`);
   assert(!Object.entries(lock['SPEC REPOS'] || {}).some(([, pods]) => pods.includes(podName)), `${podName} unexpectedly came from CocoaPods trunk/CDN`);
 }
 assert(fs.existsSync(path.join(ios, 'Pods', native.pod, 'Sources/PushPlatformSDK/Core/DeviceMetadata.swift')), 'New native source was not downloaded');
