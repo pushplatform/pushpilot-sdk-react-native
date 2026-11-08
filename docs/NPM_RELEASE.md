@@ -1,4 +1,4 @@
-# npm-пакет 2.0.2
+# npm-пакет 2.0.3
 
 ```sh
 npm install @pushplatform/react-native
