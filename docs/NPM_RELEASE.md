@@ -1,7 +1,7 @@
-# npm-пакет 2.0.1
+# npm-пакет 2.0.2
 
 ```sh
-npm install @pushplatform/react-native@2.0.1
+npm install @pushplatform/react-native
 ```
 
 Пакет содержит JavaScript/TypeScript API, RN bridge, Expo plugin и нативные SDK 2.0.1.

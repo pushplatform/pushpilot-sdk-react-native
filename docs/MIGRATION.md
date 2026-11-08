@@ -1,4 +1,4 @@
-# Migration to PushPilot React Native SDK 2.0.1
+# Migration to PushPilot React Native SDK 2.0.2
 
 Follow [INSTALLATION.md](INSTALLATION.md) for platform setup and
 [MIGRATION_2.md](MIGRATION_2.md) for native delivery and call ownership.
