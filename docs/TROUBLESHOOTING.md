@@ -1,483 +1,78 @@
-# Troubleshooting
+# Troubleshooting — React Native SDK 2.0.1
 
-Common issues and solutions for Push Platform React Native SDK.
+## Native installation
 
-## Table of Contents
+Install `@pushplatform/react-native@2.0.1` and follow [INSTALLATION.md](INSTALLATION.md).
+The native iOS and Android dependencies must both be 2.0.1. Rebuild the native app
+after upgrading; restarting Metro does not update native code. Expo requires a
+native development or production build; Expo Go does not contain the bridge.
 
-- [Installation Issues](#installation-issues)
-- [iOS Issues](#ios-issues)
-- [Android Issues](#android-issues)
-- [Runtime Issues](#runtime-issues)
-- [Notification Issues](#notification-issues)
-
----
-
-## Installation Issues
-
-### npm install fails with peer dependency conflicts
-
-**Problem:** npm reports peer dependency conflicts during installation.
-
-**Solution:** Use the `--legacy-peer-deps` flag:
-
-```bash
-npm install @pushplatform/react-native --legacy-peer-deps
-```
-
-Or if using yarn:
-
-```bash
-yarn add @pushplatform/react-native --ignore-engines
-```
-
----
-
-### Module not found after installation
-
-**Problem:** `Cannot find module '@pushplatform/react-native'`
-
-**Solution:**
-
-1. Clear Metro bundler cache:
-   ```bash
-   npm start -- --reset-cache
-   ```
-
-2. Reinstall node_modules:
-   ```bash
-   rm -rf node_modules && npm install
-   ```
-
-3. For iOS, reinstall pods:
-   ```bash
-   cd ios && rm -rf Pods Podfile.lock && pod install && cd ..
-   ```
-
----
-
-## iOS Issues
-
-### CocoaPods installation fails
-
-**Problem:** `pod install` fails with dependency errors.
-
-**Solution:**
-
-1. Update CocoaPods:
-   ```bash
-   sudo gem install cocoapods
-   ```
-
-2. Update pod repo:
-   ```bash
-   cd ios && pod repo update && pod install && cd ..
-   ```
-
-3. If still failing, try:
-   ```bash
-   cd ios
-   rm -rf Pods Podfile.lock
-   pod cache clean --all
-   pod install
-   cd ..
-   ```
-
----
-
-### PushPlatformSDK module not found
-
-**Problem:** Build fails with `Module 'PushPlatformSDK' not found`.
-
-**Solution:**
-
-Ensure you installed a prepared release tarball with `native/ios/PushPlatformSDK.podspec`. For Expo, remove old `sdkGitUrl`/`sdkGitBranch` options and run prebuild.
-
-While Trunk omits 1.2.10, pin both pods from the public git tag in `ios/Podfile` (right after `platform :ios`):
+For bare iOS, pin both pods in the Podfile:
 
 ```ruby
-pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
-pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v1.2.10'
+pod 'PushPlatformExtension', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v2.0.1'
+pod 'PushPlatformSDK', :git => 'https://github.com/pushplatform/pushpilot-sdk-ios.git', :tag => 'v2.0.1'
 ```
 
-Or path pods from the npm package (`native/ios`) for Expo / bundled installs.
+Update an existing installation with `bundle exec pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update`.
+The Expo plugin configures bundled iOS sources automatically. The Notification Service
+Extension imports `PushPlatformExtension`; the main app imports `PushPlatformSDK`.
+Android uses the bundled Maven repository at `native/android/maven`, configured as
+shown in the installation guide. Keep `google()` and `mavenCentral()` for transitive
+dependencies. The RN Android bridge requires API 26 or later.
 
----
-
-### Notification Service Extension — No such module 'PushPlatformSDK'
-
-**Problem:** NSE `NotificationService.swift` fails on `import PushPlatformSDK`.
-
-**Cause:** The extension target links only `PushPlatformExtension`. The full SDK is for the app, not the NSE.
-
-**Solution:** Use `import PushPlatformExtension` and keep the NSE Podfile target on `pod 'PushPlatformExtension'` only. See [INSTALLATION.md](INSTALLATION.md#ios-notification-service-extension).
-
----
-
-### Xcode build fails with Swift version mismatch
-
-**Problem:** Build fails with Swift version compatibility errors.
-
-**Solution:**
-
-1. Ensure Xcode 14+ is installed
-2. Set Swift version in project:
-   - Open Xcode
-   - Select project target
-   - Build Settings → Swift Language Version → Swift 5
-
----
-
-### Notifications not received on iOS
-
-**Problem:** Notifications don't appear on iOS device.
-
-**Solution:**
-
-1. **Check capabilities:**
-   - Xcode → Target → Signing & Capabilities
-   - Ensure "Push Notifications" capability is enabled
-   - Add "Background Modes" with "Remote notifications" checked
-
-2. **Check Info.plist:**
-   ```xml
-   <key>UIBackgroundModes</key>
-   <array>
-       <string>remote-notification</string>
-   </array>
-   ```
-
-3. **Request permissions:**
-   ```typescript
-   import { requestNotifications } from 'react-native-permissions';
-   const { status } = await requestNotifications(['alert', 'badge', 'sound']);
-   ```
-
-4. **Test on real device:**
-   - Push notifications don't work in iOS Simulator
-   - Use a physical device for testing
-
----
-
-### VoIP push not working
-
-**Problem:** VoIP push notifications not delivered.
-
-**Solution:**
-
-1. **Add VoIP capability:**
-   ```xml
-   <key>UIBackgroundModes</key>
-   <array>
-       <string>voip</string>
-   </array>
-   ```
-
-2. **Ensure PushKit entitlement:**
-   - Xcode → Target → Signing & Capabilities
-   - Background Modes → Voice over IP
-
-3. **VoIP requires real device and valid certificate**
-
----
-
-## Android Issues
-
-### Gradle sync fails
-
-**Problem:** Gradle sync fails with dependency resolution errors.
-
-**Solution:**
-
-1. **Update Android Gradle Plugin:**
-   ```gradle
-   // android/build.gradle
-   classpath("com.android.tools.build:gradle:8.1.1")
-   ```
-
-2. **Check minimum SDK version:**
-   ```gradle
-   // android/app/build.gradle
-   android {
-       defaultConfig {
-           minSdkVersion 26
-           targetSdkVersion 34
-       }
-   }
-   ```
-
-3. **Clean and rebuild:**
-   ```bash
-   cd android
-   ./gradlew clean
-   cd ..
-   npm run android
-   ```
-
----
-
-### Module not found in Android build
-
-**Problem:** Build fails with `Could not find com.pushplatform:sdk-android`.
-
-**Solution:**
-
-Clone `pushpilot-sdk-android` next to the app directory and add this composite build substitution to `android/settings.gradle`:
-
-```gradle
-includeBuild('../../pushpilot-sdk-android') {
-    dependencySubstitution {
-        substitute(module('com.pushplatform:sdk-android')).using(project(':sdk'))
-    }
-}
-```
-
----
-
-### FCM token not registering
-
-**Problem:** Android device doesn't receive push notifications.
-
-**Solution:**
-
-1. **Add google-services.json:**
-   - Download from Firebase Console
-   - Place in `android/app/google-services.json`
-
-2. **Add Firebase dependencies:**
-   ```gradle
-   // android/build.gradle
-   classpath 'com.google.gms:google-services:4.4.0'
-   
-   // android/app/build.gradle
-   apply plugin: 'com.google.gms.google-services'
-   ```
-
-3. **Check Firebase configuration:**
-   - Verify package name matches Firebase project
-   - Verify SHA-1 fingerprint is registered
-
----
-
-### Android 13+ notifications not showing
-
-**Problem:** Notifications don't show on Android 13+.
-
-**Solution:**
-
-Android 13+ requires runtime permission for notifications:
+## Initialization
 
 ```typescript
-import { PermissionsAndroid, Platform } from 'react-native';
+import PushPlatform from '@pushplatform/react-native';
 
-if (Platform.OS === 'android' && Platform.Version >= 33) {
-  const granted = await PermissionsAndroid.request(
-    PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-  );
-  console.log('Notification permission:', granted);
-}
-```
-
----
-
-## Runtime Issues
-
-### SDK not initialized error
-
-**Problem:** `SDKError: SDK not initialized. Call PushPlatform.initialize() first.` (often from `onNotificationOpened` / `onNotificationReceived` / `onNotificationWillDisplay` in a `useEffect` that did not wait for init)
-
-**Solution:**
-
-`await` `PushPlatform.initialize()` **before** those listeners (and before other SDK methods). `onRegistrationUpdated` may be registered earlier. Do not fire-and-forget `initialize()` without awaiting it.
-
-```typescript
 await PushPlatform.initialize({
-  applicationId: 'your-application-uuid',
+  applicationId: '00000000-0000-4000-8000-000000000000',
   url: 'https://api.pushpilot.ru',
-  debugMode: __DEV__,
+  debugMode: true,
 });
-
-const opened = PushPlatform.onNotificationOpened((context) => {
-  // ...
-});
-
 const installationId = await PushPlatform.getInstallationId();
+const granted = await PushPlatform.requestPermissions();
 ```
 
----
+Use the PushPilot application UUID. Keep the permanent send key on your backend.
+Check connectivity, server URL and the native registration response. Concurrent
+initializations for the same configuration share one operation; changing application,
+server or environment in the same process is rejected. Notification listeners may
+be registered before initialization; early events are queued for the corresponding
+JS listener. Await initialization before accessing installation state.
 
-### Network error during initialization
+## Notification delivery and opens
 
-**Problem:** `NETWORK_ERROR` during SDK initialization.
+On iOS, check Push Notifications, APNs environment, provisioning and AppDelegate
+callback forwarding. NSE receipts require the same App Group in the app and extension
+entitlements and signing profiles. On Android, check the Firebase project,
+`google-services.json`, notification permission and channel settings. A host-owned
+FirebaseMessagingService must forward messages and refreshed tokens to the native SDK.
 
-**Solution:**
+JS callbacks require a running JS runtime; native receipt processing and presentation
+do not require JS to be loaded. Foreground presentation uses `onNotificationWillDisplay`
+and the configured fallback; see [API.md](API.md). Wait until navigation is ready
+before handling an open and remove listeners when their owner unmounts. Custom
+Android Activities must forward notification intents as described in
+[MIGRATION_2.md](MIGRATION_2.md).
 
-1. **Check API key:** Verify your API key is correct
-2. **Check network connectivity:** Ensure device has internet access
-3. **Check baseURL:** If using custom baseURL, verify it's correct
-4. **Check firewall:** Ensure API endpoint is not blocked
+## Incoming calls
 
----
+The host owns PushKit, CallKit, signalling and media. Report a real incoming iOS
+VoIP push to CallKit natively before completing PushKit's callback; do not wait
+for JS or a socket connection. Android calling UI and its permissions also belong
+to the host. Use `notification_type: "voip"`, a short TTL and a call deadline.
+Send cancellations through signalling or background transport. See the native
+forwarding examples and device test matrix in [MIGRATION_2.md](MIGRATION_2.md).
 
-### Promise never resolves
+## Duplicates and diagnostics
 
-**Problem:** SDK methods hang indefinitely.
+PushPilot deduplication covers its own processing. Another provider may still display
+the same event independently. Route each recipient/event through one provider or
+coordinate deduplication in the host before display. Avoid duplicate listeners.
 
-**Solution:**
-
-1. **Check native bridge connection:**
-   - Restart Metro bundler
-   - Rebuild native app
-
-2. **Enable debug mode:**
-   ```typescript
-   await PushPlatform.initialize({
-     // ...
-     debugMode: true,
-   });
-   ```
-
-3. **Check native logs:**
-   - iOS: Xcode console
-   - Android: `adb logcat`
-
----
-
-## Notification Issues
-
-### Notifications received but onNotificationReceived not firing
-
-**Problem:** Native notifications arrive but JavaScript callback doesn't fire.
-
-**Solution:**
-
-1. **Ensure listener is registered before notification arrives:**
-   ```typescript
-   useEffect(() => {
-     const subscription = PushPlatform.onNotificationReceived(handler);
-     return () => subscription.remove();
-   }, []);
-   ```
-
-2. **Check event emitter is active:**
-   - Don't call `subscription.remove()` prematurely
-   - Ensure component is mounted when notification arrives
-
----
-
-### Notifications not showing in foreground
-
-**Problem:** Notifications don't display when app is in foreground.
-
-**Solution:**
-
-This is expected behavior. Use `onNotificationReceived` to handle foreground notifications:
-
-```typescript
-PushPlatform.onNotificationReceived((context) => {
-  if (context.foreground) {
-    // Show custom in-app notification UI
-    showInAppNotification(context.notification);
-  }
-});
-```
-
----
-
-### Deep links not working
-
-**Problem:** Notification deep links don't navigate to correct screen.
-
-**Solution:**
-
-1. **Parse notification data:**
-   ```typescript
-   PushPlatform.onNotificationOpened((context) => {
-     const deeplink = context.notification.data?.deeplink;
-     if (deeplink) {
-       navigation.navigate(deeplink);
-     }
-   });
-   ```
-
-2. **Ensure navigation is ready:**
-   - Wait for navigation container to be mounted
-   - Use `navigationRef` if navigating outside components
-
----
-
-### Duplicate notifications
-
-**Problem:** Same notification appears multiple times.
-
-**Solution:**
-
-Event deduplication is handled automatically by native SDKs using `event_id` and `call_id` fields. If you're still seeing duplicates:
-
-1. **Ensure notifications include event_id:**
-   ```json
-   {
-     "notification": {
-       "title": "Hello",
-       "body": "World"
-     },
-     "data": {
-       "event_id": "unique-id-here"
-     }
-   }
-   ```
-
-2. **Check for multiple event listeners:**
-   - Ensure you're not registering the same listener multiple times
-   - Use `useEffect` cleanup to remove old listeners
-
----
-
-## Debug Mode
-
-Enable debug logging to troubleshoot issues:
-
-```typescript
-await PushPlatform.initialize({
-  apiKey: 'your-api-key',
-  appId: 'your-app-id',
-  environment: 'development',
-  debugMode: true, // Enable verbose logging
-});
-```
-
-**View logs:**
-
-- **iOS:** Xcode → Console
-- **Android:** `adb logcat | grep PushPlatform`
-- **React Native:** Metro bundler console
-
----
-
-## Getting Help
-
-If you're still experiencing issues:
-
-1. Check [API Reference](API.md) for correct usage
-2. Review [Quick Start Guide](QUICK_START.md) for setup steps
-3. Search [GitHub Issues](https://github.com/pushplatform/react-native/issues)
-4. File a new issue with:
-   - SDK version
-   - React Native version
-   - Platform (iOS/Android) and version
-   - Code snippet reproducing the issue
-   - Debug logs
-
----
-
-## Common Error Codes
-
-| Code | Meaning | Solution |
-|------|---------|----------|
-| `NOT_CONFIGURED` | SDK not initialized | Call `initialize()` first |
-| `INVALID_CONFIG` | Invalid configuration | Check config parameters |
-| `NETWORK_ERROR` | Network request failed | Check connectivity and API key |
-| `API_ERROR` | API returned error | Check API response in logs |
-| `INVALID_TOKEN` | Token format invalid | Contact support |
-| `MAX_RETRIES_EXCEEDED` | Too many failed attempts | Check network and API status |
-| `STORAGE_ERROR` | Storage access failed | Check device storage permissions |
-| `KEYCHAIN_ACCESS_DENIED` | Keychain access denied (iOS) | Check device security settings |
+Use Xcode device logs, `adb logcat` and server delivery records. Include package/native
+versions, OS version, application ID, event ID and a minimal reproduction in
+[an issue](https://github.com/pushplatform/pushpilot-sdk-react-native/issues).
+Remove tokens, private keys and user data from shared logs.

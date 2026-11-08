@@ -26,14 +26,14 @@ Main SDK class for Push Platform integration.
 
 ### initialize()
 
-Initialize the SDK with your API credentials.
+Initialize the SDK with your PushPilot application UUID.
 
-**Must be called before using any other SDK methods.**
+**Await initialization before accessing installation state. Notification listeners may be registered earlier.**
 
-If the SDK is already initialized, subsequent calls resolve successfully without changing the existing configuration.
+Concurrent calls for the same configuration share initialization. Changing application, server or environment in the same process is rejected.
 
 ```typescript
-static initialize(config: PushPlatformConfig): Promise<void>
+static initialize(config: string | PushPlatformConfig): Promise<void>
 ```
 
 **Parameters:**
@@ -137,9 +137,9 @@ await PushPlatform.logout();
 
 Register a callback for when push notifications are received.
 
-Fires when notifications arrive, whether the app is in foreground or background.
+Delivers native events while JavaScript is running, including queued early events. A push does not guarantee background JS execution.
 
-Requires a completed `await PushPlatform.initialize(...)`. Calling this before init throws `SDK not initialized`.
+May be registered before initialization; early native events are queued until the corresponding listener is attached.
 
 ```typescript
 static onNotificationReceived(
@@ -182,7 +182,7 @@ Register a callback for when user taps a notification.
 
 Fires when the user opens a notification (app was terminated or backgrounded).
 
-Requires a completed `await PushPlatform.initialize(...)`. Calling this before init throws `SDK not initialized`.
+May be registered before initialization; early native events are queued until the corresponding listener is attached.
 
 ```typescript
 static onNotificationOpened(
