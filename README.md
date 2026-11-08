@@ -196,7 +196,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
 
-### Текущая поставка · 2.0.1
+### Текущая поставка · 2.0.2
 
 `initialize` принимает UUID приложения или options с `applicationId` и `debugMode`; секретный ключ не требуется. Основные нативные SDK подключаются транзитивно через npm-пакет, отдельные app-level записи в Podfile не нужны. Для Notification Service Extension используйте отдельный target из инструкции выше.
 

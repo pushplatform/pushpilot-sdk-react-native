@@ -1,10 +1,10 @@
-# Выпуск SDK 2.0.1
+# Выпуск SDK 2.0.2
 
-Версии пакета, нативных зависимостей и runtime metadata должны совпадать.
+Версия пакета должна совпадать в его manifest и lockfile. Версии нативных SDK должны совпадать с release/native-lock.json и нативными зависимостями моста.
 Инструкции установки и настройки приложения находятся в README.md;
 изменения интеграции звонков — в docs/MIGRATION_2.md.
 
-1. Согласуйте package.json, package-lock.json, Podspec, Gradle и release/native-lock.json: версия 2.0.1.
+1. Согласуйте package.json, package-lock.json, Podspec, Gradle и release/native-lock.json: версия пакета 2.0.2; версии native SDK — из release/native-lock.json.
 2. В native-lock.json зафиксируйте точные коммиты нативных SDK 2.0.1.
 3. Выполните typecheck, JavaScript/Expo/publication tests и нативные consumer builds.
 4. Сформируйте native/ командой `npm run release:stage` с нативными исходниками и Maven-артефактами из зафиксированных коммитов.
