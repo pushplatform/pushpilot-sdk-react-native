@@ -3,7 +3,7 @@
 Install `@pushplatform/react-native`:
 
 ```sh
-npm install @pushplatform/react-native
+npm install https://github.com/pushplatform/pushpilot-sdk-react-native/releases/download/v2.0.5/pushplatform-react-native-2.0.5.tgz
 ```
 
 

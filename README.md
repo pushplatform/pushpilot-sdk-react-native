@@ -21,7 +21,7 @@ await PushPlatform.initialize('YOUR_APPLICATION_UUID');
 ## Установка
 
 ```sh
-npm install @pushplatform/react-native
+npm install https://github.com/pushplatform/pushpilot-sdk-react-native/releases/download/v2.0.5/pushplatform-react-native-2.0.5.tgz
 ```
 
 Для Expo используйте development build или EAS build. Expo Go не содержит
@@ -196,9 +196,9 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
 
-### Текущая поставка · 2.0.4
+### Текущая поставка · 2.0.5
 
-Обновление: `npm install @pushplatform/react-native@latest`, затем в `ios` — `pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update`. Сохраняйте Podfile.lock; используйте `bundle exec`, если CocoaPods управляется Bundler. Для Expo повторите prebuild и нативную сборку.
+Обновление: `npm install https://github.com/pushplatform/pushpilot-sdk-react-native/releases/download/v2.0.5/pushplatform-react-native-2.0.5.tgz`, затем в `ios` — `pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update`. Сохраняйте Podfile.lock; используйте `bundle exec`, если CocoaPods управляется Bundler. Для Expo повторите prebuild и нативную сборку.
 
 `initialize` принимает UUID приложения или options с `applicationId` и `debugMode`; секретный ключ не требуется. Основные нативные SDK подключаются транзитивно через npm-пакет, отдельные app-level записи в Podfile не нужны. Для Notification Service Extension используйте отдельный target из инструкции выше.
 

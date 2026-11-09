@@ -1,11 +1,11 @@
-# Выпуск SDK 2.0.4
+# Выпуск SDK 2.0.5
 
 Версия пакета должна совпадать в его manifest и lockfile. Версии нативных SDK должны совпадать с release/native-lock.json и нативными зависимостями моста.
 Инструкции установки и настройки приложения находятся в README.md;
 изменения интеграции звонков — в docs/MIGRATION_2.md.
 
-1. Согласуйте package.json, package-lock.json, Podspec, Gradle и release/native-lock.json: версия пакета 2.0.4; версии native SDK — из release/native-lock.json.
-2. В native-lock.json зафиксируйте точные коммиты нативных SDK 2.0.3.
+1. Согласуйте package.json, package-lock.json, Podspec, Gradle и release/native-lock.json: версия пакета 2.0.5; версии native SDK — из release/native-lock.json.
+2. В native-lock.json зафиксируйте точные коммиты Android SDK 2.0.4 и iOS SDK 2.0.3.
 3. Выполните typecheck, JavaScript/Expo/publication tests и нативные consumer builds.
 4. Сформируйте native/ командой `npm run release:stage` с нативными исходниками из зафиксированных коммитов. Maven-артефакты загрузите командой `node scripts/fetch-native-maven.mjs /tmp/pushpilot-maven`: в пакет должны попасть опубликованные байты, а не повторная сборка той же версии.
 5. Перед npm-публикацией `npm run release:verify-ios` проверяет публичный iOS-тег, его соответствие native-lock.json и наличие SDK и Extension в индексе и specs CocoaPods CDN; `npm run release:check` проверяет содержимое npm-пакета.

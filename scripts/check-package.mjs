@@ -45,7 +45,7 @@ try {
   for (const file of ['native/android/LICENSE', 'native/ios/LICENSE', 'native/THIRD_PARTY_NOTICES.md', 'native/licenses/Apache-2.0.txt', 'native/ios/PushPlatformSDK.podspec', 'native/ios/PushPlatformExtension.podspec', 'lib/index.js', 'lib/index.d.ts', 'app.plugin.js', 'react-native.config.js', 'ios/PushPlatformBridge.swift', 'android/src/main/AndroidManifest.xml']) {
     assert(fs.statSync(path.join(root, file)).size > 0, `Missing ${file}`);
   }
-  assert(read('android/build.gradle').includes(`com.pushplatform:sdk-android:${lock.android.version}`));
+  assert(read('android/build.gradle').includes(`${lock.android.group}:${lock.android.artifact}:${lock.android.version}`));
   assert(read('PushPlatform.podspec').includes(`s.dependency "PushPlatformSDK", "${lock.ios.version}"`));
   assert(!read('plugin/withPushPlatform.js').includes('git@github.com'), 'Plugin still defaults to private Git');
   assert(read('plugin/helpers.js').includes("'native/ios'"), 'Plugin does not use the bundled Pod');
