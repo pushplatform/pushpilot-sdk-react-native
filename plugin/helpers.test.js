@@ -23,7 +23,7 @@ test('adds the bundled Maven repository once, even if the app uses Maven Local',
   const twice = ensureAndroidMavenRepository(once, '../node_modules/@pushplatform/react-native/native/android/maven');
   assert.equal(twice, once);
   assert.doesNotMatch(twice, /mavenLocal/);
-  assert.match(twice, /includeModule\('com.pushplatform', 'sdk-android'\)/);
+  assert.match(twice, /includeModule\('ru.pushplatform', 'sdk-android'\)/);
   assert.match(ensureAndroidMavenRepository(gradle.replace('google()', 'mavenLocal()'), '../native'), /bundled native SDK/);
 });
 
@@ -70,4 +70,15 @@ test('native config mutations are idempotent and preserve existing values', () =
   assert.equal((twice.match(/pod 'PushPlatformSDK'/g) || []).length, 1);
   assert.equal((twice.match(/pod 'PushPlatformExtension'/g) || []).length, 1);
   assert.match(twice, /:path/);
+});
+
+test('upgrades the generated Maven coordinate without changing user-managed repositories', () => {
+  const gradle = "allprojects {\n    repositories {\n        google()\n        mavenCentral()\n    }\n}\n";
+  const generated = ensureAndroidMavenRepository(gradle, '../native/android/maven')
+    .replace("includeModule('ru.pushplatform', 'sdk-android')", "includeModule('com.pushplatform', 'sdk-android')");
+  const userRepository = "\nmaven { url 'https://example.org/maven'; content { includeModule('com.pushplatform', 'sdk-android') } }\n";
+  const upgraded = ensureAndroidMavenRepository(generated + userRepository, '../native/android/maven');
+  assert.match(upgraded, /includeModule\('ru.pushplatform', 'sdk-android'\)/);
+  assert.ok(upgraded.endsWith(userRepository));
+  assert.equal(ensureAndroidMavenRepository(upgraded, '../native/android/maven'), upgraded);
 });

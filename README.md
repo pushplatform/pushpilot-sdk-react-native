@@ -196,7 +196,7 @@ RN SDK использует native Device Registry; опция `browserAuth` Web
 
 Лицензия: [MIT](https://github.com/pushplatform/pushpilot-sdk-react-native/blob/main/LICENSE).
 
-### Текущая поставка · 2.0.4
+### Текущая поставка · 2.0.5
 
 Обновление: `npm install @pushplatform/react-native@latest`, затем в `ios` — `pod update PushPlatform PushPlatformSDK PushPlatformExtension --repo-update`. Сохраняйте Podfile.lock; используйте `bundle exec`, если CocoaPods управляется Bundler. Для Expo повторите prebuild и нативную сборку.
 

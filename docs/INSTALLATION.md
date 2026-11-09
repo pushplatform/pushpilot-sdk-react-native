@@ -86,9 +86,13 @@ func application(_ application: UIApplication,
 maven {
     def sdkPackage = new File(["node", "--print", "require.resolve('@pushplatform/react-native/package.json')"].execute(null, rootDir).text.trim()).parentFile
     url = uri(new File(sdkPackage, "native/android/maven"))
-    content { includeModule("com.pushplatform", "sdk-android") }
+    content { includeModule("ru.pushplatform", "sdk-android") }
 }
 ```
+
+При обновлении до 2.0.5 замените в существующем фильтре SDK группу
+`com.pushplatform` на `ru.pushplatform`. Expo plugin обновляет созданный им блок
+автоматически при повторном prebuild. Java/Kotlin imports не меняются.
 
 Если проект централизует repositories через `dependencyResolutionManagement`
 в `settings.gradle`, поместите тот же блок в его `repositories`, сохранив

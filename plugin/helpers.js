@@ -119,11 +119,16 @@ function applyGoogleServicesPlugin(appGradle) {
 function ensureAndroidMavenRepository(projectGradle, relativePath) {
   // Upgrade our own old generated entry; preserve user-managed Maven Local.
   projectGradle = projectGradle.replace(/\s*\/\/ PushPlatform native SDK local Maven repository\s*\n\s*mavenLocal\(\)/g, '');
-  if (projectGradle.includes(ANDROID_MAVEN_MARKER)) {
-    return projectGradle;
-  }
   const escapedPath = relativePath.replace(/\\/g, '/').replace(/'/g, "\\'").replace(/\r|\n/g, '');
-  const repository = `${ANDROID_MAVEN_MARKER}\n        maven {\n            url = uri(new File(rootDir, '${escapedPath}'))\n            content { includeModule('com.pushplatform', 'sdk-android') }\n        }`;
+  const repository = `${ANDROID_MAVEN_MARKER}\n        maven {\n            url = uri(new File(rootDir, '${escapedPath}'))\n            content { includeModule('ru.pushplatform', 'sdk-android') }\n        }`;
+  if (projectGradle.includes(ANDROID_MAVEN_MARKER)) {
+    // Replace only our generated block when upgrading the native Maven coordinate.
+    // Leave user-managed repositories and their content filters untouched.
+    return projectGradle.replace(
+      /\/\/ PushPlatform bundled native SDK Maven repository[ \t]*\n[ \t]*maven[ \t]*\{[ \t]*\n[ \t]*url[^\n]*\n[ \t]*content[ \t]*\{[^\n]*\}[ \t]*\n[ \t]*\}/,
+      repository,
+    );
+  }
   const allProjects = /allprojects\s*\{/;
   const match = allProjects.exec(projectGradle);
   if (match) {

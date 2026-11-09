@@ -1,4 +1,4 @@
-# Troubleshooting — React Native SDK 2.0.4
+# Troubleshooting — React Native SDK 2.0.5
 
 ## Native installation
 

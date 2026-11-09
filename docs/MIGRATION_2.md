@@ -61,7 +61,7 @@ Android permissions и системного calling API приложения.
 
 - React Native: `npm install @pushplatform/react-native`.
 - Flutter: `flutter pub add push_platform_flutter`.
-- Android: `implementation("com.pushplatform:sdk-android:[2.0.0,3.0)")`.
+- Android: `implementation("ru.pushplatform:sdk-android:[2.0.4,3.0)")`.
 - Нативный iOS: установка описана в README iOS SDK.
 
 React Native и Flutter подключают SDK основного приложения транзитивно.
